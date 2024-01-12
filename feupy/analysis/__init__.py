@@ -6,7 +6,7 @@ from .counterparts import AnalysisConfig, Analysis
 __all__ = [
     "Analysis",
     "AnalysisConfig",
-#     "get_catalogs",
+#     "write_datasets_models",
 #     "gammapy_catalog",
 #     "atnf_catalog",
 ]

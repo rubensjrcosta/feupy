@@ -29,6 +29,14 @@ from pathlib import Path
 from feupy.utils.string_handling import name_to_txt
 
 
+# In[ ]:
+
+
+from pathlib import Path
+PATH_ANALYSIS = Path("analysis")
+PATH_ANALYSIS.mkdir(exist_ok=True)
+
+
 # In[4]:
 
 
@@ -152,13 +160,14 @@ def test_analysis_confg():
     )
 
 
-# In[16]:
+# In[15]:
 
 
 from feupy.scripts import gammapy_catalogs 
+from pathlib import Path
 
-from feupy.catalog.pulsar.atnf import PSR_PARAMS
-from feupy.catalog.pulsar.atnf import SourceCatalogATNF
+from gammapy.utils.table import table_row_to_dict
+from feupy.catalog.pulsar.atnf import SourceCatalogATNF, SourceCatalogObjectATNF
 from feupy.catalog.lhaaso import SourceCatalogPublishNatureLHAASO
 from feupy.catalog.hawc import SourceCatalogExtraHAWC
 
@@ -193,13 +202,14 @@ class Analysis:
         self.datasets = None
         self.sources = None
         self.models = None
+        self.pulsars = None
         self.dict_roi = None
         self.df_roi = None
 
 
-#         self.fit = Fit()
-        self.fit_result = None
-        self.flux_points = None
+# #         self.fit = Fit()
+#         self.fit_result = None
+#         self.flux_points = None
         
     @property
     def config(self):
@@ -213,19 +223,24 @@ class Analysis:
         else:
             raise TypeError("config must be AnalysisConfig.")
             
-    def get_catalogs(self):
+    def run(self):
+        self._get_catalogs()
+        self._get_datasets()
+        self._get_pulsars()
+        self._get_dict_roi()
+        self._get_df_roi()
+        
+    def _get_catalogs(self):
         _catalogs = []
         catalogs_roi = []
         
         position = self.config.roi.position 
         radius = self.config.roi.radius 
 
-        catalogs_gammapy = gammapy_catalogs.load_all_catalogs()
-        _catalogs.extend(catalogs_gammapy)
-        catalog_lhaaso = SourceCatalogPublishNatureLHAASO()
-        _catalogs.append(catalog_lhaaso)
-        catalog_hawc = SourceCatalogExtraHAWC()
-        _catalogs.append(catalog_hawc)
+        _catalogs.extend(gammapy_catalogs.load_all_catalogs())
+        _catalogs.append(SourceCatalogExtraHAWC())
+        _catalogs.append(SourceCatalogPublishNatureLHAASO())
+       
 
         n_tot = len(_catalogs)
         for catalog in _catalogs:        
@@ -241,13 +256,11 @@ class Analysis:
                 pass
 #               catalogs_roi_no.append(f"{catalog.tag}: {catalog.description}")
         self.catalogs = catalogs_roi
-    
-
-
-    def get_datasets(self):
-        '''
+  
+    def _get_datasets(self):
+        """
         Select a catalog subset (only sources within a region of interest)
-        '''
+        """
 
         datasets = Datasets() # global datasets object
         models = Models()  # global models object
@@ -285,7 +298,7 @@ class Analysis:
                     )
 
                     if any([self.config.e_ref_min !=  None, self.config.e_ref_max !=  None]):
-                        dataset = self.cut_energy_flux_points(dataset)
+                        dataset = self._cut_energy_flux_points(dataset)
             
                     n_flux_points+=1
                     models.append(model)  # Add the model to models()
@@ -314,7 +327,7 @@ class Analysis:
         self.datasets = datasets
         self.models = models
         
-    def cut_energy_flux_points(self, dataset):
+    def _cut_energy_flux_points(self, dataset):
         _datasets = Datasets()
         e_ref_min = self.config.e_ref_min
         e_ref_max = self.config.e_ref_max
@@ -345,22 +358,27 @@ class Analysis:
 
         return FluxPointsDataset(models = models, data = flux_points, name = ds_name)
      
-    def get_dict_roi(self):
+    def _get_dict_roi(self):
         _dict_roi = {}
 
         roi_pos = self.config.roi.position 
         radius_roi = self.config.roi.radius 
 
-        for index, source in enumerate(self.sources):
+        _sources = self.sources.copy()
+        _sources.extend(self.pulsars)
+        for index, source in enumerate(_sources):
             source_pos = source.position
             sep = source.position.separation(roi_pos).deg
-            _dict_roi[source.name] = {
+            if index < len(self.datasets):
+                name = self.datasets[index].name
+            else: name = source.name
+            _dict_roi[name] = {
                 'position': source_pos,
                 'separation':sep }
 
         self.dict_roi = _dict_roi
         
-    def get_df_roi(self):
+    def _get_df_roi(self):
         _dict = self.dict_roi
 
         df = pd.DataFrame()
@@ -378,36 +396,83 @@ class Analysis:
         df["dec.(deg)"] =df_dec
         df["Sep.(deg)"]= df_sep
         self.df_roi = df
+        
+    # @u.quantity_input(pos_ra= u.deg,  pos_dec= u.deg, radius = u.deg)
+    def _get_pulsars(self, params=SourceCatalogATNF.PSR_PARAMS):
+        """
+        """
+        position = self.config.roi.position 
+        radius = self.config.roi.radius.value 
+
+        dict_psr = []    
+    #     radius = roi.radius.value
+
+        # define circular search region
+        search_region = [str(position.ra), str(position.dec), radius]
+        # query ATNF catalog
+        psrs = SourceCatalogATNF().query(params = params, circular_boundary = search_region)
+
+        if len(psrs) == 0:
+            print('no PSR found!')
+        else:
+            # pulsars position in SkyCoord form
+            cpsrs = SkyCoord(
+                ra=psrs['RAJ'], 
+                dec=psrs['DECJ'], 
+                frame='icrs',            
+                unit=(u.hourangle, u.deg)
+            )
+            print(f'{len(psrs)} PSRs found!')
+
+            # calculate angular separation between pulsars and target
+            sep = cpsrs.separation(position)
+
+        for index, _table in enumerate(psrs.table):
+            _dict = table_row_to_dict(_table, make_quantity=True)
+            SourceCatalogObjectATNF.instantiate_from_ATNF([_dict])
+        self.pulsars = SourceCatalogObjectATNF.all
+        
+
+    def write_datasets_models(self, overwrite=True):
+        """Write datasets and Models to YAML file.
+
+            Parameters
+            ----------
+            overwrite : bool, optional
+                Overwrite existing file. Default is True.
+            """
+        path_file = Path(f"{PATH_ANALYSIS}/datasets")
+        path_file.mkdir(parents=True, exist_ok=True)
+        self.datasets.write(filename=f"{path_file}/datasets.yaml", filename_models=f"{path_file}/models.yaml", overwrite=overwrite)
+        
+        
+#     def read_datasets_models():
+#         path_file = Path(f"{PATH_ANALYSIS}/datasets")
+#         path_file.mkdir(parents=True, exist_ok=True)
+#         return Datasets.read(filename=f"{path_file}/datasets.yaml", filename_models=f"{path_file}/models.yaml")
 
 
-# In[17]:
+# In[9]:
 
 
-# # config.energy_range
-
-# config=test_analysis_confg()
-
-# analysis = Analysis(config)
-
-# analysis.get_catalogs()
-# analysis.catalogs
-
-# analysis.get_datasets()
-
-# print(analysis.datasets)
-
-# analysis.sources
-
-# analysis.get_dict_roi()
-
-# analysis.dict_roi
-
-# analysis.get_df_roi()
-
-# analysis.df_roi
+# analysis_confg = AnalysisConfig(
+#     "LHAASO J1825-1326", 
+#     276.45* u.Unit('deg'), 
+#     -13.45* u.Unit('deg'),
+#     1* u.Unit('deg'),
+#     1* u.Unit('erg')
+# )
+# analysis = Analysis(analysis_confg)
+# analysis.run()
 
 
-# In[18]:
+# In[ ]:
+
+
+
+
+
+# In[10]:
 
 
 
