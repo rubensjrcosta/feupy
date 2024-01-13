@@ -5,6 +5,11 @@
 
 
 from astropy import units as u
+
+
+# In[ ]:
+
+
 CU = 6.1e-17 * u.Unit("TeV-1 cm-2 s-1") 
 # CU is the flux of the Crab Nebula at 100 TeV
 UNIT_DEG = 'deg' 
@@ -71,6 +76,9 @@ MARKER_CTA = "s"
 
 MARKERS = ['s','o']
 LINESTYLES = ['solid','dotted','dashed','dashdot']
+
+
+           
 
 # # catalogs_tags = ["gamma-cat", "hgps", "2hwc", "3hwc", "3fgl", "4fgl", "2fhl", "3fhl"]
 

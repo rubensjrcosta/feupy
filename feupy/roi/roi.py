@@ -4,11 +4,8 @@
 # In[ ]:
 
 
-# from .maker import get_catalogs
 from astropy import units as u
-from astropy.units import Quantity
 from astropy.coordinates import SkyCoord
-from gammapy.utils.units import energy_unit_format
 
 
 # In[2]:
@@ -16,8 +13,6 @@ from gammapy.utils.units import energy_unit_format
 
 __all__ = [
     "ROI",
-#     "Target",
-#     "AnalysisConfig",
 ]
 
 
@@ -46,10 +41,10 @@ class ROI:
 
     @property
     def info(self):
-        info={}
-        info["name"]=self.__name
-        info["position"]=self.position
-        info["radius"]=self.radius
+        info = {}
+        info["name"] = self.__name
+        info["position"] = self.position
+        info["radius"] = self.radius
         return info
 
     @property
@@ -58,11 +53,18 @@ class ROI:
         return self.__name
 
     def __repr__(self):
-        return f"{self.__class__.__name__}({self.__name}, {(self.position.ra.value)}.deg, {(self.position.dec.value)}.deg, {(self.radius.value)}.deg)"
+        ss = f"{self.__class__.__name__}("
+        ss += f"name={self.name!r}, "
+        ss += "pos_ra=Quantity('{:.2f}'), ".format(self.position.ra).replace(' ', '')
+        ss += "pos_dec=Quantity('{:.2f}'), ".format(self.position.dec).replace(' ', '')
+        ss += "radius=Quantity('{:.2f}'))\n".format(self.radius).replace(' ', '')
+        return ss  
 
 
 # In[7]:
 
+
+from astropy.units import Quantity
 
 def test_roi():
     return ROI(

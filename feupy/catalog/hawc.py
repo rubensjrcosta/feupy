@@ -1,19 +1,26 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[1]:
+# In[ ]:
 
 
-from feupy.source import Source
-from feupy.utils.string_handling import *
-from feupy.utils.table import *
+# Licensed under a 3-clause BSD style license - see LICENSE.rst
+"""ExtraHAWC catalog and source classes."""
 
-from astropy.table import Table
-from gammapy.utils.scripts import make_path
 
-from gammapy.estimators import FluxPoints
+# In[2]:
+
 
 import pickle
+
+# from feupy.source import Source
+# from feupy.utils.string_handling import *
+from feupy.utils.table import remove_nan
+
+from astropy.table import Table
+
+from gammapy.utils.scripts import make_path
+from gammapy.estimators import FluxPoints
 from gammapy.modeling.models import SkyModel
 from gammapy.catalog.core import SourceCatalog, SourceCatalogObject
 
@@ -47,7 +54,11 @@ class SourceCatalogObjectExtraHAWC(SourceCatalogObject):
         _data = pickle.load(fp)
     
     def __repr__(self):
-        return f"{self.__class__.__name__}({self.name!r})"
+        ss = f"{self.__class__.__name__}("
+        ss += f"name={self.name!r}, "
+        ss += "pos_ra=Quantity('{:.2f}'), ".format(self.position.ra).replace(' ', '')
+        ss += "pos_dec=Quantity('{:.2f}'))\n".format(self.position.dec).replace(' ', '')
+        return ss  
 
     def __str__(self):
         return self.info()
@@ -96,7 +107,7 @@ class SourceCatalogExtraHAWC(SourceCatalog):
     tag = "extraHAWC"
     """Catalog name"""
         
-    description = "HAWC Catalogue"
+    description = "extraHAWC catalog from the HAWC observatory"
     """Catalog description"""
     
     source_object_class = SourceCatalogObjectExtraHAWC

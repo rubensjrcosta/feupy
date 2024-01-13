@@ -3,16 +3,13 @@
 
 from .hawc import SourceCatalogObjectExtraHAWC, SourceCatalogExtraHAWC
 from .lhaaso import SourceCatalogObjectPublishNatureLHAASO, SourceCatalogPublishNatureLHAASO
-
-# from .length import get_length
-
-# from ..scripts.example1 import yolo
-
-# from ..scripts.make_1LHAASO import get_table
+from .pulsar.atnf import SourceCatalogObjectATNF, SourceCatalogATNF
 
 __all__ = [
     "SourceCatalogExtraHAWC",
     "SourceCatalogPublishNatureLHAASO",
+    "SourceCatalogATNF",
     "SourceCatalogObjectExtraHAWC",
     "SourceCatalogObjectPublishNatureLHAASO",
+    "SourceCatalogObjectATNF",
 ]

@@ -6,9 +6,9 @@
 
 import pickle
 
-from feupy.source import Source
-from feupy.utils.string_handling import *
-from feupy.utils.table import *
+# from feupy.source import Source
+# from feupy.utils.string_handling import *
+from feupy.utils.table import remove_nan
 
 from astropy.table import Table
 

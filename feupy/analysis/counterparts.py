@@ -10,8 +10,18 @@
 # In[2]:
 
 
+import logging
+import numpy as np
+import pandas as pd 
+
 from feupy.roi import ROI
 from feupy.target import Target
+from feupy.utils.string_handling import name_to_txt
+from feupy.scripts import gammapy_catalogs 
+
+from feupy.catalog.pulsar.atnf import SourceCatalogATNF
+from feupy.catalog.lhaaso import SourceCatalogPublishNatureLHAASO
+from feupy.catalog.hawc import SourceCatalogExtraHAWC
 
 from astropy import units as u
 from astropy.coordinates import SkyCoord
@@ -19,20 +29,19 @@ from astropy.units import Quantity
 
 from gammapy.utils.units import energy_unit_format
 
-import logging
+from gammapy.datasets import FluxPointsDataset
+from gammapy.datasets import Datasets
+
+from gammapy.modeling.models import SkyModel, Models
+
+from gammapy.estimators import FluxPoints
+
 from pathlib import Path
-
-
-# In[3]:
-
-
-from feupy.utils.string_handling import name_to_txt
 
 
 # In[ ]:
 
 
-from pathlib import Path
 PATH_ANALYSIS = Path("analysis")
 PATH_ANALYSIS.mkdir(exist_ok=True)
 
@@ -41,12 +50,6 @@ PATH_ANALYSIS.mkdir(exist_ok=True)
 
 
 __all__ = ["AnalysisConfig", "Analysis"]
-
-# log = logging.getLogger(__name__)
-
-
-# CONFIG_PATH = Path(__file__).resolve().parent / "config"
-# DOCS_FILE = CONFIG_PATH / "docs.yaml"
 
 
 # In[5]:
@@ -65,19 +68,18 @@ class AnalysisConfig:
         assert -90 <= pos_dec.value <= 90, f"Declination {pos_dec} is not in the range: (-90,90) deg!"
 
         # Assign to self object
-        self.__target_name=target_name
-        self.position=SkyCoord(pos_ra, pos_dec) 
-        self.radius=radius
+        self.__target_name = target_name
+        self.position = SkyCoord(pos_ra, pos_dec) 
+        self.radius = radius
         if e_ref_min is not None:
-            self.e_ref_min=Quantity(e_ref_min, "TeV")
-        else: self.e_ref_min=e_ref_min
+            self.e_ref_min = Quantity(e_ref_min, "TeV")
+        else: self.e_ref_min = e_ref_min
         if e_ref_max is not None:
-            self.e_ref_max=Quantity(e_ref_max, "TeV")
-        else: self.e_ref_max=e_ref_max
-        self.energy_range=[self.e_ref_min, self.e_ref_max]
-        self.target=Target(self.__target_name, self.position.ra, self.position.dec)
-        self.roi=ROI(self.__target_name, self.position.ra, self.position.dec, self.radius)
-#         self.catalogs_roi=get_catalogs(self.roi)
+            self.e_ref_max = Quantity(e_ref_max, "TeV")
+        else: self.e_ref_max = e_ref_max
+        self.energy_range = [self.e_ref_min, self.e_ref_max]
+        self.target = Target(self.__target_name, self.position.ra, self.position.dec)
+        self.roi = ROI(self.__target_name, self.position.ra, self.position.dec, self.radius)
         
         # Actions to execute
         AnalysisConfig.all.append(self)
@@ -86,100 +88,31 @@ class AnalysisConfig:
     # Property Decorator=Read-Only Attribute
     def info(self):
         info={}
-        info["target_name"]=self.target_name
-        info["position"]=self.position
-        info["radius"]=self.radius
-        info["energy_range"]=self.energy_range
+        info["target_name"] = self.target_name
+        info["position"] = self.position
+        info["radius"] = self.radius
+        info["energy_range"] = self.energy_range
         return info    
     
     @property
     def target_name(self):
         return self.__target_name
 
-    #     @name.setter
-    #     def name(self, value):
-    #         if len(value) > 15:
-    #             raise Exception("The name is too long!")
-    #         else:
-    #             self.__name=value
-
-    @staticmethod
-    def is_integer(num):
-       # We will count out the floats that are point zero
-       # For i.e: 5.0, 10.0
-        if isinstance(num, float):
-           # Count out the floats that are point zero
-           return num.is_integer()
-        elif isinstance(num, int):
-            return True
-        else: return False
-
-    def __repr__(self):        
+    def __repr__(self):
         ss = f"{self.__class__.__name__}("
-        ss += f"target_name='{self.__target_name}', "
-        ss += "pos_ra={}*u.Unit('{}'), ".format(self.position.ra.value, self.position.ra.unit)
-        ss += "pos_dec={}*u.Unit('{}'), ".format(self.position.dec.value, self.position.dec.unit)
-        ss += "radius={}*u.Unit('{}'), ".format(self.radius.value, self.radius.unit)
+        ss += f"target_name={self.__target_name}, "
+        ss += "pos_ra=Quantity('{:.2f}'), ".format(self.position.ra).replace(' ', '')
+        ss += "pos_dec=Quantity('{:.2f}'), ".format(self.position.dec).replace(' ', '')
+        ss += "radius=Quantity('{:.2f}'), ".format(self.radius).replace(' ', '')
         if self.e_ref_min is None: ss += "e_ref_min=None, "
         else: ss += "e_ref_min=Quantity('{}'), ".format(energy_unit_format(self.e_ref_min).replace(' ', ''))
         if self.e_ref_max is None: ss += "e_ref_max=None)"
         else: ss += "e_ref_max=Quantity('{}'))".format(energy_unit_format(self.e_ref_max).replace(' ', ''))
-        return ss
+        return ss 
 
 
-# In[ ]:
+# In[2]:
 
-
-
-
-
-# In[6]:
-
-
-# def cli_run_analysis(filename, out, overwrite):
-#     """Performs automated data reduction process."""
-#     config = AnalysisConfig.read(filename)
-#     config.datasets.background.method = "reflected"
-#     analysis = Analysis(config)
-#     analysis.get_observations()
-#     analysis.get_datasets()
-#     analysis.datasets.write(out, overwrite=overwrite)
-#     log.info(f"Datasets stored in {out} folder.")
-
-
-# In[7]:
-
-
-def test_analysis_confg():
-    return AnalysisConfig(
-        "LHAASO J1825-1326", 
-        276.45* u.Unit('deg'), 
-        -13.45* u.Unit('deg'),
-        1* u.Unit('deg'),
-        1* u.Unit('erg')
-    )
-
-
-# In[15]:
-
-
-from feupy.scripts import gammapy_catalogs 
-from pathlib import Path
-
-from gammapy.utils.table import table_row_to_dict
-from feupy.catalog.pulsar.atnf import SourceCatalogATNF, SourceCatalogObjectATNF
-from feupy.catalog.lhaaso import SourceCatalogPublishNatureLHAASO
-from feupy.catalog.hawc import SourceCatalogExtraHAWC
-
-from gammapy.datasets import FluxPointsDataset
-from astropy.coordinates import SkyCoord
-from astropy import units as u
-from gammapy.modeling.models import SkyModel, Models
-from gammapy.datasets import Datasets
-import numpy as np
-import pandas as pd 
-
-from gammapy.estimators import FluxPoints
 
 class Analysis:
     """Config-driven high level analysis interface.
@@ -197,7 +130,6 @@ class Analysis:
 
     def __init__(self, config):
         self.config = config
-#         self.config.set_logging()
         self.catalogs = None
         self.datasets = None
         self.sources = None
@@ -206,10 +138,6 @@ class Analysis:
         self.dict_roi = None
         self.df_roi = None
 
-
-# #         self.fit = Fit()
-#         self.fit_result = None
-#         self.flux_points = None
         
     @property
     def config(self):
@@ -226,7 +154,6 @@ class Analysis:
     def run(self):
         self._get_catalogs()
         self._get_datasets()
-        self._get_pulsars()
         self._get_dict_roi()
         self._get_df_roi()
         
@@ -240,7 +167,8 @@ class Analysis:
         _catalogs.extend(gammapy_catalogs.load_all_catalogs())
         _catalogs.append(SourceCatalogExtraHAWC())
         _catalogs.append(SourceCatalogPublishNatureLHAASO())
-       
+        _catalogs.append(SourceCatalogATNF())
+
 
         n_tot = len(_catalogs)
         for catalog in _catalogs:        
@@ -251,7 +179,6 @@ class Analysis:
 
             if len(catalog[mask_roi].table):
                 catalogs_roi.append(catalog[mask_roi])
-#                 n_roi += 1
             else:
                 pass
 #               catalogs_roi_no.append(f"{catalog.tag}: {catalog.description}")
@@ -265,67 +192,65 @@ class Analysis:
         datasets = Datasets() # global datasets object
         models = Models()  # global models object
         sources = [] # global sources object
+        pulsars = [] # global pulsars object
         n_sources = 0 # number of sources
         n_flux_points = 0 # number of flux points tables
-    
+        
         for catalog in self.catalogs:
             cat_tag = catalog.tag
             for source in catalog:
-                n_sources+=1   
+                n_sources += 1   
                 source_name = source.name            
-                try:
-                    flux_points = source.flux_points
+                if cat_tag == "ATNF":
+                    pulsars.append(source)
+                else:
+                    try:
+                        flux_points = source.flux_points
 
-                    spectral_model = source.spectral_model()
-                    spectral_model_tag = spectral_model.tag[1]
+                        spectral_model = source.spectral_model()
+                        spectral_model_tag = spectral_model.tag[1]
 
-                    if cat_tag == 'gamma-cat' or cat_tag == 'hgps':
-                        dataset_name = f'{source_name}: {cat_tag}'
-                    else: dataset_name = source_name
+                        if cat_tag == 'gamma-cat' or cat_tag == 'hgps':
+                            dataset_name = f'{source_name}: {cat_tag}'
+                        else: dataset_name = source_name
 
-                    file_name = name_to_txt(dataset_name)
+                        file_name = name_to_txt(dataset_name)
 
-                    model = SkyModel(
-                        name = f"{file_name}_{spectral_model_tag}",
-                        spectral_model = spectral_model,
-                        datasets_names=dataset_name
-                    )
+                        model = SkyModel(
+                            name=f"{file_name}_{spectral_model_tag}",
+                            spectral_model=spectral_model,
+                            datasets_names=dataset_name
+                        )
 
-                    dataset = FluxPointsDataset(
-                        models = model,
-                        data = flux_points, 
-                        name =  dataset_name   
-                    )
+                        dataset = FluxPointsDataset(
+                            models=model,
+                            data=flux_points, 
+                            name=dataset_name   
+                        )
 
-                    if any([self.config.e_ref_min !=  None, self.config.e_ref_max !=  None]):
-                        dataset = self._cut_energy_flux_points(dataset)
-            
-                    n_flux_points+=1
-                    models.append(model)  # Add the model to models()
+                        if any([self.config.e_ref_min !=  None, self.config.e_ref_max !=  None]):
+                            dataset = self._cut_energy_flux_points(dataset)
 
-                    sources.append(source)
-                    datasets.append(dataset)
+                        n_flux_points += 1
+                        models.append(model)  # Add the model to models()
 
-    #                 table = dataset.data.to_table(sed_type = cfg.sed_type_e2dnde, formatted = True)
+                        sources.append(source)
+                        datasets.append(dataset)
 
-    #                 # Writes the flux points table in the csv/fits format
-    #                 utl.write_tables_csv(table, path_file, file_name)
-    #                 utl.write_tables_fits(table, path_file, file_name)
-
-                except Exception as error:
-                    # By this way we can know about the type of error occurring
-                    print(f'The error is: ({source_name}) {error}') 
+                    except Exception as error:
+                        # By this way we can know about the type of error occurring
+                        print(f'The error is: ({source_name}) {error}') 
 
         datasets.models = models
-        # To save datasets and models
-    #     utl.write_datasets_models(datasets,region_of_interest, datasets_name)
-
-        print(f"Total number of Gammapy sources: {n_sources}")
-        print(f"Total number of flux points tables: {n_flux_points}")
         
+        self.pulsars = pulsars
         self.sources = sources
         self.datasets = datasets
         self.models = models
+        
+        print(f"Total number of gammapy sources: {n_sources-len(pulsars)}")
+        print(f"Total number of flux points tables: {n_flux_points}")
+        print(f"Total number of pulsars: {len(pulsars)}")
         
     def _cut_energy_flux_points(self, dataset):
         _datasets = Datasets()
@@ -345,7 +270,7 @@ class Analysis:
 
             flux_points_mask = flux_points.to_table()[mask_energy]
             flux_points = FluxPoints.from_table(flux_points_mask)
-            print(e_ref)
+
         if e_ref_max != None:
             mask_energy = np.zeros(len(flux_points.to_table()), dtype=bool)
 
@@ -356,7 +281,7 @@ class Analysis:
             flux_points_mask = flux_points.to_table()[mask_energy]
             flux_points = FluxPoints.from_table(flux_points_mask)     
 
-        return FluxPointsDataset(models = models, data = flux_points, name = ds_name)
+        return FluxPointsDataset(models=models, data=flux_points, name=ds_name)
      
     def _get_dict_roi(self):
         _dict_roi = {}
@@ -374,7 +299,8 @@ class Analysis:
             else: name = source.name
             _dict_roi[name] = {
                 'position': source_pos,
-                'separation':sep }
+                'separation':sep
+            }
 
         self.dict_roi = _dict_roi
         
@@ -393,46 +319,10 @@ class Analysis:
             df_sep.append(_dict[name]["separation"])
 
         df["RA(deg)"] = df_ra
-        df["dec.(deg)"] =df_dec
-        df["Sep.(deg)"]= df_sep
+        df["dec.(deg)"] = df_dec
+        df["Sep.(deg)"] = df_sep
         self.df_roi = df
         
-    # @u.quantity_input(pos_ra= u.deg,  pos_dec= u.deg, radius = u.deg)
-    def _get_pulsars(self, params=SourceCatalogATNF.PSR_PARAMS):
-        """
-        """
-        position = self.config.roi.position 
-        radius = self.config.roi.radius.value 
-
-        dict_psr = []    
-    #     radius = roi.radius.value
-
-        # define circular search region
-        search_region = [str(position.ra), str(position.dec), radius]
-        # query ATNF catalog
-        psrs = SourceCatalogATNF().query(params = params, circular_boundary = search_region)
-
-        if len(psrs) == 0:
-            print('no PSR found!')
-        else:
-            # pulsars position in SkyCoord form
-            cpsrs = SkyCoord(
-                ra=psrs['RAJ'], 
-                dec=psrs['DECJ'], 
-                frame='icrs',            
-                unit=(u.hourangle, u.deg)
-            )
-            print(f'{len(psrs)} PSRs found!')
-
-            # calculate angular separation between pulsars and target
-            sep = cpsrs.separation(position)
-
-        for index, _table in enumerate(psrs.table):
-            _dict = table_row_to_dict(_table, make_quantity=True)
-            SourceCatalogObjectATNF.instantiate_from_ATNF([_dict])
-        self.pulsars = SourceCatalogObjectATNF.all
-        
-
     def write_datasets_models(self, overwrite=True):
         """Write datasets and Models to YAML file.
 
@@ -470,6 +360,19 @@ class Analysis:
 
 
 
+
+
+# In[7]:
+
+
+def test_analysis_confg():
+    return AnalysisConfig(
+        "LHAASO J1825-1326", 
+        276.45* u.Unit('deg'), 
+        -13.45* u.Unit('deg'),
+        1* u.Unit('deg'),
+        1* u.Unit('erg')
+    )
 
 
 # In[10]:
