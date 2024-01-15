@@ -39,13 +39,6 @@ from gammapy.estimators import FluxPoints
 from pathlib import Path
 
 
-# In[ ]:
-
-
-PATH_ANALYSIS = Path("analysis")
-PATH_ANALYSIS.mkdir(exist_ok=True)
-
-
 # In[4]:
 
 
@@ -323,6 +316,20 @@ class Analysis:
         df["Sep.(deg)"] = df_sep
         self.df_roi = df
         
+    def _create_roi_name(self): 
+        """ ... """
+        ss = f"{self.config.target_name}"
+        ss += "_roi_{:.2f}".format(self.config.radius).replace(' ', '')
+        if self.config.e_ref_min is None: ss += ""
+        else: ss += "_e_ref_min_{}".format(energy_unit_format(self.config.e_ref_min).replace(' ', ''))
+        if self.config.e_ref_max is None: ss += ""
+        else: ss += "_e_ref_max_{}".format(energy_unit_format(self.config.e_ref_max).replace(' ', ''))
+        return ss
+    
+    def create_analysis_path(self): 
+        """ ... """
+        return Path(f"analysis_roi/{self._create_roi_name()}")
+
     def write_datasets_models(self, overwrite=True):
         """Write datasets and Models to YAML file.
 
@@ -331,7 +338,8 @@ class Analysis:
             overwrite : bool, optional
                 Overwrite existing file. Default is True.
             """
-        path_file = Path(f"{PATH_ANALYSIS}/datasets")
+
+        path_file = Path(f"{self.create_analysis_path()}/datasets")
         path_file.mkdir(parents=True, exist_ok=True)
         self.datasets.write(filename=f"{path_file}/datasets.yaml", filename_models=f"{path_file}/models.yaml", overwrite=overwrite)
         
@@ -342,18 +350,24 @@ class Analysis:
 #         return Datasets.read(filename=f"{path_file}/datasets.yaml", filename_models=f"{path_file}/models.yaml")
 
 
-# In[9]:
+# In[2]:
 
 
-# analysis_confg = AnalysisConfig(
-#     "LHAASO J1825-1326", 
-#     276.45* u.Unit('deg'), 
-#     -13.45* u.Unit('deg'),
-#     1* u.Unit('deg'),
-#     1* u.Unit('erg')
+# # To save only the models
+# models_3fhl.write("3fhl_models.yaml", overwrite=True)
+
+# # To save datasets and models
+# datasets.write(
+#     filename="datasets-gc.yaml", filename_models="models_gc.yaml", overwrite=True
 # )
-# analysis = Analysis(analysis_confg)
-# analysis.run()
+
+# # To read only models
+# models = Models.read("3fhl_models.yaml")
+# print(models)
+
+# # To read datasets with models
+# datasets_read = Datasets.read("datasets-gc.yaml", filename_models="models_gc.yaml")
+# print(datasets_read)
 
 
 # In[ ]:
