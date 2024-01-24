@@ -73,20 +73,20 @@ class Target:
     @property
     def info(self):
         """Target report (`str`)."""
-        ss = '*** Target parameters ***\n'
+        ss = '*** Target parameters ***\n\n'
         ss += 'Name={}\n'.format(self.name)
         ss += "pos_ra={:.2f}\n".format(self.position.ra).replace(' ', '')
         ss += "pos_dec={:.2f}\n".format(self.position.dec).replace(' ', '')
         if self.spectral_model:
-            ss += '*** Spectral Model parameters ***\n'
+            ss += '\n*** Spectral Model parameters ***\n\n'
             for par in self.spectral_model.parameters:
                 ss += '{}={} {}\n'.format(par.name, str(par.value), par.unit)
         if self.spatial_model:
-            ss += '*** Spatial Model parameters ***\n'
+            ss += '\n*** Spatial Model parameters ***\n\n'
             for par in self.spatial_model.parameters:
                 ss += '{}={} {}\n'.format(par.name, str(par.value), par.unit)
         if self.temporal_model:
-            ss += '*** Temporal Model parameters ***\n'
+            ss += '\n*** Temporal Model parameters ***\n\n'
             for par in self.temporal_model.parameters:
                 ss += '{}={} {}\n'.format(par.name, str(par.value), par.unit)
         return ss

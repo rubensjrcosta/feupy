@@ -1,7 +1,8 @@
 # Licensed under a 3-clause BSD style license - see LICENSE.rst
-"""CTA."""
-from .cta import CTA
+"""CTAOPerf."""
+from .cta import CTAOPerf, ObservationParameters
 
 __all__ = [
-    "CTA",
+    "CTAOPerf",
+    "ObservationParameters"
 ]

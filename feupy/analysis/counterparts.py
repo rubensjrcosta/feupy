@@ -104,7 +104,7 @@ class AnalysisConfig:
         return ss 
 
 
-# In[2]:
+# In[3]:
 
 
 class Analysis:
@@ -331,7 +331,7 @@ class Analysis:
         return Path(f"analysis_roi/{self._create_roi_name()}")
 
     def write_datasets_models(self, overwrite=True):
-        """Write datasets and Models to YAML file.
+        """Write Datasets and Models to YAML file.
 
             Parameters
             ----------
@@ -342,8 +342,13 @@ class Analysis:
         path_file = Path(f"{self.create_analysis_path()}/datasets")
         path_file.mkdir(parents=True, exist_ok=True)
         self.datasets.write(filename=f"{path_file}/datasets.yaml", filename_models=f"{path_file}/models.yaml", overwrite=overwrite)
-        
-        
+    
+    def read_datasets_models(self):
+        """Read Datasets and Models from YAML file."""
+
+        path_file = Path(f"{self.create_analysis_path()}/datasets")
+#         path_file.mkdir(parents=True, exist_ok=True)
+        return Datasets.read(filename=f"{path_file}/datasets.yaml", filename_models=f"{path_file}/models.yaml")
 #     def read_datasets_models():
 #         path_file = Path(f"{PATH_ANALYSIS}/datasets")
 #         path_file.mkdir(parents=True, exist_ok=True)
