@@ -10,7 +10,6 @@
 # In[2]:
 
 
-import logging
 import numpy as np
 import pandas as pd 
 
@@ -117,7 +116,7 @@ class Analysis:
 
     Parameters
     ----------
-    config : dict or `~gammapy.analysis.AnalysisConfig`
+    config : dict or `~gammapy.analysis.counterparts.AnalysisConfig`
         Configuration options following `AnalysisConfig` schema.
     """
 
