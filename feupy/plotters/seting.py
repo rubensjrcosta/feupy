@@ -4,7 +4,7 @@
 # In[1]:
 
 
-from feupy.config import *
+from feupy.plotters.config import *
 
 
 # In[6]:
@@ -27,74 +27,68 @@ __all__ = [
 # In[2]:
 
 
-def set_leg_style_models(leg_style, models, color = None, linestyle = None):
-    models = Models(models)
-    color_m = color
-    linestyle_m = linestyle
+def set_leg_style(
+    leg_style = {}, 
+    datasets_names=None, 
+    models_names=None, 
+    colors=COLORS, 
+    markers=MARKERS, 
+    linestyles=LINESTYLES
+):
     
-    if not linestyle:
-        while len(LINESTYLES) < len(models) +1:
-            LINESTYLES.extend(LINESTYLES)
-    if not color_m:      
-        while len(COLORS) < len(models) +1:
-            COLORS.extend(COLORS)
+    if all([datasets_names ==  None, models_names ==  None]):
+        return print("Sorry, there is error: 'datasets_names =  None' and 'models_names =  None'")
+    else: 
+        if datasets_names !=  None:
+            leg_style = set_leg_style_datasets(datasets_names, leg_style, colors, markers)
 
-    for index, model in enumerate(models):
-        if not color_m:
-            color = "black"
-            
-        linestyle = LINESTYLES[index]
-        leg_style[model.name] = (color, linestyle)
+        if models_names !=  None:
+            leg_style = set_leg_style_models(models_names, leg_style, colors, linestyles)
+    
     return leg_style
 
 
 # In[ ]:
 
 
-def set_leg_style_datasets(leg_style, datasets, color = None, marker = None):
-    datasets = Datasets(datasets)
-    marker_ds = marker
-    color_ds = color
-    if not marker_ds:
-        while len(MARKERS) < len(datasets) +1:
-            MARKERS.extend(MARKERS)
-    if not color_ds:      
-        while len(COLORS) < len(datasets) +1:
-            COLORS.extend(COLORS)
-
-    for index, dataset in enumerate(datasets):
-        if not color_ds:
-            color = COLORS[index]
-
-        if not color_ds:
-            marker = MARKERS[index]
+def set_leg_style_datasets(datasets_names, leg_style={}, colors=COLORS, markers=MARKERS):
+    if not isinstance(datasets_names, list):
+        datasets_names = [datasets_names]
         
-        #############################
-        if dataset.name.find('LHAASO') != -1:
-            color = COLOR_LHAASO
-            marker = MARKER_LHAASO
-            
-        if dataset.name.find('CTA') != -1:
-            color = COLOR_CTA
-            marker = MARKER_CTA
-        #############################    
-        leg_style[dataset.name] = (color, marker)
+    if len(colors) < len(datasets_names):      
+        while len(colors) < len(datasets_names) +1:
+            colors.extend(colors)
+    
+    if len(markers) < len(datasets_names):
+        while len(markers) < len(datasets_names)+1:
+            markers.extend(markers)
+
+    for index, name in enumerate(datasets_names):
+        color = colors[index]
+        marker = markers[index]   
+        leg_style[name] = (color, marker)
     return leg_style
 
 
 # In[3]:
 
 
-def set_leg_style(leg_style, datasets = None, models = None, color = None, marker = None, linestyle = None):
-    if all([datasets ==  None, models ==  None]):
-        return print("Sorry, there is error: 'datasets =  None' and 'models =  None'")
-    else: 
-        if datasets !=  None:
-            leg_style = set_leg_style_datasets(leg_style, datasets, color, marker)
+def set_leg_style_models(models_names, leg_style={}, colors='black', linestyles=LINESTYLES):
+    if not isinstance(models_names, list):
+        models_names = [models_names]
+    
+    if len(linestyles) < len(models_names):
+        while len(linestyles) < len(models_names)+1:
+            linestyles.extend(linestyles)
 
-        if models !=  None:
-            leg_style = set_leg_style_models(leg_style, models, color, linestyle)
-        
+    if len(colors) < len(models_names):      
+        while len(colors) < len(models_names) +1:
+            colors.extend(colors)
+
+    for index, name in enumerate(models_names):
+        color = colors[index]
+        linestyle = linestyles[index]   
+        leg_style[name] = (color, linestyle)
     return leg_style
 
 
