@@ -1,10 +1,21 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[1]:
+# In[ ]:
 
 
-from feupy.config import *
+
+
+
+# In[2]:
+
+
+from feupy.plotters.config import *
+import matplotlib.pyplot as plt # A collection of command style functions
+from gammapy.utils.scripts import make_path
+from astropy import units as u
+
+plt.style.use(make_path(PATHMYSTYLE))
 
 
 # In[ ]:
@@ -12,22 +23,17 @@ from feupy.config import *
 
 __all__ = [
     "show_sky_map",
+    "create_sky_map",
 ]
 
 
-# In[4]:
+# In[ ]:
 
 
-import matplotlib.pyplot as plt # A collection of command style functions
-from gammapy.utils.scripts import make_path
 
 
-FILE_PATH = "$PYTHONPATH/feupy/plotters/"
-path_my_plot_style = f"{FILE_PATH}/my_plot_style.txt" 
-plt.style.use(make_path(path_my_plot_style))
 
-
-# In[1]:
+# In[ ]:
 
 
 from matplotlib.patches import Circle  # $matplotlib/patches.py
@@ -59,9 +65,9 @@ def show_sky_map(
         
 #     region = SphericalCircleSkyRegion(center, radius=5 * u.deg) # defines the region
 
-    target_name = roi.name
+    target_name = roi.target.name
     radius = roi.radius
-    position = roi.position 
+    position = roi.target.position 
     pos_ra = position.ra.value
     pos_dec= position.dec.value
             
@@ -115,25 +121,27 @@ def show_sky_map(
     
     for index, source in enumerate(sources):
                     
-            source_pos = source.position
-            pos_ra = source_pos.ra.value
-            pos_dec= source_pos.dec.value
-            source_name = datasets[index].name
-            
-            color = leg_style[source_name][0]
-            marker = leg_style[source_name][1]
+        source_pos = source.position
+        pos_ra = source_pos.ra.value
+        pos_dec= source_pos.dec.value
+#         if index < len(datasets):
+#             source_name = datasets[index].name
+#         else: source_name = source.name
+        source_name = datasets[index].name
+        color = leg_style[source_name][0]
+        marker = leg_style[source_name][1]
 
-            ax.scatter(
-                pos_ra,
-                pos_dec,
-                s=s+50,
-                label=source_name, 
-                marker=marker, 
-                edgecolor=color, 
-                ec='black', 
-                lw=.5,
-                facecolor=color
-            )
+        ax.scatter(
+            pos_ra,
+            pos_dec,
+            s=s+50,
+            label=source_name, 
+            marker=marker, 
+            edgecolor=color, 
+            ec='black', 
+            lw=.5,
+            facecolor=color
+        )
             
     for index, source in enumerate(pulsars):
 
@@ -148,7 +156,7 @@ def show_sky_map(
         ax.scatter(
             pos_ra,
             pos_dec,
-            s=550,
+            s=s+50,
             label=source_name, 
             marker= "*", 
             edgecolor=None, 

@@ -8,7 +8,7 @@
 """ExtraHAWC catalog and source classes."""
 
 
-# In[2]:
+# In[1]:
 
 
 import pickle
@@ -34,7 +34,7 @@ __all__ = [
 ]
 
 
-# In[5]:
+# In[ ]:
 
 
 class SourceCatalogObjectExtraHAWC(SourceCatalogObject):
@@ -49,19 +49,19 @@ class SourceCatalogObjectExtraHAWC(SourceCatalogObject):
     """    
     _source_name_key = "source_name"
     
-    _filename="$PYTHONPATH/feupy/data/catalogs/extraHAWC/extraHAWC.pkl"    
+    _filename="$PYTHONPATH/data/catalogs/extraHAWC/extraHAWC.pkl"    
     with open(make_path(_filename), "rb") as fp:  
         _data = pickle.load(fp)
     
-    def __repr__(self):
-        ss = f"{self.__class__.__name__}("
-        ss += f"name={self.name!r}, "
-        ss += "pos_ra=Quantity('{:.2f}'), ".format(self.position.ra).replace(' ', '')
-        ss += "pos_dec=Quantity('{:.2f}'))\n".format(self.position.dec).replace(' ', '')
-        return ss  
+#     def __repr__(self):
+#         ss = f"{self.__class__.__name__}("
+#         ss += f"name={self.name!r}, "
+#         ss += "pos_ra=Quantity('{:.2f}'), ".format(self.position.ra).replace(' ', '')
+#         ss += "pos_dec=Quantity('{:.2f}'))\n".format(self.position.dec).replace(' ', '')
+#         return ss  
 
-    def __str__(self):
-        return self.info()
+#     def __str__(self):
+#         return self.info()
     
     def spectral_model(self):
         """Spectral model as a `~gammapy.modeling.models.SpectralModel` object."""
@@ -112,9 +112,9 @@ class SourceCatalogExtraHAWC(SourceCatalog):
     
     source_object_class = SourceCatalogObjectExtraHAWC
     
-    def __init__(self, filename="$PYTHONPATH/feupy/data/catalogs/extraHAWC/extraHAWC.fits"):
+    def __init__(self, filename="$PYTHONPATH/data/catalogs/extraHAWC/extraHAWC.fits"):
         table = Table.read(make_path(filename))
-        source_name_key = "Source_Name"
+        source_name_key = "source_name"
         super().__init__(table=table, source_name_key=source_name_key)
 
 

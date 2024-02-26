@@ -1,26 +1,24 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[1]:
+# In[ ]:
 
 
 # Licensed under a 3-clause BSD style license - see LICENSE.rst
 """ATNF Pulsar Catalogue and source classes."""
 
 
-# In[2]:
+# In[ ]:
 
-
-# from feupy.utils.string_handling import *
-# from feupy.utils.table import *
 
 from astropy.table import Table
+
 
 from gammapy.utils.scripts import make_path
 from gammapy.catalog.core import SourceCatalog, SourceCatalogObject
 
 
-# In[3]:
+# In[ ]:
 
 
 __all__ = [
@@ -29,47 +27,39 @@ __all__ = [
 ]
 
 
-# In[4]:
+# In[1]:
 
 
 class SourceCatalogObjectATNF(SourceCatalogObject):
-    """One source from the HAWC Catalogue.
+    """One source from the ATNF Pulsar Catalogue.
 
-    See: ...
+    See: Manchester, R. N., Hobbs, G. B., Teoh, A. & Hobbs, M., Astron. J., 129, 1993-2006 (2005) (astro-ph/0412641)
     
-    The data are available through the web page (http://english.ihep.cas.cn/lhaaso/index.html) 
+    
+    The data are available through the web page (http://www.atnf.csiro.au/research/pulsar/psrcat) 
     in the section ‘Public Data’. 
 
     One source is represented by `~feupy.catalog.pulsar.SourceCatalogObjectATNF`.
     """    
     _source_name_key = "JNAME"
-    
-#     all = []
-    
-#     def __init__(self):
-    
-#         SourceCatalogObjectATNF.all.append(self)
+
     
 #     def __repr__(self):
-#         return f"{self.__class__.__name__}({self.name!r})"
+#         ss = f"{self.__class__.__name__}("
+#         ss += f"name={self.name!r}, "
+#         ss += "pos_ra=Quantity('{:.2f}'), ".format(self.position.ra).replace(' ', '')
+#         ss += "pos_dec=Quantity('{:.2f}'), ".format(self.position.dec).replace(' ', '')
+#         ss += "dist=Quantity('{:.2f}'), ".format(self.dist).replace(' ', '')
+#         ss += "age=Quantity('{:.2e}'), ".format(self.age).replace(' ', '')
+#         ss += "P_0=Quantity('{:.2f}'), ".format(self.P_0).replace(' ', '')
+#         ss += "B_surf=Quantity('{:.2e}'), ".format(self.B_surf).replace(' ', '')
+#         ss += "E_dot=Quantity('{:.2e}'), ".format(self.E_dot).replace(' ', '')
+#         ss += "Type={:<20s}, ".format(self.Type)
+#         ss += "assoc={:<20s})\n".format(self.assoc)
+#         return ss  
     
-    def __repr__(self):
-#         return f"{self.__class__.__name__}('{self.__name}', {self.position.ra.deg}.deg, {self.position.dec.deg}.deg, {self.catalog})"
-        ss = f"{self.__class__.__name__}("
-        ss += f"name='{self.name!r}, "
-        ss += "pos_ra=Quantity('{:.2f}'), ".format(self.position.ra).replace(' ', '')
-        ss += "pos_dec=Quantity('{:.2f}'), ".format(self.position.dec).replace(' ', '')
-        ss += "dist=Quantity('{:.2f}'), ".format(self.dist).replace(' ', '')
-        ss += "age=Quantity('{:.2e}'), ".format(self.age).replace(' ', '')
-        ss += "P_0=Quantity('{:.2f}'), ".format(self.P_0).replace(' ', '')
-        ss += "B_surf=Quantity('{:.2e}'), ".format(self.B_surf).replace(' ', '')
-        ss += "E_dot=Quantity('{:.2e}'), ".format(self.E_dot).replace(' ', '')
-        ss += "Type={:<20s}, ".format(self.Type)
-        ss += "assoc={:<20s})\n".format(self.assoc)
-        return ss  
-    
-    def __str__(self):
-        return self.info()
+#     def __str__(self):
+#         return self.info()
     
     @property
     def dist(self):
@@ -142,18 +132,15 @@ class SourceCatalogATNF(SourceCatalog):
         'TYPE', 
         'ASSOC',
     ]
-    """Pulsar default parameters"""
+    """Pulsar default parameters
+    
+    See: https://www.atnf.csiro.au/research/pulsar/psrcat/psrcat_help.html?type=normal&highlight=name#par_list
+    """
     
     source_object_class = SourceCatalogObjectATNF
     
-    def __init__(self, filename="$PYTHONPATH/feupy/data/catalogs/ATNF/ATNF.fits"):
+    def __init__(self, filename="$PYTHONPATH/data/catalogs/ATNF/atnf.fits"):
         table = Table.read(make_path(filename))
-        source_name_key = "Source_Name"
+        source_name_key = "JNAME"
         super().__init__(table=table, source_name_key=source_name_key)
-
-
-# In[ ]:
-
-
-
 

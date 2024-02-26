@@ -1,6 +1,13 @@
 #!/usr/bin/env python
 # coding: utf-8
 
+# In[ ]:
+
+
+# Licensed under a 3-clause BSD style license - see LICENSE.rst
+"""PublishNatureLHAASO catalog and source classes."""
+
+
 # In[9]:
 
 
@@ -9,6 +16,7 @@ import pickle
 # from feupy.source import Source
 # from feupy.utils.string_handling import *
 from feupy.utils.table import remove_nan
+
 
 from astropy.table import Table
 
@@ -28,17 +36,9 @@ __all__ = [
 ]
 
 
-# In[ ]:
-
-
-
-
-
 # In[11]:
 
 
-# Licensed under a 3-clause BSD style license - see LICENSE.rst
-"""Source catalog for LHAASO"""
 class SourceCatalogObjectPublishNatureLHAASO(SourceCatalogObject):
     """One source from the LHAASO first 12 PeVatrons Catalogue.
 
@@ -51,15 +51,15 @@ class SourceCatalogObjectPublishNatureLHAASO(SourceCatalogObject):
     """    
     _source_name_key = "source_name"
     
-    _filename="$PYTHONPATH/feupy/data/catalogs/publishNatureLHAASO/publishNatureLHAASO.pkl"    
+    _filename="$PYTHONPATH/data/catalogs/publishNatureLHAASO/publishNatureLHAASO.pkl"    
     with open(make_path(_filename), "rb") as fp:  
         _data = pickle.load(fp)
     
-    def __repr__(self):
-        return f"{self.__class__.__name__}({self.name!r})"
+#     def __repr__(self):
+#         return f"{self.__class__.__name__}({self.name!r})"
 
-    def __str__(self):
-        return self.info()
+#     def __str__(self):
+#         return self.info()
     
     def spectral_model(self):
         """Spectral model as a `~gammapy.modeling.models.SpectralModel` object."""
@@ -103,9 +103,9 @@ class SourceCatalogPublishNatureLHAASO(SourceCatalog):
     The data are available through the web page (http://english.ihep.cas.cn/lhaaso/index.html) 
     in the section ‘Public Data’. 
 
-    One source is represented by `~feupy.catalog.SourceCatalogLHAASO`.
+    One source is represented by `~feupy.catalog.SourceCatalogPublishNatureLHAASO`.
     """    
-    tag = "lhaaso-nature"
+    tag = "publish-nature-lhaaso"
     """Catalog name"""
         
     description = "LHAASO first 12 PeVatrons Catalogue"
@@ -113,9 +113,9 @@ class SourceCatalogPublishNatureLHAASO(SourceCatalog):
     
     source_object_class = SourceCatalogObjectPublishNatureLHAASO
     
-    def __init__(self, filename="$PYTHONPATH/feupy/data/catalogs/publishNatureLHAASO/publishNatureLHAASO.fits"):
+    def __init__(self, filename="$PYTHONPATH/data/catalogs/publishNatureLHAASO/publishNatureLHAASO.fits"):
         table = Table.read(make_path(filename))
-        source_name_key = "Source_Name"
+        source_name_key = "source_name"
         super().__init__(table=table, source_name_key=source_name_key)
 
 
