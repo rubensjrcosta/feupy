@@ -2,3 +2,6 @@
 
 # feupy
 A TeV Astronomy Python package based on Gammapy.
+
+# You might need to install psrqpy (https://psrqpy.readthedocs.io/en/latest/)
+# !pip install psrqpy
