@@ -1,197 +1,95 @@
-import json
-from pathlib import Path
-from typing import Annotated
-from astropy import units as u
-from astropy.coordinates import AltAz, Angle, EarthLocation, SkyCoord
+#!/usr/bin/env python
+# coding: utf-8
+
+# In[1]:
+
+
+# Licensed under a 3-clause BSD style license - see LICENSE.rst
+"""Utilities for types validation."""
+
+
+# In[2]:
+
+
+from astropy.coordinates import Angle
 from astropy.time import Time
-from pydantic import PlainSerializer
-from pydantic.functional_validators import AfterValidator, BeforeValidator
-# from gammapy.utils.observers import observatory_locations
-from gammapy.utils.scripts import make_path
-from gammapy.data import observatory_locations
+from astropy.units import Quantity
+
+from feupy.cta import Irfs
+
+
+# In[4]:
+
 
 __all__ = [
     "AngleType",
     "EnergyType",
+    "QuantityType",
     "TimeType",
-    "PathType",
-    "EarthLocationType",
-    "SkyCoordType",
+    "IrfType",
 ]
 
 
-# TODO: replace by QuantityType and pydantic TypeAdapter
-class JsonQuantityEncoder(json.JSONEncoder):
-    """Support for quantities that JSON default encoder"""
-
-    def default(self, obj):
-        if isinstance(obj, u.Quantity):
-            return obj.to_string()
-
-        return json.JSONEncoder.default(self, obj)
+# In[6]:
 
 
-# TODO: replace by QuantityType and pydantic TypeAdapter
-class JsonQuantityDecoder(json.JSONDecoder):
-    """Support for quantities that JSON default encoder"""
+class AngleType(Angle):
+    @classmethod
+    def __get_validators__(cls):
+        yield cls.validate
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(object_hook=self.object_hook, *args, **kwargs)
-
-    @staticmethod
-    def object_hook(data):
-        for key, value in data.items():
-            try:
-                data[key] = u.Quantity(value)
-            except TypeError:
-                continue
-        return data
+    @classmethod
+    def validate(cls, v):
+        return Angle(v)
 
 
-def json_encode_earth_location(v):
-    """JSON encoder for `~astropy.coordinates.EarthLocation`."""
-    return (
-        f"lon: {v.lon.value} {v.lon.unit}, "
-        f"lat : {v.lat.value} {v.lat.unit}, "
-        f"height : {v.height.value} {v.height.unit}"
-    )
+class EnergyType(Quantity):
+    @classmethod
+    def __get_validators__(cls):
+        yield cls.validate
 
-
-def json_encode_sky_coord(v):
-    """JSON encoder for `~astropy.coordinates.SkyCoord`."""
-    return f"lon: {v.spherical.lon.value} {v.spherical.lon.unit}, lat: {v.spherical.lat.value} {v.spherical.lat.unit}, frame: {v.frame.name} "
-
-
-def json_encode_time(v):
-    """JSON encoder for `~astropy.time.Time`."""
-    if v.isscalar:
-        return v.value
-
-    return v.value.tolist()
-
-
-def validate_angle(v):
-    """Validator for `~astropy.coordinates.Angle`."""
-    return Angle(v)
-
-
-def validate_scalar(v):
-    """Validator for scalar values."""
-    if not v.isscalar:
-        raise ValueError(f"A scalar value is required: {v!r}")
-
-    return v
-
-
-def validate_energy(v):
-    """Validator for `~astropy.units.Quantity` with unit "energy"."""
-    v = u.Quantity(v)
-
-    if v.unit.physical_type != "energy":
-        raise ValueError(f"Invalid unit for energy: {v.unit!r}")
-
-    return v
-
-
-def validate_time(v):
-    """Validator for `~astropy.time.Time`."""
-    return Time(v)
-
-
-def validate_earth_location(v):
-    """Validator for `~astropy.coordinates.EarthLocation`."""
-    if isinstance(v, EarthLocation):
+    @classmethod
+    def validate(cls, v):
+        v = Quantity(v)
+        if v.unit.physical_type != "energy":
+            raise ValueError(f"Invalid unit for energy: {v.unit!r}")
         return v
 
-    if isinstance(v, str) and v in observatory_locations:
-        return observatory_locations[v]
+class QuantityType(Quantity):
+    @classmethod
+    def __get_validators__(cls):
+        yield cls.validate
 
-    try:
-        return EarthLocation(v)
-    except TypeError:
-        raise ValueError(f"Invalid EarthLocation: {v!r}")
+    @classmethod
+    def validate(cls, v):
+        return Quantity(v)
+        
+            
+class TimeType(Time):
+    @classmethod
+    def __get_validators__(cls):
+        yield cls.validate
 
+    @classmethod
+    def validate(cls, v):
+        return Time(v)
 
-def validate_sky_coord(v):
-    """Validator for `~astropy.coordinates.SkyCoord`."""
-    return SkyCoord(v)
+class IrfType(Irfs):
+    @classmethod
+    def __get_validators__(cls):
+        yield cls.validate
 
-
-def validate_sky_coord_icrs(v):
-    """Validator for `~astropy.coordinates.SkyCoord` in icrs."""
-    try:
-        return SkyCoord(v).icrs
-    except AttributeError:
-        raise ValueError(f"Cannot convert '{v!r}' to icrs")
-
-
-def validate_altaz_coord(v):
-    """Validator for `~astropy.coordinates.AltAz`."""
-    if isinstance(v, AltAz):
-        return SkyCoord(v)
-
-    return SkyCoord(v).altaz
-
-
-SERIALIZE_KWARGS = {
-    "when_used": "json-unless-none",
-    "return_type": str,
-}
-
-scalar_validator = AfterValidator(validate_scalar)
+    @classmethod
+    def validate(cls, v):
+        if not v in Irfs.irfs_opts:
+            ss = f"The value of the IRF option is invalid: {v!r}\n "
+            ss += f"Select one value from the following list: {Irfs.irfs_opts!r}"
+            raise ValueError(ss)
+        return v
 
 
-AngleType = Annotated[
-    Angle,
-    PlainSerializer(lambda v: f"{v.value} {v.unit}", **SERIALIZE_KWARGS),
-    BeforeValidator(validate_angle),
-    scalar_validator,
-]
-
-EnergyType = Annotated[
-    u.Quantity,
-    PlainSerializer(lambda v: f"{v.value} {v.unit}", **SERIALIZE_KWARGS),
-    BeforeValidator(validate_energy),
-    scalar_validator,
-]
-
-TimeType = Annotated[
-    Time,
-    PlainSerializer(json_encode_time, when_used="json-unless-none"),
-    BeforeValidator(validate_time),
-]
+# In[ ]:
 
 
-EarthLocationType = Annotated[
-    EarthLocation,
-    PlainSerializer(json_encode_earth_location, **SERIALIZE_KWARGS),
-    BeforeValidator(validate_earth_location),
-    scalar_validator,
-]
 
-SkyCoordType = Annotated[
-    SkyCoord,
-    PlainSerializer(json_encode_sky_coord, **SERIALIZE_KWARGS),
-    BeforeValidator(validate_sky_coord),
-    scalar_validator,
-]
 
-ICRSSkyCoordType = Annotated[
-    SkyCoord,
-    PlainSerializer(json_encode_sky_coord, **SERIALIZE_KWARGS),
-    BeforeValidator(validate_sky_coord_icrs),
-    scalar_validator,
-]
-
-AltAzSkyCoordType = Annotated[
-    SkyCoord,
-    PlainSerializer(json_encode_sky_coord, **SERIALIZE_KWARGS),
-    BeforeValidator(validate_altaz_coord),
-    scalar_validator,
-]
-
-PathType = Annotated[
-    Path,
-    PlainSerializer(lambda p: str(p), **SERIALIZE_KWARGS),
-    BeforeValidator(make_path),
-]

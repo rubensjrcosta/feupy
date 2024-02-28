@@ -1,20 +1,20 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[7]:
+# In[ ]:
 
 
-get_ipython().system('pyflakes config.py')
+# !pyflakes config.py
 
 
-# In[5]:
+# In[1]:
 
 
 # Licensed under a 3-clause BSD style license - see LICENSE.rst
 """Configuration."""
 
 
-# In[1]:
+# In[2]:
 
 
 # from pydantic import BaseModel
@@ -39,6 +39,24 @@ from feupy.utils.geometry import (
 )
 from feupy.plotters import *
 
+from feupy.utils.types import (
+    AngleType,
+    EnergyType,
+    QuantityType,
+    TimeType,
+    IrfType,
+)
+
+from feupy.utils.enum import(    
+    ReductionTypeEnum,
+    FrameEnum,
+    RequiredHDUEnum,
+    BackgroundMethodEnum,
+    SafeMaskMethodsEnum,
+    MapSelectionEnum,
+)
+
+
 from astropy.coordinates import Angle
 from astropy.time import Time
 from astropy.units import Quantity
@@ -59,10 +77,66 @@ import yaml
 # In[ ]:
 
 
-__all__ = ["CounterpartsAnalysisConfig", "CTAObservationAnalysisConfig", 'SimulationConfig']
+
 
 
 # In[ ]:
+
+
+
+
+
+# In[3]:
+
+
+__file__ = 'file'
+__name__ = 'name'
+
+
+from feupy.utils.scripts import pickling, unpickling
+from feupy.cta.irfs import Irfs
+from feupy.catalog.pulsar.atnf import SourceCatalogATNF
+
+from feupy.target import Target
+
+from feupy.utils.coordinates import skcoord_to_dict, dict_to_skcoord
+
+from feupy.analysis.simulation import ObservationParameters
+
+from feupy.plotters import *
+
+from pathlib import Path
+
+from astropy import units as u
+from astropy.table import Table
+
+from gammapy.modeling.models import SkyModel
+
+from gammapy.modeling import Fit
+
+import matplotlib.pyplot as plt
+import numpy as np
+
+
+# In[ ]:
+
+
+
+
+
+# In[ ]:
+
+
+
+
+
+# In[4]:
+
+
+__all__ = ["CounterpartsAnalysisConfig", "CTAObservationAnalysisConfig", 'SimulationConfig']
+
+
+# In[5]:
 
 
 CONFIG_PATH = Path(__file__).resolve().parent / "config"
@@ -74,88 +148,10 @@ log = logging.getLogger(__name__)
 # In[ ]:
 
 
-class AngleType(Angle):
-    @classmethod
-    def __get_validators__(cls):
-        yield cls.validate
-
-    @classmethod
-    def validate(cls, v):
-        return Angle(v)
 
 
-class EnergyType(Quantity):
-    @classmethod
-    def __get_validators__(cls):
-        yield cls.validate
 
-    @classmethod
-    def validate(cls, v):
-        v = Quantity(v)
-        if v.unit.physical_type != "energy":
-            raise ValueError(f"Invalid unit for energy: {v.unit!r}")
-        return v
-
-class QuantityType(Quantity):
-    @classmethod
-    def __get_validators__(cls):
-        yield cls.validate
-
-    @classmethod
-    def validate(cls, v):
-        return Quantity(v)
-        
-            
-class TimeType(Time):
-    @classmethod
-    def __get_validators__(cls):
-        yield cls.validate
-
-    @classmethod
-    def validate(cls, v):
-        return Time(v)
-
-
-class ReductionTypeEnum(str, Enum):
-    spectrum = "1d"
-    cube = "3d"
-
-
-class FrameEnum(str, Enum):
-    icrs = "icrs"
-    galactic = "galactic"
-
-
-class RequiredHDUEnum(str, Enum):
-    events = "events"
-    gti = "gti"
-    aeff = "aeff"
-    bkg = "bkg"
-    edisp = "edisp"
-    psf = "psf"
-    rad_max = "rad_max"
-
-
-class BackgroundMethodEnum(str, Enum):
-    reflected = "reflected"
-    fov = "fov_background"
-    ring = "ring"
-
-
-class SafeMaskMethodsEnum(str, Enum):
-    aeff_default = "aeff-default"
-    aeff_max = "aeff-max"
-    edisp_bias = "edisp-bias"
-    offset_max = "offset-max"
-    bkg_peak = "bkg-peak"
-
-
-class MapSelectionEnum(str, Enum):
-    counts = "counts"
-    exposure = "exposure"
-    background = "background"
-    psf = "psf"
-    edisp = "edisp"
+# In[28]:
 
 
 class GammapyBaseConfig(BaseModel):
@@ -171,8 +167,6 @@ class GammapyBaseConfig(BaseModel):
             Time: lambda v: f"{v.value}",
         }
 
-#         target: Target()
-#     obs_params: ObservationParameters
         
 class SkyCoordConfig(GammapyBaseConfig):
     frame: FrameEnum = None
@@ -262,24 +256,25 @@ class WcsConfig(GammapyBaseConfig):
 
 
 class GeomConfig(GammapyBaseConfig):
-    wcs: WcsConfig = WcsConfig()
-    selection: SelectionConfig = SelectionConfig()
+#     wcs: WcsConfig = WcsConfig()
+#     selection: SelectionConfig = SelectionConfig()
     axes: EnergyAxesConfig = EnergyAxesConfig()
 
 
 class DatasetsConfig(GammapyBaseConfig):
-    type: ReductionTypeEnum = ReductionTypeEnum.spectrum
-    stack: bool = True
+#     type: ReductionTypeEnum = ReductionTypeEnum.spectrum
+#     stack: bool = True
     geom: GeomConfig = GeomConfig()
     selection: List[MapSelectionEnum] = MapDatasetMaker.available_selection
     use_region_center: bool = False
-    background: BackgroundConfig = BackgroundConfig()
+#     background: BackgroundConfig = BackgroundConfig()
     safe_mask: SafeMaskConfig = SafeMaskConfig()
-    on_region: SpatialCircleConfig = SpatialCircleConfig()
+#     on_region: SpatialCircleConfig = SpatialCircleConfig()
     containment_correction: bool = False
     acceptance: int = None
     acceptance_off: int = None
     alpha: float = None
+        
         
 class SensitivityConfig(GammapyBaseConfig):
     gamma_min: int = None
@@ -292,16 +287,31 @@ class ObservationsParametersConfig(GammapyBaseConfig):
     offset: QuantityType = None
     on_region_radius: AngleType = None
     n_obs: int = None
+
+
+class TargetConfig(GammapyBaseConfig):
+    name: str = None
+    position: SkyCoordConfig = SkyCoordConfig()
+    model:  dict = {}  
         
+class IrfsConfig(GammapyBaseConfig):
+    opt: IrfType = ['South', 'AverageAz', '20deg', '50h']
+
+class PointingConfig(GammapyBaseConfig):
+    angle: AngleType = 0 * u.deg
         
 class ObservationsConfig(GammapyBaseConfig):
+    target: TargetConfig = TargetConfig()
     parameters: ObservationsParametersConfig = ObservationsParametersConfig()
-    datastore: Path = Path("$GAMMAPY_DATA/hess-dl3-dr1/")
-    obs_ids: List[int] = []
-    obs_file: Path = None
-    obs_cone: SpatialCircleConfig = SpatialCircleConfig()
-    obs_time: TimeRangeConfig = TimeRangeConfig()
-    required_irf: List[RequiredHDUEnum] = ["aeff", "edisp", "psf", "bkg"]
+    irfs: IrfsConfig = IrfsConfig()
+    pointing: PointingConfig = PointingConfig()
+        
+#     datastore: Path = Path("$GAMMAPY_DATA/hess-dl3-dr1/")
+#     obs_ids: List[int] = []
+#     obs_file: Path = None
+#     obs_cone: SpatialCircleConfig = SpatialCircleConfig()
+#     obs_time: TimeRangeConfig = TimeRangeConfig()
+#     required_irf: List[RequiredHDUEnum] = ["aeff", "edisp", "psf", "bkg"]
 
 
 class LogConfig(GammapyBaseConfig):
@@ -319,27 +329,32 @@ class GeneralConfig(GammapyBaseConfig):
     datasets_file: Path = None
     models_file: Path = None
 
-class TargetConfig(GammapyBaseConfig):
-    name: str = None
-    position: SkyCoordConfig = SkyCoordConfig()
-    model:  dict = {}
         
-class IrfsConfig(GammapyBaseConfig):
-    opt: List[str] = None
+
+        
+
+
+# In[ ]:
+
+
+
+
+
+# In[29]:
+
 
 class SimulationConfig(GammapyBaseConfig):
     """Gammapy analysis configuration."""
 
     general: GeneralConfig = GeneralConfig()
-    target: TargetConfig = TargetConfig()
     observations: ObservationsConfig = ObservationsConfig()
-    irfs: IrfsConfig = IrfsConfig()
-    sensitivity: SensitivityConfig = SensitivityConfig()
+#     irfs: IrfsConfig = IrfsConfig()
     datasets: DatasetsConfig = DatasetsConfig()
-    fit: FitConfig = FitConfig()
-    flux_points: FluxPointsConfig = FluxPointsConfig()
-    excess_map: ExcessMapConfig = ExcessMapConfig()
-    light_curve: LightCurveConfig = LightCurveConfig()
+    sensitivity: SensitivityConfig = SensitivityConfig()
+#     fit: FitConfig = FitConfig()
+#     flux_points: FluxPointsConfig = FluxPointsConfig()
+#     excess_map: ExcessMapConfig = ExcessMapConfig()
+#     light_curve: LightCurveConfig = LightCurveConfig()
 
     def __str__(self):
         """Display settings in pretty YAML format."""
@@ -423,6 +438,127 @@ class SimulationConfig(GammapyBaseConfig):
                     keyword = line.replace("# Section: ", "")
                 doc[keyword] += line + "\n"
         return doc
+
+
+# In[30]:
+
+
+config = SimulationConfig()
+print(config)
+
+
+# In[ ]:
+
+
+
+
+
+# In[31]:
+
+
+from feupy.catalog.pulsar.atnf import SourceCatalogATNF
+
+catalog = SourceCatalogATNF()
+source = catalog['PSR J1826-1256']
+name = source.name
+pos_ra = source.position.ra
+pos_dec = source.position.dec
+from gammapy.modeling.models import SkyModel
+from gammapy.modeling.models import ExpCutoffPowerLawSpectralModel
+model = SkyModel(spectral_model=ExpCutoffPowerLawSpectralModel(), name=name)
+print(model)
+target = Target(name, pos_ra, pos_dec, model)
+
+
+# In[32]:
+
+
+config.observations.target = target.dict
+
+
+# In[33]:
+
+
+livetime=10*u.h 
+offset=0.11*u.deg 
+on_region_radius=0.5*u.deg 
+n_obs=10
+
+obs_params = ObservationParameters(
+    livetime=livetime, 
+    on_region_radius = on_region_radius,
+    offset=offset,
+    n_obs=n_obs,
+)
+print(obs_params)
+
+
+# In[34]:
+
+
+config.observations.parameters = obs_params.dict
+
+
+# In[35]:
+
+
+print(config)
+
+
+# In[36]:
+
+
+irfs_opt = ['South', 'AverageAz', '20deg', '50h']
+config.observations.irfs.opt = irfs_opt
+print(config)
+
+
+# In[ ]:
+
+
+
+
+
+# In[ ]:
+
+
+
+
+
+# In[38]:
+
+
+e_edges_min=0.1*u.TeV 
+e_edges_max=100.*u.TeV
+
+
+# In[39]:
+
+
+# We now fix the energy axis for the counts map
+config.datasets.geom.axes.energy.min = ".1 TeV"
+config.datasets.geom.axes.energy.max = "100 TeV"
+config.datasets.geom.axes.energy.nbins = 5
+config.datasets.geom.axes.energy.name = 'energy'
+
+# We now fix the energy axis for the IRF maps (exposure, etc)
+# config.datasets.geom.axes.energy_true.min = "0.5 TeV"
+# config.datasets.geom.axes.energy_true.max = "20 TeV"
+# config.datasets.geom.axes.energy_true.nbins = 20
+config.datasets.geom.axes.energy_true.min = .3*e_edges_min
+config.datasets.geom.axes.energy_true.max = 3*e_edges_max
+config.datasets.geom.axes.energy_true.nbins = 8
+config.datasets.geom.axes.energy_true.name = 'energy_true'
+print(config)
+
+
+# In[41]:
+
+
+config.write("config.yaml", overwrite=True)
+
+config = SimulationConfig.read("config.yaml")
+print(config)
 
 
 # In[ ]:
@@ -893,12 +1029,6 @@ class CTAObservationAnalysisConfig__:
 
 
 # config = CTAObservationAnalysisConfig(target, params, irfs, geom_params)
-
-
-# In[ ]:
-
-
-
 
 
 # In[ ]:

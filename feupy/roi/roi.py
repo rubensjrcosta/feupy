@@ -48,6 +48,7 @@ class ROI:
         # Assign to self object
         self.target=target
         self.radius=Quantity(radius, "deg")
+        self.dict = self._to_dict()
         
         # Actions to execute
         ROI.all.append(self) 
@@ -63,6 +64,11 @@ class ROI:
             self._target = value
         else:
             raise TypeError("target must be Target")
+
+    def _to_dict(self):
+        _dict = self.target.dict.copy()
+        _dict["radius"] = self.radius
+        return _dict
 
     @property
     def info(self):

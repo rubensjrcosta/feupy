@@ -1,14 +1,14 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[17]:
+# In[5]:
 
 
 # Licensed under a 3-clause BSD style license - see LICENSE.rst
-"""Target classes."""
+"""Target class."""
 
 
-# In[18]:
+# In[27]:
 
 
 from astropy import units as u
@@ -25,8 +25,11 @@ from gammapy.modeling.models import (
 
 from feupy.utils.string_handling import name_to_txt
 
+from feupy.utils.coordinates import skcoord_to_dict
+from gammapy.modeling.models import Models
 
-# In[19]:
+
+# In[7]:
 
 
 __all__ = [
@@ -40,7 +43,7 @@ __all__ = [
 
 
 
-# In[49]:
+# In[8]:
 
 
 class Target:
@@ -78,10 +81,19 @@ class Target:
         assert -90 <= pos_dec.value <= 90, f"Declination {pos_dec} is not in the range: (-90,90) deg!"
 
         # Assign to self object
-        self.__name = name
-        self.model = model 
+        self.__name = name 
         self.position = SkyCoord(Quantity(pos_ra, "deg"), Quantity(pos_dec, "deg"))
+#         self.position_dict = skcoord_to_dict(self.position)
+        self.model = model
+        self.dict = self._to_dict()
+            
     
+    def _to_dict(self):
+        _dict = {"name": self.name,
+                "position": skcoord_to_dict(self.position) }
+        if self.model:
+            _dict["model"] = self.model.to_dict()
+        return _dict
     
     @property
     def name(self):
@@ -126,8 +138,20 @@ class Target:
         
 
 
-# In[ ]:
+# In[9]:
 
 
+# from feupy.catalog.pulsar.atnf import SourceCatalogATNF
 
+# catalog = SourceCatalogATNF()
+# source = catalog['PSR J1826-1256']
+# name = source.name
+# pos_ra = source.position.ra
+# pos_dec = source.position.dec
+# from gammapy.modeling.models import SkyModel
+# from gammapy.modeling.models import ExpCutoffPowerLawSpectralModel
+# model = SkyModel(spectral_model=ExpCutoffPowerLawSpectralModel(), name=name)
+# print(model)
+# target = Target(name, pos_ra, pos_dec, model)
+# target.model
 

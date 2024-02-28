@@ -75,7 +75,7 @@ from feupy.utils.datasets import cut_energy_table_fp, write_datasets, read_datas
 
 from feupy.analysis import CounterpartsAnalysisConfig, SimulationConfig, CTAObservationAnalysisConfig
 from feupy.cta.irfs import Irfs
-from feupy.utils.scripts import skcoord_to_dict, dict_to_skcoord
+from feupy.utils.coordinates import skcoord_to_dict, dict_to_skcoord
 
 
 from feupy.plotters import *

@@ -55,19 +55,7 @@ def is_documented_by(original):
 # In[ ]:
 
 
-def skcoord_to_dict(position: SkyCoord):
-    return {
-        'lon': position.ra,
-        'lat': position.dec,
-        'frame': position.frame.name,
-    }
 
-
-# In[1]:
-
-
-def dict_to_skcoord(pos_dict: dict):
-    return SkyCoord(pos_dict.lon, pos_dict.lat, frame=pos_dict.frame)
 
 
 # In[ ]:

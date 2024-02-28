@@ -7,7 +7,7 @@
 
 
 
-# In[1]:
+# In[16]:
 
 
 from astropy.coordinates import Angle
@@ -19,7 +19,7 @@ from feupy.utils.scripts import is_documented_by
 from feupy.utils.datasets import flux_points_dataset_from_table
 
 
-# In[2]:
+# In[17]:
 
 
 __all__ = [
@@ -27,7 +27,7 @@ __all__ = [
 ]
 
 
-# In[35]:
+# In[57]:
 
 
 class ObservationParameters:
@@ -51,13 +51,27 @@ class ObservationParameters:
                  livetime=None,
                  on_region_radius=None, 
                  offset=None, 
-                 n_obs=None
+                 n_obs:int =None
                 ):
         self.livetime = livetime
         self.on_region_radius = on_region_radius
         self.offset = offset
         self.n_obs = n_obs
+        self.dict = self._to_dict()
+                
+    def _to_dict(self):
+        _dict = {}
+        if self.livetime is not None:
+            _dict["livetime"] = self.livetime
+        if self.on_region_radius is not None:
+            _dict["on_region_radius"] = self.on_region_radius
+        if self.offset is not None:
+            _dict["offset"] = self.offset
+        if self.n_obs is not None:
+            _dict["n_obs"] = self.n_obs
+        return _dict
 
+    
     @property
     def livetime(self):
         return self._livetime
@@ -114,7 +128,7 @@ class ObservationParameters:
         return ss.replace('=', ' = ')
 
 
-# In[4]:
+# In[58]:
 
 
 @is_documented_by(SensitivityEstimator)
@@ -132,12 +146,6 @@ def sensitivity_estimator(
         bkg_syst_fraction=bkg_syst_fraction
 )
     return sensitivity, sensitivity.run(dataset_onoff)
-
-
-# In[39]:
-
-
-
 
 
 # In[ ]:
