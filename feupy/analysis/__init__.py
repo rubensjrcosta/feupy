@@ -1,8 +1,10 @@
 # Licensed under a 3-clause BSD style license - see LICENSE.rst
 """Analysis."""
 
-from .config import CounterpartsAnalysisConfig, CTAObservationAnalysisConfig, SimulationConfig
-from .core import CounterpartsAnalysis, CTAObservationAnalysis, Simulation
+# from .config import CounterpartsAnalysisConfig, CTAObservationAnalysisConfig, SimulationConfig
+from .config import CounterpartsConfig, SimulationConfig
+
+from .core import Counterparts, Simulation
 
 from .simulation.observations import ObservationParameters
 
@@ -16,10 +18,12 @@ from .simulation.geometry import GeometryParameters
 __all__ = [
     'Simulation',
     'SimulationConfig',
-    "CounterpartsAnalysis",
-    "CounterpartsAnalysisConfig",
-    "CTAObservationAnalysis",
-    "CTAObservationAnalysisConfig",
+#     "CounterpartsAnalysis",
+    "Counterparts",
+#     "CounterpartsAnalysisConfig",
+    "CounterpartsConfig",
+#     "CTAObservationAnalysis",
+#     "CTAObservationAnalysisConfig",
     "ObservationParameters",
     "GeometryParameters",
     "create_spectrum_dataset_empty",
