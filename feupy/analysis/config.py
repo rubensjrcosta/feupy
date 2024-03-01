@@ -17,9 +17,9 @@
 # In[2]:
 
 
-# from pydantic import BaseModel
-from pydantic.v1 import BaseModel
-from pydantic.v1.utils import lenient_isinstance
+from pydantic import BaseModel
+# from pydantic.v1 import BaseModel
+# from pydantic.v1.utils import lenient_isinstance
 from pydantic.utils import deep_update
 
 from feupy.roi import ROI
@@ -298,7 +298,7 @@ class IrfsConfig(GammapyBaseConfig):
     opt: IrfType = ['South', 'AverageAz', '20deg', '50h']
 
 class PointingConfig(GammapyBaseConfig):
-    angle: AngleType = 0 * u.deg
+    angle: AngleType = None
         
 class ObservationsConfig(GammapyBaseConfig):
     target: TargetConfig = TargetConfig()
