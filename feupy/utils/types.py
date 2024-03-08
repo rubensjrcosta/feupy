@@ -81,9 +81,9 @@ class IrfType(Irfs):
 
     @classmethod
     def validate(cls, v):
-        if not v in Irfs.irfs_opts:
+        if not v in Irfs.IRFS_OPTIONS:
             ss = f"The value of the IRF option is invalid: {v!r}\n "
-            ss += f"Select one value from the following list: {Irfs.irfs_opts!r}"
+            ss += f"Select one value from the following list: {Irfs.IRFS_OPTIONS!r}"
             raise ValueError(ss)
         return v
 

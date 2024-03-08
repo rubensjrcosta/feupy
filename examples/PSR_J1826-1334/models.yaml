@@ -1,0 +1,157 @@
+components:
+-   name: HESS_J1825-137_gamma-cat_ecpl
+    type: SkyModel
+    datasets_names: 'HESS J1825-137: gamma-cat'
+    spectral:
+        type: ExpCutoffPowerLawSpectralModel
+        parameters:
+        -   name: index
+            value: 2.259999990463257
+            error: 0.029999999329447746
+        -   name: amplitude
+            value: 2.100000034976901e-11
+            unit: TeV-1 s-1 cm-2
+            error: 4.999999980020986e-13
+        -   name: reference
+            value: 1.0
+            unit: TeV
+        -   name: lambda_
+            value: 0.040322581885632605
+            unit: TeV-1
+            error: 0.01170655619353056
+        -   name: alpha
+            value: 1.0
+-   name: HESS_J1825-137_hgps_ecpl
+    type: SkyModel
+    datasets_names: 'HESS J1825-137: hgps'
+    spectral:
+        type: ExpCutoffPowerLawSpectralModel
+        parameters:
+        -   name: index
+            value: 2.150993585586548
+            error: 0.06252627819776535
+        -   name: amplitude
+            value: 6.946258152007445e-11
+            unit: TeV-1 s-1 cm-2
+            error: 2.854722101069962e-12
+        -   name: reference
+            value: 0.650128960609436
+            unit: TeV
+        -   name: lambda_
+            value: 0.07367420196533203
+            unit: TeV-1
+            error: 0.02136995457112789
+        -   name: alpha
+            value: 1.0
+-   name: 4FGL_J1824.4-1350e_lp
+    type: SkyModel
+    datasets_names: 4FGL J1824.4-1350e
+    spectral:
+        type: LogParabolaSpectralModel
+        parameters:
+        -   name: amplitude
+            value: 1.4742180187102966e-13
+            unit: MeV-1 s-1 cm-2
+            error: 7.95244251716341e-15
+        -   name: reference
+            value: 11602.41796875
+            unit: MeV
+        -   name: alpha
+            value: 1.6851983070373535
+            error: 0.041749242693185806
+        -   name: beta
+            value: 0.046579759567976
+            error: 0.017297927290201187
+-   name: 2FHL_J1824.5-1350e_pl-2
+    type: SkyModel
+    datasets_names: 2FHL J1824.5-1350e
+    spectral:
+        type: PowerLaw2SpectralModel
+        parameters:
+        -   name: amplitude
+            value: 7.15000003648214e-10
+            unit: s-1 cm-2
+            error: 6.459999896124557e-11
+        -   name: index
+            value: 1.8899999856948853
+            error: 0.10999999940395355
+        -   name: emin
+            value: 0.05
+            unit: TeV
+        -   name: emax
+            value: 2.0
+            unit: TeV
+-   name: 3FHL_J1824.5-1351e_lp
+    type: SkyModel
+    datasets_names: 3FHL J1824.5-1351e
+    spectral:
+        type: LogParabolaSpectralModel
+        parameters:
+        -   name: amplitude
+            value: 2.2919730349735268e-11
+            unit: GeV-1 s-1 cm-2
+            error: 1.8504811398478704e-12
+        -   name: reference
+            value: 33.4053955078125
+            unit: GeV
+        -   name: alpha
+            value: 1.5273646116256714
+            error: 0.10330700874328613
+        -   name: beta
+            value: 0.16805604100227356
+            error: 0.05695989355444908
+-   name: HAWC_J1825-138_ecpl
+    type: SkyModel
+    datasets_names: HAWC J1825-138
+    spectral:
+        type: ExpCutoffPowerLawSpectralModel
+        parameters:
+        -   name: index
+            value: 2.02
+        -   name: amplitude
+            value: 2.7e-14
+            unit: TeV-1 s-1 cm-2
+        -   name: reference
+            value: 18.0
+            unit: TeV
+        -   name: lambda_
+            value: 0.037037037037037035
+            unit: TeV-1
+        -   name: alpha
+            value: 1.0
+-   name: eHWC_J1825-134_ecpl
+    type: SkyModel
+    datasets_names: eHWC J1825-134
+    spectral:
+        type: ExpCutoffPowerLawSpectralModel
+        parameters:
+        -   name: index
+            value: 2.12
+        -   name: amplitude
+            value: 2.12e-13
+            unit: TeV-1 s-1 cm-2
+        -   name: reference
+            value: 10.0
+            unit: TeV
+        -   name: lambda_
+            value: 0.01639344262295082
+            unit: TeV-1
+        -   name: alpha
+            value: 1.0
+-   name: LHAASO_J1825-1326_lp
+    type: SkyModel
+    datasets_names: LHAASO J1825-1326
+    spectral:
+        type: LogParabolaSpectralModel
+        parameters:
+        -   name: amplitude
+            value: 1.0e-12
+            unit: TeV-1 s-1 cm-2
+        -   name: reference
+            value: 10.0
+            unit: TeV
+        -   name: alpha
+            value: 0.92
+        -   name: beta
+            value: 1.19
+covariance: models_covariance.dat

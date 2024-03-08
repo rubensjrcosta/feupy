@@ -18,6 +18,7 @@ from enum import Enum
 
 
 __all__ = [
+    "CatalogsTypeEnum",
     "ReductionTypeEnum",
     "FrameEnum",
     "RequiredHDUEnum",
@@ -30,6 +31,13 @@ __all__ = [
 # In[3]:
 
 
+class CatalogsTypeEnum(str, Enum):
+    all = "all"
+    gamma = "gamma"
+    gammapy = "gammapy"
+    feupy = "feupy"
+
+    
 class ReductionTypeEnum(str, Enum):
     spectrum = "1d"
     cube = "3d"

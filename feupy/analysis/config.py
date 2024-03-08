@@ -47,7 +47,8 @@ from feupy.utils.types import (
     IrfType,
 )
 
-from feupy.utils.enum import(    
+from feupy.utils.enum import(
+    CatalogsTypeEnum,
     ReductionTypeEnum,
     FrameEnum,
     RequiredHDUEnum,
@@ -262,25 +263,38 @@ class GeomConfig(GammapyBaseConfig):
 
 
 class DatasetsConfig(GammapyBaseConfig):
-#     type: ReductionTypeEnum = ReductionTypeEnum.spectrum
+    type: ReductionTypeEnum = ReductionTypeEnum.spectrum
 #     stack: bool = True
     geom: GeomConfig = GeomConfig()
     selection: List[MapSelectionEnum] = MapDatasetMaker.available_selection
     use_region_center: bool = False
 #     background: BackgroundConfig = BackgroundConfig()
-    safe_mask: SafeMaskConfig = SafeMaskConfig()
 #     on_region: SpatialCircleConfig = SpatialCircleConfig()
     containment_correction: bool = False
+    safe_mask: SafeMaskConfig = SafeMaskConfig()
+        
+
+class DatasetsOnOffConfig(GammapyBaseConfig):
     acceptance: int = None
     acceptance_off: int = None
-    alpha: float = None
+    
         
         
 class SensitivityConfig(GammapyBaseConfig):
     gamma_min: int = None
     n_sigma: int = None
     bkg_syst_fraction: float = None
+    table: dict = {}
 
+# class WStatisticsConfig(GammapyBaseConfig):
+#     excess: float = None
+#     ts: float = None
+#     sqrt_ts: float = None
+
+class StatisticsConfig(GammapyBaseConfig):
+    alpha: float = None
+    wstat: dict = {}
+    fitted_parameters: dict = {}   
                 
 class ObservationsParametersConfig(GammapyBaseConfig):
     livetime: QuantityType = None
@@ -292,11 +306,13 @@ class ObservationsParametersConfig(GammapyBaseConfig):
 class TargetConfig(GammapyBaseConfig):
     name: str = None
     position: SkyCoordConfig = SkyCoordConfig()
-    model:  dict = {}  
+    model: dict = {}  
+    model_fitted: dict = {}
         
 class IrfsConfig(GammapyBaseConfig):
     opt: IrfType = ['South', 'AverageAz', '20deg', '50h']
 
+        
 class PointingConfig(GammapyBaseConfig):
     angle: AngleType = 0 * u.deg
         
@@ -308,8 +324,10 @@ class ObservationsConfig(GammapyBaseConfig):
         
 class ROIConfig(GammapyBaseConfig):
     target: TargetConfig = TargetConfig()
-    region_radius: AngleType = None
-    
+    radius: AngleType = None
+    catalogs: CatalogsTypeEnum = "all"
+    dict_sep: dict = {} 
+    leg_style: dict = {}
         
 #     datastore: Path = Path("$GAMMAPY_DATA/hess-dl3-dr1/")
 #     obs_ids: List[int] = []
@@ -336,7 +354,120 @@ class GeneralConfig(GammapyBaseConfig):
 
         
 
-        
+class GeneralCounterpartsConfig(GammapyBaseConfig):
+    log: LogConfig = LogConfig()
+    outdir: str = "."
+    path_file: Path = None
+
+
+# In[ ]:
+
+
+
+
+
+# In[ ]:
+
+
+class CounterpartsConfig(GammapyBaseConfig):
+    """Gammapy analysis configuration."""
+
+    general: GeneralCounterpartsConfig = GeneralCounterpartsConfig()
+    roi: ROIConfig = ROIConfig()
+    energy_range: EnergyRangeConfig = EnergyRangeConfig()
+#     irfs: IrfsConfig = IrfsConfig()
+#     datasets: DatasetsConfig = DatasetsConfig()
+#     sensitivity: SensitivityConfig = SensitivityConfig()
+#     fit: FitConfig = FitConfig()
+#     flux_points: FluxPointsConfig = FluxPointsConfig()
+#     excess_map: ExcessMapConfig = ExcessMapConfig()
+#     light_curve: LightCurveConfig = LightCurveConfig()
+
+    def __str__(self):
+        """Display settings in pretty YAML format."""
+        info = self.__class__.__name__ + "\n\n\t"
+        data = self.to_yaml()
+        data = data.replace("\n", "\n\t")
+        info += data
+        return info.expandtabs(tabsize=4)
+
+    @classmethod
+    def read(cls, path):
+        """Reads from YAML file."""
+        config = read_yaml(path)
+        return CounterpartsConfig(**config)
+
+
+    @classmethod
+    def from_yaml(cls, config_str):
+        """Create from YAML string."""
+        settings = yaml.safe_load(config_str)
+        return CounterpartsConfig(**settings)
+
+
+    def write(self, path = None, overwrite=False):
+        """Write to YAML file."""
+        if path is not None:
+            path = make_path(path)
+        else: path = make_path(f"{self.general.path_file}/counterparts_config.yaml")
+            
+        if path.exists() and not overwrite:
+            raise IOError(f"File exists already: {path}")
+        path.write_text(self.to_yaml())
+
+
+    def to_yaml(self):
+        """Convert to YAML string."""
+        # Here using `dict()` instead of `json()` would be more natural.
+        # We should change this once pydantic adds support for custom encoders
+        # to `dict()`. See https://github.com/samuelcolvin/pydantic/issues/1043
+        config = json.loads(self.json())
+        return yaml.dump(
+            config, sort_keys=False, indent=4, width=80, default_flow_style=None
+        )
+
+    def set_logging(self):
+        """Set logging config.
+
+        Calls ``logging.basicConfig``, i.e. adjusts global logging state.
+        """
+        self.general.log.level = self.general.log.level.upper()
+        logging.basicConfig(**self.general.log.dict())
+        log.info("Setting logging config: {!r}".format(self.general.log.dict()))
+
+
+    def update(self, config=None):
+        """Update config with provided settings.
+
+        Parameters
+        ----------
+        config : string dict or `CounterpartsConfig` object
+            Configuration settings provided in dict() syntax.
+        """
+        if isinstance(config, str):
+            other = CounterpartsConfig.from_yaml(config)
+        elif isinstance(config, CounterpartsConfig):
+            other = config
+        else:
+            raise TypeError(f"Invalid type: {config}")
+
+        config_new = deep_update(
+            self.dict(exclude_defaults=True), other.dict(exclude_defaults=True)
+        )
+        return CounterpartsConfig(**config_new)
+
+
+    @staticmethod
+    def _get_doc_sections():
+        """Returns dict with commented docs from docs file"""
+        doc = defaultdict(str)
+        with open(DOCS_FILE) as f:
+            for line in filter(lambda line: not line.startswith("---"), f):
+                line = line.strip("\n")
+                if line.startswith("# Section: "):
+                    keyword = line.replace("# Section: ", "")
+                doc[keyword] += line + "\n"
+        return doc    
 
 
 # In[ ]:
@@ -353,13 +484,12 @@ class SimulationConfig(GammapyBaseConfig):
 
     general: GeneralConfig = GeneralConfig()
     observations: ObservationsConfig = ObservationsConfig()
-#     irfs: IrfsConfig = IrfsConfig()
     datasets: DatasetsConfig = DatasetsConfig()
+    datasets_onoff: DatasetsOnOffConfig = DatasetsOnOffConfig()
+    statistics:StatisticsConfig = StatisticsConfig()
     sensitivity: SensitivityConfig = SensitivityConfig()
 #     fit: FitConfig = FitConfig()
-#     flux_points: FluxPointsConfig = FluxPointsConfig()
-#     excess_map: ExcessMapConfig = ExcessMapConfig()
-#     light_curve: LightCurveConfig = LightCurveConfig()
+    flux_points: FluxPointsConfig = FluxPointsConfig()
 
     def __str__(self):
         """Display settings in pretty YAML format."""
@@ -443,114 +573,6 @@ class SimulationConfig(GammapyBaseConfig):
                     keyword = line.replace("# Section: ", "")
                 doc[keyword] += line + "\n"
         return doc
-
-
-# In[ ]:
-
-
-class CounterpartsConfig(GammapyBaseConfig):
-    """Gammapy analysis configuration."""
-
-    general: GeneralConfig = GeneralConfig()
-    roi: ROIConfig = ROIConfig()
-    energy_range: EnergyRangeConfig = EnergyRangeConfig()
-#     irfs: IrfsConfig = IrfsConfig()
-#     datasets: DatasetsConfig = DatasetsConfig()
-#     sensitivity: SensitivityConfig = SensitivityConfig()
-#     fit: FitConfig = FitConfig()
-#     flux_points: FluxPointsConfig = FluxPointsConfig()
-#     excess_map: ExcessMapConfig = ExcessMapConfig()
-#     light_curve: LightCurveConfig = LightCurveConfig()
-
-    def __str__(self):
-        """Display settings in pretty YAML format."""
-        info = self.__class__.__name__ + "\n\n\t"
-        data = self.to_yaml()
-        data = data.replace("\n", "\n\t")
-        info += data
-        return info.expandtabs(tabsize=4)
-
-    @classmethod
-    def read(cls, path):
-        """Reads from YAML file."""
-        config = read_yaml(path)
-        return CounterpartsConfig(**config)
-
-
-    @classmethod
-    def from_yaml(cls, config_str):
-        """Create from YAML string."""
-        settings = yaml.safe_load(config_str)
-        return CounterpartsConfig(**settings)
-
-
-    def write(self, path, overwrite=False):
-        """Write to YAML file."""
-        path = make_path(path)
-        if path.exists() and not overwrite:
-            raise IOError(f"File exists already: {path}")
-        path.write_text(self.to_yaml())
-
-
-    def to_yaml(self):
-        """Convert to YAML string."""
-        # Here using `dict()` instead of `json()` would be more natural.
-        # We should change this once pydantic adds support for custom encoders
-        # to `dict()`. See https://github.com/samuelcolvin/pydantic/issues/1043
-        config = json.loads(self.json())
-        return yaml.dump(
-            config, sort_keys=False, indent=4, width=80, default_flow_style=None
-        )
-
-    def set_logging(self):
-        """Set logging config.
-
-        Calls ``logging.basicConfig``, i.e. adjusts global logging state.
-        """
-        self.general.log.level = self.general.log.level.upper()
-        logging.basicConfig(**self.general.log.dict())
-        log.info("Setting logging config: {!r}".format(self.general.log.dict()))
-
-
-    def update(self, config=None):
-        """Update config with provided settings.
-
-        Parameters
-        ----------
-        config : string dict or `CounterpartsConfig` object
-            Configuration settings provided in dict() syntax.
-        """
-        if isinstance(config, str):
-            other = CounterpartsConfig.from_yaml(config)
-        elif isinstance(config, CounterpartsConfig):
-            other = config
-        else:
-            raise TypeError(f"Invalid type: {config}")
-
-        config_new = deep_update(
-            self.dict(exclude_defaults=True), other.dict(exclude_defaults=True)
-        )
-        return CounterpartsConfig(**config_new)
-
-
-    @staticmethod
-    def _get_doc_sections():
-        """Returns dict with commented docs from docs file"""
-        doc = defaultdict(str)
-        with open(DOCS_FILE) as f:
-            for line in filter(lambda line: not line.startswith("---"), f):
-                line = line.strip("\n")
-                if line.startswith("# Section: "):
-                    keyword = line.replace("# Section: ", "")
-                doc[keyword] += line + "\n"
-        return doc
-    
-
-
-# In[ ]:
-
-
-
 
 
 # In[ ]:

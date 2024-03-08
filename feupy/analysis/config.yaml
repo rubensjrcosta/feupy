@@ -6,10 +6,10 @@ general:
     models_file: null
 roi:
     target:
-        name: PSR J1826-1256
-        position: {frame: icrs, lon: 276.53554166666663 deg, lat: -12.9425 deg}
+        name: LHAASO J1825-1326
+        position: {frame: icrs, lon: 276.45 deg, lat: -13.45 deg}
         model:
-            name: PSR J1826-1256
+            name: LHAASO J1825-1326
             type: SkyModel
             spectral:
                 type: ExpCutoffPowerLawSpectralModel
@@ -20,4 +20,5 @@ roi:
                 - {name: lambda_, value: 0.1, unit: TeV-1}
                 - {name: alpha, value: 1.0}
     region_radius: 1.0 deg
-energy_range: {min: 0.1 TeV, max: 100.0 TeV}
+    catalogs: all
+energy_range: {min: 0.1 TeV, max: null}

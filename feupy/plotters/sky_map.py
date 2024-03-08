@@ -44,17 +44,11 @@ from gammapy.maps import Map
 from gammapy.utils.regions import SphericalCircleSkyRegion
 # help(Map)
 
-def show_sky_map(
-    name, 
-    leg_style, 
-    sources, 
-    datasets,
-    pulsars,
+def show_sky_map(leg_style, sources, datasets, pulsars,
     roi,
-    width=(20 * u.deg, 20 * u.deg)):
+    width=(20 * u.deg, 20 * u.deg),
+    file_path=None):
     
-    frame  = "icrs" # International Celestial Reference System (ICRS)
-    unit   = "deg"  # Degrees units
     fontsize = 6.5
     rotation = 20
     s=30
@@ -68,10 +62,10 @@ def show_sky_map(
     target_name = roi.target.name
     radius = roi.radius
     position = roi.target.position 
-    pos_ra = position.ra.value
-    pos_dec= position.dec.value
-            
-    center = SkyCoord(pos_ra, pos_dec, unit=unit, frame=frame) # Source Position
+    pos_ra = position.lon.value
+    pos_dec= position.lat.value
+    frame =  position.frame
+    center = SkyCoord(pos_ra, pos_dec, unit = position.lat.unit, frame=frame) # Source Position
         
     fig, ax = plt.subplots(figsize=(7, 7))
 
@@ -124,9 +118,6 @@ def show_sky_map(
         source_pos = source.position
         pos_ra = source_pos.ra.value
         pos_dec= source_pos.dec.value
-#         if index < len(datasets):
-#             source_name = datasets[index].name
-#         else: source_name = source.name
         source_name = datasets[index].name
         color = leg_style[source_name][0]
         marker = leg_style[source_name][1]
@@ -165,13 +156,6 @@ def show_sky_map(
             facecolor=None
         )
             
-#     lines = plt.gca().get_lines()
-#     include = [0,1]
-#     legend1 = plt.legend([lines[i] for i in include],[lines[i].get_label() for i in include], loc=1)
-#     legend2 = plt.legend([lines[i] for i in [2,3]],['manual label 3','manual label 4'], loc=4)
-# plt.gca().add_artist(legend1)
-# plt.show()
-
     ax.legend(labelcolor="black", markerscale=.75)
     
     sky_map = create_sky_map(center, width)
@@ -181,10 +165,8 @@ def show_sky_map(
     plt.ylabel(r'Declination (deg)')
     ax.set_facecolor("white")
     
-#     path_file =  utl.get_path_sky_maps(region_of_interest)  
-#     file_name = utl.name_to_txt(name)
-        
-#     savefig(path_file, file_name)
+    if file_path:
+        plt.savefig(file_path, bbox_inches='tight')
     
     # plt.legend(*scatter.legend_elements())
     return

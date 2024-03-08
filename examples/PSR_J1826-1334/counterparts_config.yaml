@@ -1,0 +1,25 @@
+general:
+    log: {level: info, filename: null, filemode: null, format: null, datefmt: null}
+    outdir: .
+    path_file: PSR_J1826-1334
+roi:
+    target:
+        name: PSR J1826-1334
+        position: {frame: icrs, lon: 276.55489583333326 deg, lat: -13.579666666666666
+                deg}
+        model:
+            name: PSR J1826-1334
+            type: SkyModel
+            spectral:
+                type: ExpCutoffPowerLawSpectralModel
+                parameters:
+                - {name: index, value: 1.5}
+                - {name: amplitude, value: 1.0e-12, unit: TeV-1 s-1 cm-2}
+                - {name: reference, value: 1.0, unit: TeV}
+                - {name: lambda_, value: 0.1, unit: TeV-1}
+                - {name: alpha, value: 1.0}
+    radius: 1.0 deg
+    catalogs: all
+    dict_sep: {}
+    leg_style: {}
+energy_range: {min: 0.1 TeV, max: null}

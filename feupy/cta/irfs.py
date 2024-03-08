@@ -11,9 +11,6 @@ from astropy.units import Quantity
 
 from astropy import units as u
 
-# from feupy.cta.config import *
-from feupy.config import IRF_OPTIONS
-
 
 # In[2]:
 
@@ -23,18 +20,181 @@ __all__ = [
 ]
 
 
-# In[ ]:
-
-
-
-
-
 # In[3]:
+
+
+_IRFS_OPTIONS = [
+    ['South', 'AverageAz', '20deg', '0.5h'],
+     ['South', 'AverageAz', '20deg', '5h'],
+     ['South', 'AverageAz', '20deg', '50h'],
+     ['South', 'NorthAz', '20deg', '0.5h'],
+     ['South', 'NorthAz', '20deg', '5h'],
+     ['South', 'NorthAz', '20deg', '50h'],
+     ['South', 'SouthAz', '20deg', '0.5h'],
+     ['South', 'SouthAz', '20deg', '5h'],
+     ['South', 'SouthAz', '20deg', '50h'],
+     ['South', 'AverageAz', '40deg', '0.5h'],
+     ['South', 'AverageAz', '40deg', '5h'],
+     ['South', 'AverageAz', '40deg', '50h'],
+     ['South', 'NorthAz', '40deg', '0.5h'],
+     ['South', 'NorthAz', '40deg', '5h'],
+     ['South', 'NorthAz', '40deg', '50h'],
+     ['South', 'SouthAz', '40deg', '0.5h'],
+     ['South', 'SouthAz', '40deg', '5h'],
+     ['South', 'SouthAz', '40deg', '50h'],
+     ['South', 'AverageAz', '60deg', '0.5h'],
+     ['South', 'AverageAz', '60deg', '5h'],
+     ['South', 'AverageAz', '60deg', '50h'],
+     ['South', 'NorthAz', '60deg', '0.5h'],
+     ['South', 'NorthAz', '60deg', '5h'],
+     ['South', 'NorthAz', '60deg', '50h'],
+     ['South', 'SouthAz', '60deg', '0.5h'],
+     ['South', 'SouthAz', '60deg', '5h'],
+     ['South', 'SouthAz', '60deg', '50h'],
+     ['South-SSTSubArray', 'AverageAz', '20deg', '0.5h'],
+     ['South-SSTSubArray', 'AverageAz', '20deg', '5h'],
+     ['South-SSTSubArray', 'AverageAz', '20deg', '50h'],
+     ['South-SSTSubArray', 'NorthAz', '20deg', '0.5h'],
+     ['South-SSTSubArray', 'NorthAz', '20deg', '5h'],
+     ['South-SSTSubArray', 'NorthAz', '20deg', '50h'],
+     ['South-SSTSubArray', 'SouthAz', '20deg', '0.5h'],
+     ['South-SSTSubArray', 'SouthAz', '20deg', '5h'],
+     ['South-SSTSubArray', 'SouthAz', '20deg', '50h'],
+     ['South-SSTSubArray', 'AverageAz', '40deg', '0.5h'],
+     ['South-SSTSubArray', 'AverageAz', '40deg', '5h'],
+     ['South-SSTSubArray', 'AverageAz', '40deg', '50h'],
+     ['South-SSTSubArray', 'NorthAz', '40deg', '0.5h'],
+     ['South-SSTSubArray', 'NorthAz', '40deg', '5h'],
+     ['South-SSTSubArray', 'NorthAz', '40deg', '50h'],
+     ['South-SSTSubArray', 'SouthAz', '40deg', '0.5h'],
+     ['South-SSTSubArray', 'SouthAz', '40deg', '5h'],
+     ['South-SSTSubArray', 'SouthAz', '40deg', '50h'],
+     ['South-SSTSubArray', 'AverageAz', '60deg', '0.5h'],
+     ['South-SSTSubArray', 'AverageAz', '60deg', '5h'],
+     ['South-SSTSubArray', 'AverageAz', '60deg', '50h'],
+     ['South-SSTSubArray', 'NorthAz', '60deg', '0.5h'],
+     ['South-SSTSubArray', 'NorthAz', '60deg', '5h'],
+     ['South-SSTSubArray', 'NorthAz', '60deg', '50h'],
+     ['South-SSTSubArray', 'SouthAz', '60deg', '0.5h'],
+     ['South-SSTSubArray', 'SouthAz', '60deg', '5h'],
+     ['South-SSTSubArray', 'SouthAz', '60deg', '50h'],
+     ['South-MSTSubArray', 'AverageAz', '20deg', '0.5h'],
+     ['South-MSTSubArray', 'AverageAz', '20deg', '5h'],
+     ['South-MSTSubArray', 'AverageAz', '20deg', '50h'],
+     ['South-MSTSubArray', 'NorthAz', '20deg', '0.5h'],
+     ['South-MSTSubArray', 'NorthAz', '20deg', '5h'],
+     ['South-MSTSubArray', 'NorthAz', '20deg', '50h'],
+     ['South-MSTSubArray', 'SouthAz', '20deg', '0.5h'],
+     ['South-MSTSubArray', 'SouthAz', '20deg', '5h'],
+     ['South-MSTSubArray', 'SouthAz', '20deg', '50h'],
+     ['South-MSTSubArray', 'AverageAz', '40deg', '0.5h'],
+     ['South-MSTSubArray', 'AverageAz', '40deg', '5h'],
+     ['South-MSTSubArray', 'AverageAz', '40deg', '50h'],
+     ['South-MSTSubArray', 'NorthAz', '40deg', '0.5h'],
+     ['South-MSTSubArray', 'NorthAz', '40deg', '5h'],
+     ['South-MSTSubArray', 'NorthAz', '40deg', '50h'],
+     ['South-MSTSubArray', 'SouthAz', '40deg', '0.5h'],
+     ['South-MSTSubArray', 'SouthAz', '40deg', '5h'],
+     ['South-MSTSubArray', 'SouthAz', '40deg', '50h'],
+     ['South-MSTSubArray', 'AverageAz', '60deg', '0.5h'],
+     ['South-MSTSubArray', 'AverageAz', '60deg', '5h'],
+     ['South-MSTSubArray', 'AverageAz', '60deg', '50h'],
+     ['South-MSTSubArray', 'NorthAz', '60deg', '0.5h'],
+     ['South-MSTSubArray', 'NorthAz', '60deg', '5h'],
+     ['South-MSTSubArray', 'NorthAz', '60deg', '50h'],
+     ['South-MSTSubArray', 'SouthAz', '60deg', '0.5h'],
+     ['South-MSTSubArray', 'SouthAz', '60deg', '5h'],
+     ['South-MSTSubArray', 'SouthAz', '60deg', '50h'],
+     ['North', 'AverageAz', '20deg', '0.5h'],
+     ['North', 'AverageAz', '20deg', '5h'],
+     ['North', 'AverageAz', '20deg', '50h'],
+     ['North', 'NorthAz', '20deg', '0.5h'],
+     ['North', 'NorthAz', '20deg', '5h'],
+     ['North', 'NorthAz', '20deg', '50h'],
+     ['North', 'SouthAz', '20deg', '0.5h'],
+     ['North', 'SouthAz', '20deg', '5h'],
+     ['North', 'SouthAz', '20deg', '50h'],
+     ['North', 'AverageAz', '40deg', '0.5h'],
+     ['North', 'AverageAz', '40deg', '5h'],
+     ['North', 'AverageAz', '40deg', '50h'],
+     ['North', 'NorthAz', '40deg', '0.5h'],
+     ['North', 'NorthAz', '40deg', '5h'],
+     ['North', 'NorthAz', '40deg', '50h'],
+     ['North', 'SouthAz', '40deg', '0.5h'],
+     ['North', 'SouthAz', '40deg', '5h'],
+     ['North', 'SouthAz', '40deg', '50h'],
+     ['North', 'AverageAz', '60deg', '0.5h'],
+     ['North', 'AverageAz', '60deg', '5h'],
+     ['North', 'AverageAz', '60deg', '50h'],
+     ['North', 'NorthAz', '60deg', '0.5h'],
+     ['North', 'NorthAz', '60deg', '5h'],
+     ['North', 'NorthAz', '60deg', '50h'],
+     ['North', 'SouthAz', '60deg', '0.5h'],
+     ['North', 'SouthAz', '60deg', '5h'],
+     ['North', 'SouthAz', '60deg', '50h'],
+     ['North-MSTSubArray', 'AverageAz', '20deg', '0.5h'],
+     ['North-MSTSubArray', 'AverageAz', '20deg', '5h'],
+     ['North-MSTSubArray', 'AverageAz', '20deg', '50h'],
+     ['North-MSTSubArray', 'NorthAz', '20deg', '0.5h'],
+     ['North-MSTSubArray', 'NorthAz', '20deg', '5h'],
+     ['North-MSTSubArray', 'NorthAz', '20deg', '50h'],
+     ['North-MSTSubArray', 'SouthAz', '20deg', '0.5h'],
+     ['North-MSTSubArray', 'SouthAz', '20deg', '5h'],
+     ['North-MSTSubArray', 'SouthAz', '20deg', '50h'],
+     ['North-MSTSubArray', 'AverageAz', '40deg', '0.5h'],
+     ['North-MSTSubArray', 'AverageAz', '40deg', '5h'],
+     ['North-MSTSubArray', 'AverageAz', '40deg', '50h'],
+     ['North-MSTSubArray', 'NorthAz', '40deg', '0.5h'],
+     ['North-MSTSubArray', 'NorthAz', '40deg', '5h'],
+     ['North-MSTSubArray', 'NorthAz', '40deg', '50h'],
+     ['North-MSTSubArray', 'SouthAz', '40deg', '0.5h'],
+     ['North-MSTSubArray', 'SouthAz', '40deg', '5h'],
+     ['North-MSTSubArray', 'SouthAz', '40deg', '50h'],
+     ['North-MSTSubArray', 'AverageAz', '60deg', '0.5h'],
+     ['North-MSTSubArray', 'AverageAz', '60deg', '5h'],
+     ['North-MSTSubArray', 'AverageAz', '60deg', '50h'],
+     ['North-MSTSubArray', 'NorthAz', '60deg', '0.5h'],
+     ['North-MSTSubArray', 'NorthAz', '60deg', '5h'],
+     ['North-MSTSubArray', 'NorthAz', '60deg', '50h'],
+     ['North-MSTSubArray', 'SouthAz', '60deg', '0.5h'],
+     ['North-MSTSubArray', 'SouthAz', '60deg', '5h'],
+     ['North-MSTSubArray', 'SouthAz', '60deg', '50h'],
+     ['North-LSTSubArray', 'AverageAz', '20deg', '0.5h'],
+     ['North-LSTSubArray', 'AverageAz', '20deg', '5h'],
+     ['North-LSTSubArray', 'AverageAz', '20deg', '50h'],
+     ['North-LSTSubArray', 'NorthAz', '20deg', '0.5h'],
+     ['North-LSTSubArray', 'NorthAz', '20deg', '5h'],
+     ['North-LSTSubArray', 'NorthAz', '20deg', '50h'],
+     ['North-LSTSubArray', 'SouthAz', '20deg', '0.5h'],
+     ['North-LSTSubArray', 'SouthAz', '20deg', '5h'],
+     ['North-LSTSubArray', 'SouthAz', '20deg', '50h'],
+     ['North-LSTSubArray', 'AverageAz', '40deg', '0.5h'],
+     ['North-LSTSubArray', 'AverageAz', '40deg', '5h'],
+     ['North-LSTSubArray', 'AverageAz', '40deg', '50h'],
+     ['North-LSTSubArray', 'NorthAz', '40deg', '0.5h'],
+     ['North-LSTSubArray', 'NorthAz', '40deg', '5h'],
+     ['North-LSTSubArray', 'NorthAz', '40deg', '50h'],
+     ['North-LSTSubArray', 'SouthAz', '40deg', '0.5h'],
+     ['North-LSTSubArray', 'SouthAz', '40deg', '5h'],
+     ['North-LSTSubArray', 'SouthAz', '40deg', '50h'],
+     ['North-LSTSubArray', 'AverageAz', '60deg', '0.5h'],
+     ['North-LSTSubArray', 'AverageAz', '60deg', '5h'],
+     ['North-LSTSubArray', 'AverageAz', '60deg', '50h'],
+     ['North-LSTSubArray', 'NorthAz', '60deg', '0.5h'],
+     ['North-LSTSubArray', 'NorthAz', '60deg', '5h'],
+     ['North-LSTSubArray', 'NorthAz', '60deg', '50h'],
+     ['North-LSTSubArray', 'SouthAz', '60deg', '0.5h'],
+     ['North-LSTSubArray', 'SouthAz', '60deg', '5h'],
+     ['North-LSTSubArray', 'SouthAz', '60deg', '50h']
+]
+
+
+# In[5]:
 
 
 class Irfs:
     
-    irfs_opts = IRF_OPTIONS
+    IRFS_OPTIONS = _IRFS_OPTIONS
     IRF_version = "prod5 v0.1"
     
     _SITE_ARRAY = {
@@ -108,15 +268,6 @@ class Irfs:
         else: return observatory_locations['cta_north'] 
 
         
-
-
-# In[ ]:
-
-
-
-
-
-# In[ ]:
 
 
 

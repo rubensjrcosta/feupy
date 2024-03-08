@@ -1,13 +1,10 @@
-#!/usr/bin/env python
-# coding: utf-8
+import matplotlib.pyplot as plt # A collection of command style functions
+from gammapy.utils.scripts import make_path
+from astropy import units as u
 
-# In[1]:
+from feupy.plotters.config import PATHMYSTYLE
 
-
-from feupy.config import *
-
-
-# In[ ]:
+plt.style.use(make_path(PATHMYSTYLE))
 
 
 __all__ = [
@@ -17,20 +14,9 @@ __all__ = [
 
 # In[4]:
 
-
-import matplotlib.pyplot as plt # A collection of command style functions
-from gammapy.utils.scripts import make_path
-
-
-FILE_PATH = "$PYTHONPATH/feupy/plotters/"
-path_my_plot_style = f"{FILE_PATH}/my_plot_style.txt" 
-plt.style.use(make_path(path_my_plot_style))
-
-
 # In[1]:
 
 
-from astropy import units as u
 get_ipython().run_line_magic('matplotlib', 'inline')
 # import matplotlib.pyplot as plt # A collection of command style functions
 
@@ -86,7 +72,7 @@ def show_SED(
             
             energy_bounds=plot_limits['energy_bounds']
 
-            spectral_model.plot(label = f"{model.name} (fit)", energy_bounds=energy_bounds,   marker = ',', color="black", **kwargs)
+            spectral_model.plot(label = f"{model.name}", energy_bounds=energy_bounds,   marker = ',', color="black", **kwargs)
 #             energy_bounds = [7e-2, 8e2] * u.TeV
 #             spectral_model.plot(energy_bounds=energy_bounds,  linestyle = linestyle,  marker = ',', color=color, **kwargs)
 #             spectral_model.plot(label = f"{model.name}", energy_bounds=energy_bounds,  linestyle = linestyle, color=color, **kwargs)

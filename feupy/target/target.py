@@ -1,14 +1,14 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[5]:
+# In[1]:
 
 
 # Licensed under a 3-clause BSD style license - see LICENSE.rst
 """Target class."""
 
 
-# In[27]:
+# In[1]:
 
 
 from astropy import units as u
@@ -25,8 +25,10 @@ from gammapy.modeling.models import (
 
 from feupy.utils.coordinates import skcoord_to_dict
 
+from feupy.utils.string_handling import name_to_txt
 
-# In[7]:
+
+# In[3]:
 
 
 __all__ = [
@@ -34,7 +36,7 @@ __all__ = [
 ]
 
 
-# In[ ]:
+# In[2]:
 
 
 class Target:
@@ -64,7 +66,7 @@ class Target:
     -------
     
     """
-    
+    all = []
     # Validating the units of arguments to functions
     @u.quantity_input(pos_ra=u.deg, pos_dec=u.deg)
     def __init__(
@@ -85,6 +87,8 @@ class Target:
         self.temporal_model = temporal_model
         self.sky_model = self._sky_model()
         self.dict = self._to_dict()
+        
+        Target.all.append(self)
         
     @property
     def name(self):
@@ -179,8 +183,9 @@ class Target:
     
     def _sky_model(self):
         if self.spectral_model is not None:
+            tag = self.spectral_model.tag[1]
             return SkyModel(
-                    name=self.name,
+                    name=f"{name_to_txt(self.name)} - {tag}",
                     spectral_model=self.spectral_model,
                     spatial_model=self.spatial_model, 
                     temporal_model=self.temporal_model
@@ -193,4 +198,53 @@ class Target:
         if self.sky_model is not None:
             _dict["model"] = self.sky_model.to_dict()
         return _dict
+    
+    def __repr__(self):
+        ss = f"{self.__class__.__name__}("
+        ss += f"name={self.name!r}, "
+        ss += "pos_ra=Quantity('{:.2f}'), ".format(self.position.ra).replace(' ', '')
+        ss += "pos_dec=Quantity('{:.2f}'))\n".format(self.position.dec).replace(' ', '')
+        return ss 
+
+
+# In[ ]:
+
+
+def config(self, value):
+    if isinstance(value, dict):
+        self._config = AnalysisConfig(**value)
+    elif isinstance(value, AnalysisConfig):
+        self._config = value
+    else:
+        raise TypeError("config must be dict or AnalysisConfig.")
+
+
+# In[5]:
+
+
+def test_target():
+    return Target(
+        name="23HWC J1825-134", 
+        pos_ra=27.46* u.Unit('deg'), 
+        pos_dec=12.2* u.Unit('deg'),
+    
+    )
+
+
+# In[7]:
+
+
+
+
+
+# In[10]:
+
+
+
+
+
+# In[ ]:
+
+
+
 

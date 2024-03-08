@@ -39,7 +39,8 @@ def flux_points_dataset_from_table(
         'mask_fit': None,
         'mask_safe': None,
         'meta_table': None,
-    }
+    },
+    model_name= None,
 ):
     flux_points = FluxPoints.from_table(
         table=table, 
@@ -47,7 +48,12 @@ def flux_points_dataset_from_table(
         sed_type=sed_type,
         **kwargs_fp,
     )
-    models = SkyModel(spectral_model=reference_model, name=name)
+    
+    models = None
+    if reference_model:
+        if model_name is None:
+            model_name = name
+        models = SkyModel(spectral_model=reference_model, name=model_name)
     
     return FluxPointsDataset(
         models=models,

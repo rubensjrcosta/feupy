@@ -9,6 +9,8 @@
 
 from astropy.coordinates import SkyCoord
 
+# from feupy.analysis.config import SkyCoordConfig
+
 
 # In[ ]:
 
@@ -21,11 +23,12 @@ def skcoord_to_dict(position: SkyCoord):
     }
 
 
-# In[1]:
+def skcoord_config_to_skcoord(pos_config):
+    return SkyCoord(pos_config.lon, pos_config.lat, frame=pos_config.frame)
 
 
 def dict_to_skcoord(pos_dict: dict):
-    return SkyCoord(pos_dict.lon, pos_dict.lat, frame=pos_dict.frame)
+    return SkyCoord(pos_dict['lon'], pos_dict['lat'], frame=pos_dict['frame'])
 
 
 # In[ ]:
