@@ -4,6 +4,12 @@
 # In[1]:
 
 
+get_ipython().system('jupyter nbconvert test_core.ipynb  --to script --output \'core\' --output-dir "."')
+
+
+# In[2]:
+
+
 # Licensed under a 3-clause BSD style license - see LICENSE.rst
 """Session class driving the high level interface API"""
 import logging
@@ -103,13 +109,13 @@ from astropy.io.fits.verify import VerifyWarning
 import warnings
 
 
-# In[2]:
+# In[ ]:
 
 
 __all__ = ["Counterparts", "Simulation"]
 
 
-# In[3]:
+# In[ ]:
 
 
 log = logging.getLogger(__name__)
@@ -370,7 +376,7 @@ class Counterparts:
 
 
 
-# In[4]:
+# In[ ]:
 
 
 log = logging.getLogger(__name__)
@@ -660,7 +666,7 @@ class Simulation:
         uncertainty = fitted_params.std()
         fitted_params_dict = {}
         for name in list(results[0].keys()):
-            fitted_params_dict[name] = {
+            fitted_params_dict[name] = { "name": 
                 "mean": mean[name],
                 "uncertainty": uncertainty[name]
             }
