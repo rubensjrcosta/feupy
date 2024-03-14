@@ -7,19 +7,19 @@
 # !pyflakes config.py
 
 
-# In[1]:
+# In[ ]:
 
 
 # Licensed under a 3-clause BSD style license - see LICENSE.rst
 """Configuration."""
 
 
-# In[2]:
+# In[1]:
 
 
 from pydantic import BaseModel
-# from pydantic.v1 import BaseModel
-# from pydantic.v1.utils import lenient_isinstance
+from pydantic.v1 import BaseModel
+from pydantic.v1.utils import lenient_isinstance
 from pydantic.utils import deep_update
 
 from feupy.roi import ROI

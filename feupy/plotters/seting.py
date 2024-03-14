@@ -7,24 +7,25 @@
 from feupy.plotters.config import *
 
 
-# In[6]:
+# In[2]:
 
 
 from gammapy.modeling.models import Models
 from gammapy.datasets import Datasets
 
 
-# In[ ]:
+# In[3]:
 
 
 __all__ = [
     "set_leg_style_models",
     "set_leg_style_datasets",
     "set_leg_style",
+    "setting_leg_style"
 ]
 
 
-# In[2]:
+# In[4]:
 
 
 def set_leg_style(
@@ -48,7 +49,7 @@ def set_leg_style(
     return leg_style
 
 
-# In[ ]:
+# In[5]:
 
 
 def set_leg_style_datasets(datasets_names, leg_style={}, colors=COLORS, markers=MARKERS):
@@ -70,7 +71,7 @@ def set_leg_style_datasets(datasets_names, leg_style={}, colors=COLORS, markers=
     return leg_style
 
 
-# In[3]:
+# In[6]:
 
 
 def set_leg_style_models(models_names, leg_style={}, colors='black', linestyles=LINESTYLES):
@@ -92,7 +93,43 @@ def set_leg_style_models(models_names, leg_style={}, colors='black', linestyles=
     return leg_style
 
 
+# In[7]:
+
+
+def setting_leg_style( 
+    leg_style = {},
+    names=None, 
+    colors=COLORS, 
+    markers=MARKERS, 
+    linestyles=LINESTYLES
+    
+):
+    if all([names ==  None]):
+        return print("Sorry, there is error: 'names =  None'")
+    else: 
+        if not isinstance(names, list):
+            names = [names]    
+    
+    if len(colors) < len(names):      
+        while len(colors) < len(names) + 1:
+            colors.extend(colors)
+
+    if len(markers) < len(names):
+        while len(markers) < len(names) + 1:
+            markers.extend(markers)
+            
+    if len(linestyles) < len(names):
+        while len(linestyles) < len(names) + 1:
+            linestyles.extend(linestyles)
+    
+    for index, name in enumerate(names):
+#     for index, name in enumerate(names):
+        leg_style[name] = (colors[index], linestyles[index], markers[index]) 
+    return leg_style
+
+
 # In[ ]:
+
 
 
 
