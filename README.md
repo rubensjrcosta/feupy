@@ -25,5 +25,7 @@
 
 1. Clone this repository:
    ```bash
-   git clone https://github.com/your-username/FeuPy.git
-   cd FeuPy
+   git clone https://github.com/your-username/feupy.git
+   cd feupy
+2. The last conda commands will define the environment variable within the conda environment. Conversely, you might want to define the $PYTHONPATH environment variable directly in your shell with:
+   export PYTHONPATH=/your-feupy-path/feupy
