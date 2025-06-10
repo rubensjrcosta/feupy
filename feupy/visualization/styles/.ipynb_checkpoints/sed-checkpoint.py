@@ -17,7 +17,6 @@ from feupy.visualization import LINESTYLES_DEFAULT
 
 __all__ = ["SEDPlotter"]
 
-
 class SEDPlotter:
     def __init__(self, datasets, models=None, sed_type="e2dnde"):
         """
