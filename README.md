@@ -2,7 +2,7 @@
 
 # FeuPy
 
-**FeuPy** is a Python application for very high-energy (VHE) gamma-ray analysis using the [Gammapy](https://docs.gammapy.org/) library. It facilitates the search for possible γ-ray counterparts to target sources and performs spectral model fitting across multiple wavelengths. **FeuPy** is designed with a focus on Cherenkov Telescope Array (CTA) users, providing tools for sensitivity analysis, observation simulations, and the computation of non-thermal radiation from relativistic particle populations.
+**FeuPy** is a Python application for very high-energy (VHE) gamma-ray analysis using the [Gammapy](https://docs.gammapy.org/1.3/) library. It facilitates the search for possible γ-ray counterparts to target sources and performs spectral model fitting across multiple wavelengths. **FeuPy** is designed with a focus on Cherenkov Telescope Array (CTA) users, providing tools for sensitivity analysis, observation simulations, and the computation of non-thermal radiation from relativistic particle populations.
 
 ## Features
 
