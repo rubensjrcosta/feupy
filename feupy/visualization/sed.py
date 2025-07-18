@@ -49,7 +49,7 @@ class SEDPlotter:
         kwargs.setdefault(
             'kwargs_legend',
             dict(
-                bbox_to_anchor=(0, -0.45),
+                # bbox_to_anchor=(0, -0.45),
                 ncol=3,
                 loc='lower left',
                 markerscale=0.75,
@@ -116,8 +116,9 @@ class SEDPlotter:
         """
         for dataset in self.datasets:
             kwargs_dataset = ref_markers.get(dataset.name, {}).copy()
+
             kwargs_dataset.update(
-                dict(ls='None', lw=0.5, markeredgecolor='k', mew=1, elinewidth=0.9, capsize=1.5)
+                dict(ls='None', lw=0.5, markeredgecolor='k', mew=0.8, elinewidth=0.6, capsize=1.5)
             )
             
             # Plot dataset data
@@ -199,7 +200,7 @@ class SEDPlotter:
         refs_names = self.datasets.names
         if self.models:
             refs_names.extend(self.models.names)
-        ref_markers = ref_markers or generate_specified_marker_set(refs_names, marker_size=6)
+        ref_markers = ref_markers or generate_specified_marker_set(refs_names, marker_size=4)
 
         # Use the provided axes or get the current axes
         self.ax = ax if ax else plt.gca()
