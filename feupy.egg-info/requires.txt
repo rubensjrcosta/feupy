@@ -1,0 +1,12 @@
+gammapy==2.0
+naima>=0.10.0
+astropy>=6.0
+numpy>=1.22
+scipy>=1.10
+matplotlib>=3.8
+pandas>=2.0
+pyyaml>=6.0
+tqdm>=4.65
+regions>=0.7
+jupyter>=1.0
+ipykernel>=6.0

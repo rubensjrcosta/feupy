@@ -546,7 +546,7 @@ class CTAOAnalysis:
     def _create_pointing(pointing_position):
         """Create the pointing."""
         return FixedPointingInfo(
-            mode=PointingMode.POINTING,
+            # mode=PointingMode.POINTING,
             fixed_icrs=pointing_position.icrs,
     
         )

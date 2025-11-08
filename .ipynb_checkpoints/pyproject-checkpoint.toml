@@ -1,0 +1,38 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "feupy"
+version = "0.1.0"
+description = "FeuPy — A Python application for VHE gamma-ray analysis with Gammapy, aiding γ-ray counterpart searches, spectral model fitting across wavelengths. It includes tools for CTAO sensitivity analysis, observation simulations, and non-thermal radiation calculations from relativistic particles."
+authors = [
+    { name = "R. Jr. Costa", email = "rubensp@utfpr.edu.br" },
+    { name = "R. C. Dos Anjos", email = "ritacassia@ufpr.br" }
+]
+license = { text = "BSD-3-Clause" }
+readme = "README.md"
+requires-python = ">=3.10"
+
+dependencies = [
+    "gammapy==2.0",
+    "naima>=0.10.0",
+    "astropy>=6.0",
+    "numpy>=1.22",
+    "scipy>=1.10",
+    "matplotlib>=3.8",
+     "pandas>=2.0"
+]
+
+[tool.setuptools.package-data]
+feupy = [
+    "visualization/styles/*.mplstyle"
+]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["feupy*"]
+
+[project.urls]
+Homepage = "https://github.com/rubensjrcosta/feupy"
+Issues = "https://github.com/rubensjrcosta/feupy/issues"

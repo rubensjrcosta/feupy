@@ -1,0 +1,26 @@
+name: feupy
+channels:
+  - conda-forge
+
+dependencies:
+  - python=3.12
+  - pip
+  - numpy>=1.22
+  - scipy>=1.10
+  - matplotlib>=3.7
+  - astropy>=6.0
+  - naima>=0.10
+  - gammapy=2.0
+  - jupyter
+  - ipykernel
+  - pyyaml
+  - tqdm
+  - pandas
+
+  - pip:
+      - -e .
+
+variables:
+  # Default data paths (ajuste conforme sua estrutura)
+  GAMMAPY_DATA: /home/phoenix/Coding/data/gammapy-datasets/2.0
+  FEUPY_DATA: /home/phoenix/Coding/data/feupy-datasets/1.0

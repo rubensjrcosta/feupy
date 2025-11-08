@@ -76,7 +76,7 @@ class SourceCatalogObjectExtraHESS(SourceCatalogObject):
 
     def spectral_model(self):
         """Get the spectral model associated with this source."""
-        models = Models.read("$PYTHONPATH/data/dedicated_publications/hess/2019Apercent26A...621A.116H/models.yaml")
+        models = Models.read("$FEUPY_DATA/dedicated_publications/hess/2019Apercent26A...621A.116H/models.yaml")
         if self.name in models.names:
             return models[self.name].spectral_model
         return None
@@ -90,7 +90,7 @@ class SourceCatalogObjectExtraHESS(SourceCatalogObject):
     @property
     def flux_points(self):
         """Flux points as a `~gammapy.estimators.FluxPoints` object."""
-        filename = f"$PYTHONPATH/data/dedicated_publications/hess/2019Apercent26A...621A.116H/{string_to_filename_format(self.name)}.fits"
+        filename = f"$FEUPY_DATA/dedicated_publications/hess/2019Apercent26A...621A.116H/{string_to_filename_format(self.name)}.fits"
         return FluxPoints.read(filename, reference_model=self.sky_model(), sed_type='e2dnde')
     
 class SourceCatalogExtraHESS(SourceCatalog):
@@ -106,6 +106,6 @@ class SourceCatalogExtraHESS(SourceCatalog):
 
     source_object_class = SourceCatalogObjectExtraHESS
 
-    def __init__(self, filename="$PYTHONPATH/data/dedicated_publications/hess/2019Apercent26A...621A.116H/catalog.ecsv"):
+    def __init__(self, filename="$FEUPY_DATA/dedicated_publications/hess/2019Apercent26A...621A.116H/catalog.ecsv"):
         table = Table.read(make_path(filename), format='ascii.ecsv')
         super().__init__(table=table, source_name_key="source_name")
