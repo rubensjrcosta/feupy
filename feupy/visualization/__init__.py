@@ -1,5 +1,8 @@
 # Licensed under a 3-clause BSD style license - see LICENSE.rst
 """Visualization."""
+from importlib.resources import files
+
+MY_MPL_STYLE = files("feupy.visualization.styles") / "mystyle.mplstyle"
 
 # from .setting import (
 #     set_leg_style, 
@@ -179,5 +182,5 @@ LINESTYLES_DEFAULT = [
     (0, (3, 1, 1, 1, 1, 1)),  # densely dash-dot-dotted
 ]
 
-MY_MPL_STYLE = "$PYTHONPATH/feupy/visualization/styles/mystyle.mplstyle"
+# MY_MPL_STYLE = "$PYTHONPATH/feupy/visualization/styles/mystyle.mplstyle"
 

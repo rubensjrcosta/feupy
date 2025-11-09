@@ -22,6 +22,11 @@ dependencies:
   # Jupyter ecosystem
   - jupyter
   - ipykernel
+  
+  # Test dependencies
+  - pytest
+  - pytest-cov
+  - pytest-mock
 
   # pip install (editable mode)
   - pip:

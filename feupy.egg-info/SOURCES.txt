@@ -45,3 +45,4 @@ feupy/visualization/sensitivity.py
 feupy/visualization/styles/markers.py
 feupy/visualization/styles/mystyle.mplstyle
 feupy/visualization/utils/units.py
+tests/test_catalogs.py
