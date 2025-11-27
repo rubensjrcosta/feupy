@@ -1,15 +1,20 @@
 # Licensed under a 3-clause BSD style license - see LICENSE.rst
-"""CTAO IRFs class."""
+""" CTAO IRFs class."""
+
+import pandas as pd
+
+import numpy as np
+
+import astropy.units as u
+from astropy.units import Quantity
+from astropy.coordinates import Angle
+from astropy.coordinates import SkyCoord, AltAz
+from astropy.time import Time
 
 from gammapy.irf import load_irf_dict_from_file
 from gammapy.data import observatory_locations
-from astropy.units import Quantity
-from astropy.coordinates import Angle
-import astropy.units as u
 from gammapy.data import observatory_locations
-from astropy.coordinates import SkyCoord, AltAz
-from astropy.time import Time
-import numpy as np
+
 from datetime import datetime, timedelta
 
 
@@ -286,71 +291,135 @@ class Irfs:
     
 
 
-def calculate_annual_visibility_for_zenith_ranges(observatory_name, source_position, year=2025, time_step=30):
+def calculate_annual_visibility_for_zenith_ranges(
+        observatory_name, source_position, year=2025, time_step=30):
     """
-    Calculate the annual visibility duration for a source in specific zenith angle ranges.
+    Compute annual visibility (in hours) of a source for predefined zenith-angle
+    ranges at a given observatory.
 
-    Parameters:
-    - observatory_name (str): The name of the observatory, as listed in `observatory_locations`.
-    - source_position (SkyCoord): The celestial coordinates of the source.
-    - year (int): The year for which to calculate the visibility.
-    - time_step (int): Time step in minutes between each visibility calculation point.
-    
-    Returns:
-    - annual_visibility_durations (dict): Total visibility duration in hours for each zenith angle range.
+    Parameters
+    ----------
+    observatory_name : str
+        Observatory key as defined in `observatory_locations`.
+    source_position : SkyCoord
+        Celestial coordinates of the source.
+    year : int, optional
+        Year for which visibility is calculated (default: 2025).
+    time_step : int, optional
+        Time step in minutes for sampling visibility during the night.
+
+    Returns
+    -------
+    dict
+        Total visibility hours for each zenith-angle range.
     """
-    
-    # Get the location of the observatory
+
     location = observatory_locations[observatory_name]
-    
-    # Define zenith angle ranges (in degrees)
-    zenith_ranges = {
-        '20': (10, 30),
-        '40': (30, 50),
-        '60': (50, 70)
-    }
-    # Initialize annual durations for each zenith range
-    annual_visibility_durations = {range_label: 0 for range_label in zenith_ranges.keys()}
-    
-    # Generate time points for a typical night (18:00 to 06:00 the next morning)
-    time_points = []
-    for hour in range(18, 24):  # From 18:00 to 24:00
-        for minute in range(0, 60, time_step):
-            time_points.append(f"{hour:02d}:{minute:02d}:00")
-    for hour in range(0, 6):  # From 00:00 to 06:00
-        for minute in range(0, 60, time_step):
-            time_points.append(f"{hour:02d}:{minute:02d}:00")
-    
-    # Set up the date range for the entire year
-    start_date = datetime(year, 1, 1)
+
+    # Zenith-angle bins (degrees)
+    zenith_ranges = {'20': (10, 30), '40': (30, 50), '60': (50, 70)}
+    annual_visibility = {k: 0 for k in zenith_ranges}
+
+    # Night-time sampling: 18:00 → 06:00
+    time_points = [
+        f"{h:02d}:{m:02d}:00"
+        for h in list(range(18, 24)) + list(range(0, 6))
+        for m in range(0, 60, time_step)
+    ]
+
+    # Loop over every day of the year
+    current_date = datetime(year, 1, 1)
     end_date = datetime(year + 1, 1, 1)
-    delta = timedelta(days=1)
-    
-    current_date = start_date
+    one_day = timedelta(days=1)
+
     while current_date < end_date:
-        date_str = current_date.strftime("%Y-%m-%d")
-        
-        # Generate Time objects for all times during the night
-        times = Time([f"{date_str} {time}" for time in time_points])
-        
-        # Create the AltAz frame for the given times and observatory location
-        altaz_frame = AltAz(obstime=times, location=location)
-        
-        # Transform the source position to the AltAz frame to get the altitude and azimuth
-        source_altaz = source_position.transform_to(altaz_frame)
-        
-        # Calculate zenith angles (zenith angle = 90° - altitude)
+        date = current_date.strftime("%Y-%m-%d")
+        times = Time([f"{date} {t}" for t in time_points])
+
+        altaz = AltAz(obstime=times, location=location)
+        source_altaz = source_position.transform_to(altaz)
+
         zenith_angles = 90 * u.deg - source_altaz.alt
-        
-        # Count visibility duration for each zenith range
-        for range_label, (zenith_min, zenith_max) in zenith_ranges.items():
-            # Check if zenith angles fall within the range
-            visible_times = np.sum((zenith_angles >= zenith_min * u.deg) & (zenith_angles < zenith_max * u.deg))
-            
-            # Convert time steps to hours and add to the annual total for this zenith range
-            annual_visibility_durations[range_label] += visible_times * (time_step / 60)
-        
-        # Move to the next day
-        current_date += delta
-    
-    return annual_visibility_durations
+
+        # Count time spent inside each zenith bin
+        for label, (zmin, zmax) in zenith_ranges.items():
+            mask = (zenith_angles >= zmin * u.deg) & (zenith_angles < zmax * u.deg)
+            annual_visibility[label] += np.sum(mask) * (time_step / 60)
+
+        current_date += one_day
+
+    return annual_visibility
+
+
+def get_visibility_table_from_position(source_position, year, save_path=None):
+    """
+    Compute annual visibility for a source at CTAO South and North, returning
+    the results as a pandas DataFrame and optionally saving them as CSV or LaTeX.
+
+    Parameters
+    ----------
+    source_position : SkyCoord
+        ICRS coordinates of the target source.
+    year : int
+        Year for which visibility is computed.
+    save_path : str, optional
+        Output file path (.csv or .tex). If None, no file is saved.
+
+    Returns
+    -------
+    pandas.DataFrame
+        Visibility duration per zenith-angle bin and observatory.
+    """
+
+    observatories = ['cta_south', 'cta_north']
+    rows = []
+
+    print("Annual Visibility Durations")
+
+    for obs in observatories:
+        vis = calculate_annual_visibility_for_zenith_ranges(
+            observatory_name=obs,
+            source_position=source_position,
+            year=year
+        )
+
+        print(f"\n{obs}:")
+        for zbin, duration in vis.items():
+            print(f"Zenith Angle {zbin}°: {duration:.2f} hours")
+            rows.append({
+                "Observatory": obs,
+                "Zenith Range (deg)": zbin,
+                "Visibility (hours)": duration
+            })
+
+    df = pd.DataFrame(rows)
+
+    # Publication-friendly names
+    df["Observatory"] = df["Observatory"].replace({
+        "cta_south": "CTAO South",
+        "cta_north": "CTAO North"
+    })
+
+    # Save outputs
+    if save_path:
+        if save_path.endswith(".csv"):
+            df.to_csv(save_path, index=False)
+            print(f"\nTable saved in: {save_path}")
+
+        elif save_path.endswith(".tex"):
+            latex = df.to_latex(
+                index=False,
+                float_format=lambda x: f"{x:.2f}",
+                caption="Annual visibility for each zenith range and CTAO site.",
+                label="tab:annual_visibility",
+                escape=True
+            )
+            with open(save_path, "w") as f:
+                f.write(latex)
+            print(f"\nLaTeX table saved in: {save_path}")
+
+        else:
+            print("[Warning] Unsupported file format. Use .csv or .tex.")
+
+    return df
+

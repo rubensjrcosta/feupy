@@ -10,7 +10,6 @@ __all__ = [
     "IrfType",
 ]
 
-
 def validate_irf(v):
     if v not in Irfs.IRFS_OPTIONS:
         raise ValueError(f"Invalid IRF option: {v!r}. Choose from: {Irfs.IRFS_OPTIONS!r}")
