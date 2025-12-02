@@ -1,39 +1,27 @@
 # Licensed under a 3-clause BSD style license - see LICENSE.rst
 """Source catalogs."""
 
-from gammapy.catalog import CATALOG_REGISTRY
-from gammapy.utils.registry import Registry
+from .registry import FEUPY_CATALOG_REGISTRY
 
+# Re-export catalog classes so the API stays the same
 from .hawc import (
-    get_flux_points_3hwc, create_flux_points_table_3hwc, get_flux_points_2hwc, create_flux_points_table_2hwc,
     SourceCatalogObjectEHWC, SourceCatalogEHWC,
-    SourceCatalogObjectExtraHAWC, SourceCatalogExtraHAWC
+    SourceCatalogObjectExtraHAWC, SourceCatalogExtraHAWC,
 )
 from .hess import (
-    SourceCatalogObjectExtraHESS, SourceCatalogExtraHESS
+    SourceCatalogObjectExtraHESS, SourceCatalogExtraHESS,
 )
-
-from .veritas import SourceCatalogVTSCat, SourceCatalogObjectVTSCat, SourceCatalogVERITAS, SourceCatalogObjectVERITAS
-from .psrcat import SourceCatalogPSRCAT, SourceCatalogObjectPSRCAT
-from .lhaaso import SourceCatalogObjectLHAASO, SourceCatalogLHAASO
-# from .lhaaso import SourceCatalogObject1LHAASO, SourceCatalog1LHAASO
-from .lhaaso import SourceCatalogObjectExtraLHAASO, SourceCatalogExtraLHAASO
-
-# Initialize the catalog registry
-GAMMAPY_CATALOGS = CATALOG_REGISTRY.copy()
-
-FEUPY_CATALOGS = GAMMAPY_CATALOGS+[
-    SourceCatalogEHWC,
-    SourceCatalogExtraHAWC,
-    SourceCatalogExtraHESS,
-    SourceCatalogVTSCat,
-    SourceCatalogVERITAS,
-    SourceCatalogLHAASO, 
-    SourceCatalogExtraLHAASO,
-    SourceCatalogPSRCAT, 
-]
-
-FEUPY_CATALOG_REGISTRY = Registry(FEUPY_CATALOGS)
+from .veritas import (
+    SourceCatalogVTSCat, SourceCatalogObjectVTSCat,
+    SourceCatalogVERITAS, SourceCatalogObjectVERITAS,
+)
+from .psrcat import (
+    SourceCatalogPSRCAT, SourceCatalogObjectPSRCAT,
+)
+from .lhaaso import (
+    SourceCatalogObjectLHAASO, SourceCatalogLHAASO,
+    SourceCatalogObjectExtraLHAASO, SourceCatalogExtraLHAASO,
+)
 
 __all__ = [
     "FEUPY_CATALOG_REGISTRY",
@@ -44,7 +32,7 @@ __all__ = [
     "SourceCatalogPSRCAT",
     "SourceCatalogObjectPSRCAT",
     "SourceCatalogObjectLHAASO",
-    "SourceCatalogLHAASO"
+    "SourceCatalogLHAASO",
     "SourceCatalogExtraLHAASO",
     "SourceCatalogObjectExtraLHAASO",
     "SourceCatalogObjectEHWC",
@@ -53,9 +41,4 @@ __all__ = [
     "SourceCatalogEHWC",
     "SourceCatalogObjectExtraHESS",
     "SourceCatalogExtraHESS",
-    "create_flux_points_table_3hwc",
-    "get_flux_points_3hwc",
-    "create_flux_points_table_2hwc",
-    "get_flux_points_2hwc",
 ]
-

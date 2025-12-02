@@ -18,6 +18,7 @@ feupy/catalog/hess.py
 feupy/catalog/lhaaso.py
 feupy/catalog/psrcat.py
 feupy/catalog/pulsar_spectra.py
+feupy/catalog/registry.py
 feupy/catalog/utils.py
 feupy/catalog/veritas.py
 feupy/naima/__init__.py

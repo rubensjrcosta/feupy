@@ -12,7 +12,6 @@ from gammapy.estimators import FluxPoints
 from gammapy.modeling.models import SkyModel, Models
 
 
-
 __all__ = [
     "StatisticalUtilityFunctions",
     "calculate_AIC",
@@ -316,7 +315,8 @@ def run_fit_and_plot(
     """
 
     from feupy.visualization.styles.markers import generate_specified_marker_set
-    
+    from feupy.visualization.sed import SEDPlotter
+
     # ------------------------------------------------------------------
     # 1. Prepare datasets + models
     # ------------------------------------------------------------------

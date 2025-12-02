@@ -35,8 +35,3 @@ Example usage:
     >>> from feupy.analysis.core import CTAOAnalysis
 """
 
-from . import catalog
-from . import visualization
-from . import analysis
-
-__all__ = ["catalog", "visualization", "analysis"]

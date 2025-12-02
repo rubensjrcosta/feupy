@@ -12,7 +12,6 @@ import yaml
 import os 
 from gammapy.utils.scripts import recursive_merge_dicts
 from gammapy.datasets import Datasets
-from feupy.catalog import CATALOG_REGISTRY
 from feupy.visualization import PALETTE_DEFAULT, MARKERS_DEFAULT, MARKERS_DEFAULT_DICT, LINESTYLES_DEFAULT
 from feupy.sources import Sources
 from feupy.sources import get_catalog_tag
@@ -341,7 +340,7 @@ def map_catalog_tags_to_markers(sources):
 #             )
 #             ref_markers = recursive_merge_dicts(ref_markers, _ref_markers)
 #     return ref_markers
-def generate_catalog_markers(sources, datasets=None, marker_size=6, MARKERS=MARKERS_DEFAULT, CATALOG_REGISTRY=CATALOG_REGISTRY, PALETTE=None):
+def generate_catalog_markers(sources, datasets=None, marker_size=6, MARKERS=MARKERS_DEFAULT, PALETTE=None):
     """
     Generate a dictionary of markers for a given set of sources based on their catalog tags.
 
