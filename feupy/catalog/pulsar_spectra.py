@@ -31,7 +31,7 @@ __all__ = [
 ]
 
 
-def read_pulsar_catalog(filename="$PYTHONPATH/data/catalogs/pulsar_spectra/pulsar_spectra.yaml"):
+def read_pulsar_catalog(filename="$FEUPY_DATA/catalogs/pulsar_spectra/pulsar_spectra.yaml"):
     """
     Read the pulsar spectra catalog from a YAML file.
 

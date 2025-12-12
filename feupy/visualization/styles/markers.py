@@ -10,9 +10,10 @@ Functions:
 import random
 import yaml
 import os 
+import astropy.units as u
+import numpy as np
 from gammapy.utils.scripts import recursive_merge_dicts
 from gammapy.datasets import Datasets
-from feupy.catalog import CATALOG_REGISTRY
 from feupy.visualization import PALETTE_DEFAULT, MARKERS_DEFAULT, MARKERS_DEFAULT_DICT, LINESTYLES_DEFAULT
 from feupy.sources import Sources
 from feupy.sources import get_catalog_tag
@@ -341,7 +342,7 @@ def map_catalog_tags_to_markers(sources):
 #             )
 #             ref_markers = recursive_merge_dicts(ref_markers, _ref_markers)
 #     return ref_markers
-def generate_catalog_markers(sources, datasets=None, marker_size=6, MARKERS=MARKERS_DEFAULT, CATALOG_REGISTRY=CATALOG_REGISTRY, PALETTE=None):
+def generate_catalog_markers(sources, datasets=None, marker_size=6, MARKERS=MARKERS_DEFAULT, PALETTE=None):
     """
     Generate a dictionary of markers for a given set of sources based on their catalog tags.
 
@@ -386,3 +387,65 @@ def generate_catalog_markers(sources, datasets=None, marker_size=6, MARKERS=MARK
         )
         ref_markers = recursive_merge_dicts(ref_markers, _ref_markers)
     return ref_markers
+
+
+def get_kwargs_fit(refs, energy_bounds=[[5e-2, 2e3] * u.TeV], get_color=False, marker=","):
+    """
+    Generate keyword arguments for plotting fit results.
+
+    Parameters
+    ----------
+    refs : list
+        List of labels for each curve/reference.
+    energy_bounds : list
+        List containing energy bounds (pairs of min/max values).
+        Can be a single pair (replicated for all refs) or a list matching len(refs).
+    get_color : bool
+        If True, use a different color for each reference.
+        If False, use black for all.
+    marker : str
+        Marker style.
+
+    Returns
+    -------
+    dict
+        Dictionary where each entry contains plotting kwargs for a curve.
+    """
+
+    # --- Sanitize energy bounds --------------------------------------------
+    if len(energy_bounds) not in (1, len(refs)):
+        raise ValueError(
+            "energy_bounds must have length 1 or the same length as refs."
+        )
+
+    if len(energy_bounds) == 1:
+        _energy_bounds = energy_bounds * len(refs)
+    else:
+        _energy_bounds = energy_bounds
+
+    # --- Prepare color and linestyle cycles --------------------------------
+    # Ensure enough linestyles
+    linestyles = list(LINESTYLES_DEFAULT)
+    while len(linestyles) < len(refs):
+        linestyles.extend(LINESTYLES_DEFAULT)
+
+    # Ensure enough colors
+    palette = list(PALETTE_DEFAULT)
+    while len(palette) < len(refs):
+        palette.extend(PALETTE_DEFAULT)
+
+    # --- Build kwargs dictionary -------------------------------------------
+    kwargs_legend = {}
+    for idx, label in enumerate(refs):
+
+        color = palette[idx] if get_color else "black"
+
+        kwargs_legend[idx] = dict(
+            energy_bounds=_energy_bounds[idx],
+            label=label,
+            ls=linestyles[idx],
+            marker=marker,
+            color=color,
+        )
+
+    return kwargs_legend

@@ -1,5 +1,7 @@
 # Licensed under a 3-clause BSD style license - see LICENSE.rst
 """Statistics."""
+import matplotlib.pyplot as plt
+
 from scipy.stats import chi2, norm
 from gammapy.stats import WStatCountsStatistic
 from feupy.utils.scripts import is_documented_by
@@ -7,13 +9,15 @@ import numpy as np
 from gammapy.modeling import Fit
 from gammapy.datasets import Datasets, FluxPointsDataset
 from gammapy.estimators import FluxPoints
-from gammapy.modeling.models import SkyModel
+from gammapy.modeling.models import SkyModel, Models
+
 
 __all__ = [
     "StatisticalUtilityFunctions",
     "calculate_AIC",
     "calculate_relative_AIC",
     "fit_spectral_model_to_flux_points",
+    "run_fit_and_plot",
 ]
 
 
@@ -273,3 +277,84 @@ def fit_spectral_model_to_flux_points(flux_points_table, spectral_model):
 
     return model.spectral_model
 
+
+def run_fit_and_plot(
+    datasets,
+    model,
+    fitter,
+    show_plot=True,
+    **kwargs,
+):
+    """
+    Run a spectral fit and produce a multi-panel SED plot using ``SEDPlotter``.
+
+    Parameters
+    ----------
+    datasets : list of `~gammapy.datasets.FluxPointsDataset`
+        Input datasets containing flux points.
+    model : `~gammapy.modeling.models.SkyModel`
+        The spectral model to be fitted.
+    fitter : `~gammapy.modeling.Fit`
+        Gammapy fitter instance.
+    show_plot : bool, optional
+        If True, display the figure.
+    **kwargs :
+        Additional options forwarded to ``SEDPlotter.plot()``, including:
+        - file_path : str
+            Path to save the figure (PNG/PDF supported).
+        - kwargs_fp : dict
+            Style dictionary for flux points.
+        - kwargs_model : dict
+            Style dictionary for model curves.
+        - Any other SEDPlotter configuration.
+
+    Returns
+    -------
+    result_fit : `~gammapy.modeling.FitResult`
+        Fit result including optimized parameters and covariance.
+    """
+
+    from feupy.visualization.styles.markers import generate_specified_marker_set
+    from feupy.visualization.sed import SEDPlotter
+
+    # ------------------------------------------------------------------
+    # 1. Prepare datasets + models
+    # ------------------------------------------------------------------
+    datasets_in = datasets.copy()
+    datasets.models = Models([model])
+
+    # ------------------------------------------------------------------
+    # 2. Fit
+    # ------------------------------------------------------------------
+    result_fit = fitter.run(datasets=datasets)
+    print(result_fit)
+
+    calculate_AIC(datasets, result_fit)
+
+    # ------------------------------------------------------------------
+    # 3. Plotting with SEDPlotter
+    # ------------------------------------------------------------------
+    ref_markers = generate_specified_marker_set(
+        datasets_in.names, marker_size=4
+    )
+
+    sed_plotter = SEDPlotter(
+        datasets=datasets_in,
+        models=Models(model.copy(name=f"FIT {model.spectral_model.tag[1]}")),
+    )
+
+    # Adiciona marcadores padrão ao dicionário passado ao plot
+    plot_kwargs = dict(ref_markers=ref_markers)
+
+    # Merge de todos kwargs fornecidos pelo usuário
+    plot_kwargs.update(kwargs)
+
+    # Chamada final
+    fig = sed_plotter.plot(**plot_kwargs)
+
+    if show_plot:
+        plt.show()
+    else:
+        plt.close(fig)
+
+    return result_fit

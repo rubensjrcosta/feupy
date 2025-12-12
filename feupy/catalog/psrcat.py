@@ -119,7 +119,7 @@ class SourceCatalogPSRCAT(SourceCatalog):
         
     source_object_class = SourceCatalogObjectPSRCAT
     
-    def __init__(self, filename="$PYTHONPATH/data/catalogs/psrcat/psrcat_catalog.fits"):
+    def __init__(self, filename="$FEUPY_DATA/catalogs/psrcat/psrcat_catalog.fits"):
         try:
             table = Table.read(make_path(filename))
         except Exception as e:

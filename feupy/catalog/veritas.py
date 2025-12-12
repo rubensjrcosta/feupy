@@ -51,7 +51,7 @@ class SourceCatalogObjectVTSCat(SourceCatalogObject):
     One source is represented by `~feupy.catalog.SourceCatalogVTSCat`.
     """    
 
-    _DATASETS_PATH = '$PYTHONPATH/data/catalogs/vtscat/datasets'
+    _DATASETS_PATH = '$FEUPY_DATA/catalogs/vtscat/datasets'
     _source_name_key = "source_name"
         
     def __str__(self):
@@ -242,7 +242,7 @@ class SourceCatalogVTSCat(SourceCatalog):
     
     source_object_class = SourceCatalogObjectVTSCat
     
-    def __init__(self, filename="$PYTHONPATH/data/catalogs/vtscat/sources/vtscat.ecsv"):
+    def __init__(self, filename="$FEUPY_DATA/catalogs/vtscat/sources/vtscat.ecsv"):
         table = Table.read(make_path(filename), format='ascii.ecsv')
         source_name_key = "source_name"
         source_name_alias = ("veritas_name", "common_name", "other_names", "simbad_id")
@@ -256,8 +256,21 @@ class SourceCatalogObjectVERITAS(SourceCatalogObject):
     One source is represented by `~feupy.catalog.SourceCatalogVERITAS`.
     """    
     _source_name_key = "source_name"
+
     
-    _DATA_PATH = "$PYTHONPATH/data/catalogs/veritas/"  
+    # # Expand FEUPY_DATA ou lançar erro claro
+    # FEUPY_DATA = os.environ.get("FEUPY_DATA")
+    # if FEUPY_DATA is None:
+    #     raise EnvironmentError("FEUPY_DATA is not set. Please export FEUPY_DATA=/path/to/data")
+    
+    # _DATA_PATH = os.path.join(FEUPY_DATA, "catalogs", "veritas")
+    
+    # _MODELS = Models.read(os.path.join(_DATA_PATH, "models.yaml"))
+
+
+    
+    _DATA_PATH = "$FEUPY_DATA/catalogs/veritas/"  
+    
     _MODELS = Models.read(f"{_DATA_PATH}/models.yaml")   
 
     def __str__(self):
@@ -356,7 +369,7 @@ class SourceCatalogVERITAS(SourceCatalog):
     
     source_object_class = SourceCatalogObjectVERITAS
     
-    def __init__(self, filename="$PYTHONPATH/data/catalogs/veritas/veritas.fits"):
+    def __init__(self, filename="$FEUPY_DATA/catalogs/veritas/veritas.fits"):
         table = Table.read(make_path(filename))
         source_name_key = "source_name"
         super().__init__(table=table, source_name_key=source_name_key)

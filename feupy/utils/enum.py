@@ -12,8 +12,26 @@ __all__ = [
     # "SafeMaskMethodsEnum",
     # "MapSelectionEnum",
     "TableEnum",
+    "NaimaFunctionalModelsEnum",
+    "ParticleTypeEnum",
 ]
 
+class TableEnum(str, Enum):
+    csv = "csv"
+    fits = "fits"
+
+class NaimaFunctionalModelsEnum(str, Enum):
+    PowerLaw = "PowerLaw"
+    ExponentialCutoffPowerLaw = "ExponentialCutoffPowerLaw"
+    BrokenPowerLaw = "BrokenPowerLaw"
+    ExponentialCutoffBrokenPowerLaw = "ExponentialCutoffBrokenPowerLaw"
+    LogParabola = "LogParabola"
+
+class ParticleTypeEnum(str, Enum):
+    electrons = "electrons"
+    protons = "protons"
+    both = "both"
+    
 # class CatalogsTypeEnum(str, Enum):
 #     all = "all"
 #     gamma = "gamma"
@@ -30,11 +48,6 @@ __all__ = [
 #     icrs = "icrs"
 #     galactic = "galactic"
 
-    
-class TableEnum(str, Enum):
-    csv = "csv"
-    fits = "fits"
-    
     
 # class RequiredHDUEnum(str, Enum):
 #     events = "events"
