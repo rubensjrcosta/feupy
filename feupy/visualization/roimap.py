@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 from astropy.coordinates import SkyCoord
 from regions import CircleSkyRegion, PointSkyRegion
 from gammapy.maps import RegionGeom
-from feupy.visualization.styles.markers import generate_catalog_markers
+from feupy.visualization.styles.markers.catalogs import make_catalog_marker_dict
 from gammapy.utils.scripts import make_path
 
 __all__ = ["ROIMapPlotter"]
@@ -74,7 +74,8 @@ class ROIMapPlotter:
         ref_markers : dict, optional
             Dictionary of reference markers for each source.
         """
-        ref_markers = ref_markers or generate_catalog_markers(sources, marker_size=6, PALETTE=None)
+        ref_markers = ref_markers or make_catalog_marker_dict(sources
+                                                      , marker_size=6, palette=None)
             
         # Plot each source with corresponding marker
         for index, source in enumerate(sources):

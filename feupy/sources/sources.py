@@ -14,7 +14,6 @@ log = logging.getLogger(__name__)
 
 __all__ = [
     "Sources",
-    "get_catalog_tag",
 ]
 
 

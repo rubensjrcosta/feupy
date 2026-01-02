@@ -104,6 +104,52 @@ def Hz_to_eV(freq):
     return Quantity(freq).to(u.eV, equivalencies=u.spectral())
 
 
+def get_ecut_from_ecpl(sky_model, fmt="{:.2f} \\pm {:.2f}"):
+    """
+    Extract and format the cutoff energy (E_cut) from an ECPL spectral model.
+
+    Parameters
+    ----------
+    sky_model : `~gammapy.modeling.models.SkyModel`
+        Sky model with an ExpCutoffPowerLawSpectralModel.
+    fmt : str, optional
+        Format string for value ± error.
+
+    Returns
+    -------
+    ecut_latex : str
+        LaTeX-formatted cutoff energy.
+
+    Raises
+    ------
+    TypeError
+        If the spectral model is not an ECPL.
+    """
+
+    spec = sky_model.spectral_model
+
+    # Safety check
+    if not hasattr(spec, "lambda_"):
+        raise TypeError(
+            "Spectral model does not have 'lambda_' parameter "
+            "(not an ExpCutoffPowerLawSpectralModel)."
+        )
+
+    # λ and its uncertainty (with scale)
+    lam = spec.lambda_.value 
+
+    if spec.lambda_.error is None:
+        raise ValueError("Parameter 'lambda_' has no associated error.")
+
+    lam_err = spec.lambda_.error 
+
+    # E_cut = 1 / λ
+    ecut = 1.0 / lam
+    ecut_err = ecut * (lam_err / lam)
+
+    return fmt.format(ecut, ecut_err)
+
+
 # from astropy.units import Quantity
 # from gammapy.maps.axes import UNIT_STRING_FORMAT
 # from gammapy.estimators.map.core import DEFAULT_UNIT

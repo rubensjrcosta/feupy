@@ -43,8 +43,16 @@ feupy/visualization/counts.py
 feupy/visualization/roimap.py
 feupy/visualization/sed.py
 feupy/visualization/sensitivity.py
-feupy/visualization/styles/markers.py
+feupy/visualization/styles/__init__.py
+feupy/visualization/styles/linestyles.py
 feupy/visualization/styles/mystyle.mplstyle
+feupy/visualization/styles/palettes.py
+feupy/visualization/styles/markers/__init__.py
+feupy/visualization/styles/markers/catalogs.py
+feupy/visualization/styles/markers/core.py
+feupy/visualization/styles/markers/defaults.py
+feupy/visualization/styles/markers/io.py
+feupy/visualization/styles/markers/plotting.py
 feupy/visualization/utils/units.py
 tests/test_analysis.py
 tests/test_catalogs.py

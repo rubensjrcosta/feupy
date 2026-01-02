@@ -1,5 +1,16 @@
 # Licensed under a 3-clause BSD style license - see LICENSE.rst
-"""Visualization tools and styles for feupy."""
+"""
+Plotting styles for feupy.
+
+This subpackage provides:
+- Matplotlib style sheets (.mplstyle)
+- Color palettes
+- Line styles
+- Marker utilities
+
+The public API is intentionally small and stable, following the
+Gammapy and Astropy visualization design.
+"""
 
 from importlib.resources import files
 
@@ -7,21 +18,30 @@ from importlib.resources import files
 # Matplotlib style
 # ============================================================================
 
-FEUPY_MPL_STYLE = files("feupy.visualization.styles") / "mystyle.mplstyle"
+FEUPY_MPL_STYLE = files(__name__) / "mystyle.mplstyle"
 
 # ============================================================================
-# Public visualization helpers
+# Color palettes
 # ============================================================================
 
-from .styles import (  # noqa: F401
-    # Palettes
+from .palettes import (  # noqa: F401
     PALETTE_DEFAULT,
     PALETTE_TABLEAU,
     PALETTE_IBM,
     PALETTE_WONG,
-    # Line styles
-    LINESTYLES_DEFAULT,
-    # Marker helpers
+)
+
+# ============================================================================
+# Line styles
+# ============================================================================
+
+from .linestyles import LINESTYLES_DEFAULT  # noqa: F401
+
+# ============================================================================
+# Marker utilities (public API only)
+# ============================================================================
+
+from .markers import (  # noqa: F401
     map_catalog_to_marker,
     make_marker_dict,
     get_fit_plot_kwargs,

@@ -281,7 +281,7 @@ def fit_spectral_model_to_flux_points(flux_points_table, spectral_model):
 def run_fit_and_plot(
     datasets,
     model,
-    fitter,
+    fitter=None,
     show_plot=True,
     **kwargs,
 ):
@@ -314,7 +314,7 @@ def run_fit_and_plot(
         Fit result including optimized parameters and covariance.
     """
 
-    from feupy.visualization.styles.markers import generate_specified_marker_set
+    from feupy.visualization.styles.markers import make_marker_dict
     from feupy.visualization.sed import SEDPlotter
 
     # ------------------------------------------------------------------
@@ -326,6 +326,8 @@ def run_fit_and_plot(
     # ------------------------------------------------------------------
     # 2. Fit
     # ------------------------------------------------------------------
+    if fitter is None: fitter = Fit()
+        
     result_fit = fitter.run(datasets=datasets)
     print(result_fit)
 
@@ -334,7 +336,7 @@ def run_fit_and_plot(
     # ------------------------------------------------------------------
     # 3. Plotting with SEDPlotter
     # ------------------------------------------------------------------
-    ref_markers = generate_specified_marker_set(
+    ref_markers = make_marker_dict(
         datasets_in.names, marker_size=4
     )
 
