@@ -16,7 +16,6 @@ from feupy.visualization.styles.markers import make_marker_dict
 from feupy.visualization import LINESTYLES_DEFAULT
 from feupy.utils.datasets import get_energy_bounds_from_datasets
 from feupy.visualization.utils.units import (
-    DEFAULT_UNIT,
     DEFAULT_XAXIS_LABEL,
     DEFAULT_YAXIS_LABEL,
 )

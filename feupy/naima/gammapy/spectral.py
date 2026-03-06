@@ -101,7 +101,7 @@ def make_leptohadronic_model(
     model : `~gammapy.modeling.models.SkyModel`
         Combined leptohadronic SkyModel.
     """
-    models = Models()
+    Models()
     
     if not ic_models:
         raise ValueError("ic_models list is empty.")

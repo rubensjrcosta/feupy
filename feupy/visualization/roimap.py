@@ -1,14 +1,11 @@
 # Licensed under a 3-clause BSD style license - see LICENSE.rst
 """ROI Map class."""
 
-import astropy.units as u
 import matplotlib.pyplot as plt
 
-from astropy.coordinates import SkyCoord
 from regions import CircleSkyRegion, PointSkyRegion
 from gammapy.maps import RegionGeom
 from feupy.visualization.styles.markers.catalogs import make_catalog_marker_dict
-from gammapy.utils.scripts import make_path
 
 __all__ = ["ROIMapPlotter"]
 

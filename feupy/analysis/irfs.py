@@ -6,13 +6,10 @@ import pandas as pd
 import numpy as np
 
 import astropy.units as u
-from astropy.units import Quantity
-from astropy.coordinates import Angle
-from astropy.coordinates import SkyCoord, AltAz
+from astropy.coordinates import AltAz
 from astropy.time import Time
 
 from gammapy.irf import load_irf_dict_from_file
-from gammapy.data import observatory_locations
 from gammapy.data import observatory_locations
 
 from datetime import datetime, timedelta

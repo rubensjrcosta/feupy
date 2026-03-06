@@ -8,10 +8,10 @@ This module provides functions for handling and processing tables, including:
     - Reading and writing tables in CSV and FITS formats.
 """
 
-import sys, os
+import sys
+import os
 import numpy as np
 from astropy.table import Table
-from gammapy.utils.scripts import make_path
 
 __all__ = [
     "pad_list_to_length",

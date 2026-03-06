@@ -2,7 +2,6 @@
 """Utilities to create scripts and command-line tools."""
 
 from gammapy.utils.scripts import make_path
-from astropy.coordinates import SkyCoord
 import pickle
 
 

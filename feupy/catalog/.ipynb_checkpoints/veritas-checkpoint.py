@@ -1,18 +1,15 @@
 # Licensed under a 3-clause BSD style license - see LICENSE.rst
 """VTSCat and source classes."""
 
-# from feupy.scripts.ipynb_to_gallery import convert_ipynb_to_gallery
-
 import os
 import logging
 import string
 
 import numpy as np
-import pandas as pd
 from pandas import json_normalize
 from astropy.table import Table
 
-from gammapy.modeling.models import (Model, Models, SkyModel, 
+from gammapy.modeling.models import (Models, SkyModel, 
                                      PowerLawSpectralModel, LogParabolaSpectralModel)
 from gammapy.modeling import Fit
 from gammapy.datasets import Datasets, FluxPointsDataset
@@ -21,7 +18,7 @@ from gammapy.catalog.core import SourceCatalog, SourceCatalogObject
 from gammapy.utils.scripts import make_path
 
 from feupy.utils.io import read_yaml
-from feupy.utils.string_handling import name_to_fname
+from feupy.utils.string_handling import string_to_filename_format
 
 # Set up logging
 log = logging.getLogger(__name__)
@@ -53,7 +50,7 @@ class SourceCatalogObjectVTSCat(SourceCatalogObject):
     One source is represented by `~feupy.catalog.SourceCatalogVTSCat`.
     """    
 
-    _DATASETS_PATH = '/home/blinck-left/Coding/GitHub/feupy/data/catalogs/vtscat/datasets'
+    _DATASETS_PATH = '$FEUPY_DATA/catalogs/vtscat/datasets'
     _source_name_key = "source_name"
         
     def __str__(self):
@@ -126,7 +123,7 @@ class SourceCatalogObjectVTSCat(SourceCatalogObject):
         model = SkyModel(spectral_model=spec_model)
         datasets.models = model
         fitter = Fit()
-        result = fitter.run(datasets=datasets)
+        fitter.run(datasets=datasets)
         
         return model.spectral_model
 
@@ -173,7 +170,7 @@ class SourceCatalogObjectVTSCat(SourceCatalogObject):
     def _get_file_paths(self, reference_id, which='info'):
         """Get file paths based on the reference IDs."""
         paths = []
-        yaml_dir = f'{self._DATASETS_PATH}/{reference_id}'
+        yaml_dir = make_path(f'{self._DATASETS_PATH}/{reference_id}')
         for filename in os.listdir(yaml_dir):
             path = make_path(f'{yaml_dir}/{filename}')
             if which == 'info' and filename == 'info.yaml':
@@ -244,25 +241,34 @@ class SourceCatalogVTSCat(SourceCatalog):
     
     source_object_class = SourceCatalogObjectVTSCat
     
-    def __init__(self, filename="$PYTHONPATH/data/catalogs/vtscat/sources/vtscat.ecsv"):
+    def __init__(self, filename="$FEUPY_DATA/catalogs/vtscat/sources/vtscat.ecsv"):
         table = Table.read(make_path(filename), format='ascii.ecsv')
         source_name_key = "source_name"
-        source_name_alias = ("veritas_name", "common_name", "other_names", "simbad_id")
         super().__init__(table=table, source_name_key=source_name_key)
 
 class SourceCatalogObjectVERITAS(SourceCatalogObject):
-    """One source from the VERITAS Catalogue.
-
-    See: ...
-    
+    """One source from the VERITAS Catalogue.    
     The data are available through the web page (https://iopscience.iop.org/article/10.3847/1538-4357/aac4a2) 
     in the tables 8-13. 
 
     One source is represented by `~feupy.catalog.SourceCatalogVERITAS`.
     """    
     _source_name_key = "source_name"
+
     
-    _DATA_PATH = "$PYTHONPATH/data/catalogs/veritas/"  
+    # # Expand FEUPY_DATA ou lançar erro claro
+    # FEUPY_DATA = os.environ.get("FEUPY_DATA")
+    # if FEUPY_DATA is None:
+    #     raise EnvironmentError("FEUPY_DATA is not set. Please export FEUPY_DATA=/path/to/data")
+    
+    # _DATA_PATH = os.path.join(FEUPY_DATA, "catalogs", "veritas")
+    
+    # _MODELS = Models.read(os.path.join(_DATA_PATH, "models.yaml"))
+
+
+    
+    _DATA_PATH = "$FEUPY_DATA/catalogs/veritas/"  
+    
     _MODELS = Models.read(f"{_DATA_PATH}/models.yaml")   
 
     def __str__(self):
@@ -329,7 +335,6 @@ class SourceCatalogObjectVERITAS(SourceCatalogObject):
 
         return ss
   
-
     def spectral_model(self):
         """Spectral model as a `~gammapy.modeling.models.SpectralModel` object."""
         return self._MODELS[self.name].spectral_model
@@ -346,7 +351,7 @@ class SourceCatalogObjectVERITAS(SourceCatalogObject):
     @property
     def flux_points(self):
         """Flux points (`~gammapy.estimators.FluxPoints`)."""
-        filename = f'{self._DATA_PATH}/{name_to_fname(self.name)}.fits'
+        filename = f'{self._DATA_PATH}/{string_to_filename_format(self.name)}.fits'
         return FluxPoints.read(filename)
     
 class SourceCatalogVERITAS(SourceCatalog):
@@ -362,10 +367,8 @@ class SourceCatalogVERITAS(SourceCatalog):
     
     source_object_class = SourceCatalogObjectVERITAS
     
-    def __init__(self, filename="$PYTHONPATH/data/catalogs/veritas/veritas.fits"):
+    def __init__(self, filename="$FEUPY_DATA/catalogs/veritas/veritas.fits"):
         table = Table.read(make_path(filename))
         source_name_key = "source_name"
         super().__init__(table=table, source_name_key=source_name_key)
         
-# convert_ipynb_to_gallery("Untitled.ipynb", "veritas.py")
-

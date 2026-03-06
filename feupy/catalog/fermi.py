@@ -1,7 +1,6 @@
 # Licensed under a 3-clause BSD style license - see LICENSE.rst
 """2PC/3PC catalog and source classes."""
 
-import astropy.units as u
 from gammapy.estimators import FluxPoints
 import logging
 

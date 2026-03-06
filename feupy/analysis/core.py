@@ -10,16 +10,16 @@ from astropy.coordinates import SkyCoord
 from regions import CircleSkyRegion
 
 from gammapy.data import (
-    DataStore, Observation, Observations, FixedPointingInfo, PointingMode
+    Observation, Observations, FixedPointingInfo
 )
 from gammapy.datasets import (
     Datasets, FluxPointsDataset, MapDataset, SpectrumDataset, SpectrumDatasetOnOff
 )
 from gammapy.estimators import (
-    FluxPoints, SensitivityEstimator, ExcessMapEstimator, FluxPointsEstimator, LightCurveEstimator
+    FluxPoints, SensitivityEstimator, FluxPointsEstimator
 )
 from gammapy.makers import (
-    DatasetsMaker, FoVBackgroundMaker, MapDatasetMaker, ReflectedRegionsBackgroundMaker,
+    FoVBackgroundMaker, MapDatasetMaker, ReflectedRegionsBackgroundMaker,
     RingBackgroundMaker, SafeMaskMaker, SpectrumDatasetMaker
 )
 from gammapy.maps import Map, MapAxis, RegionGeom, WcsGeom
@@ -27,7 +27,6 @@ from gammapy.modeling import Fit
 from gammapy.modeling.models import (
     SkyModel, Models, DatasetModels, FoVBackgroundModel
 )
-from gammapy.utils.pbar import progress_bar
 from gammapy.utils.scripts import make_path
 
 from feupy.analysis.config import ROIAnalysisConfig, CTAOAnalysisConfig
@@ -287,7 +286,7 @@ class ROIAnalysis:
         name=name
         )
         
-        if any([e_ref_min !=  None, e_ref_max !=  None]):
+        if any([e_ref_min is not None, e_ref_max is not None]):
             dataset = cut_energy_flux_points_datasets(
             dataset, 
             e_ref_min, 
@@ -564,8 +563,13 @@ class CTAOAnalysis:
             raise RuntimeError("No observations have been selected.")
 
         if datasets_settings.type == "1d":
-            self._spectrum_extraction(model=model, obs_id=obs_id, random_state=random_state)
-        else: raise ValueError(
+            self._spectrum_extraction(
+                model=model, 
+                obs_id=obs_id, 
+                random_state=random_state,
+            )
+        else: 
+            raise ValueError(
                     f"Incorrect dataset type. Expect '1d'. Got {datasets_settings.type}."
                 )
     def update_config(self, config):
@@ -577,7 +581,7 @@ class CTAOAnalysis:
         datasets_settings = self.config.datasets
         obs_settings = self.config.observation   
         energy_axis = self._make_energy_axis(self.config.datasets.geom.axes.energy)
-        energy_axis_true = self._make_energy_axis(self.config.datasets.geom.axes.energy_true)
+        self._make_energy_axis(self.config.datasets.geom.axes.energy_true)
 
         dataset_maker = self._create_dataset_maker()
         safe_mask_maker = self._create_safe_mask_maker()
@@ -786,7 +790,8 @@ class CTAOAnalysis:
         if datasets_settings.type == "1d":
             self._run_on_off()
             
-        else: raise ValueError(
+        else: 
+            raise ValueError(
                     f"Incorrect dataset type. Expect '1d'. Got {datasets_settings.type}."
                 )
 
@@ -828,7 +833,7 @@ class CTAOAnalysis:
             dataset_fake.meta_table["OBS_ID"] = [idx]
             datasets.append(dataset_fake)
         table = datasets.info_table()
-        display(table)
+        print(table)
         # self.datasets_on_off = datasets
         self.datasets = datasets
 

@@ -2,7 +2,6 @@
 """Catalog utilities classes."""
 
 import logging
-import numpy as np
 from typing import List, Optional
 from feupy.catalog import FEUPY_CATALOG_REGISTRY
 

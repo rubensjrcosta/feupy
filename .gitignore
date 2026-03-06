@@ -1,1 +1,6 @@
 data/
+notebook.ipynb
+.ipynb_checkpoints/
+   notebook-checkpoint.ipynb
+__pycache__/
+*.pyc

@@ -5,15 +5,12 @@ import logging
 import numpy as np
 import astropy.units as u
 from astropy.table import Table
-from gammapy.maps import MapAxis, RegionGeom
 from gammapy.modeling.models import (
-    Model, 
     Models, 
     SkyModel, 
     PowerLawSpectralModel, 
     LogParabolaSpectralModel
 )
-from gammapy.utils.gauss import Gauss2DPDF
 from gammapy.utils.scripts import make_path
 from gammapy.catalog.core import SourceCatalog, SourceCatalogObject
 from gammapy.estimators import FluxPoints
@@ -98,7 +95,6 @@ def create_flux_points_table_1lhaaso(source, which):
         value, _ = _parse(source, name, which)
         return value
 
-    data = source.data
     sed_type = 'dnde'
     e_ref = u.Quantity([_get(source, "E0", which)])
     
@@ -233,7 +229,6 @@ class SourceCatalogObjectExtraLHAASO(SourceCatalogObject):
     @property
     def flux_points(self):
         """Flux points as a `~gammapy.estimators.FluxPoints` object."""
-        file_path = ""
         filename = f"$FEUPY_DATA/dedicated_publications/lhaaso/2024icrc.confE.643Y/{string_to_filename_format(self.name)}.fits"
         return FluxPoints.read(filename,  reference_model=self.sky_model(), sed_type='e2dnde')
     

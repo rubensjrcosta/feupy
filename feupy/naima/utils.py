@@ -14,7 +14,6 @@ References
 import numpy as np
 import astropy.units as u
 from astropy.table import Table
-from gammapy.estimators.map.core import DEFAULT_UNIT, OPTIONAL_QUANTITIES, REQUIRED_COLUMNS
 from gammapy.modeling.models import NaimaSpectralModel, Models, SkyModel
 from naima.plot import find_ML
 import naima

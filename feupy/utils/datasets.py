@@ -14,7 +14,6 @@ Functions:
 from gammapy.datasets import Datasets, FluxPointsDataset
 from gammapy.estimators import FluxPoints
 from gammapy.modeling.models import SkyModel
-from gammapy.modeling import Fit
 
 from astropy import units as u
 

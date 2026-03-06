@@ -3,7 +3,7 @@
 
 from typing import List, Optional
 from gammapy.analysis.config import (
-GammapyBaseConfig, SpatialCircleConfig, GeomConfig, BackgroundConfig, SafeMaskConfig, FitConfig,
+GammapyBaseConfig, SpatialCircleConfig, GeomConfig, BackgroundConfig, SafeMaskConfig,
 )
 from gammapy.makers import MapDatasetMaker
 from gammapy.utils.types import QuantityType, AngleType, PathType

@@ -4,22 +4,21 @@ from gammapy.catalog import CATALOG_REGISTRY
 from gammapy.utils.registry import Registry
 
 from .hawc import (
-    SourceCatalogObjectEHWC, SourceCatalogEHWC,
-    SourceCatalogObjectExtraHAWC, SourceCatalogExtraHAWC
+    SourceCatalogEHWC,
+    SourceCatalogExtraHAWC
 )
 from .hess import (
-    SourceCatalogObjectExtraHESS, SourceCatalogExtraHESS
+    SourceCatalogExtraHESS
 )
 from .veritas import (
-    SourceCatalogVTSCat, SourceCatalogObjectVTSCat,
-    SourceCatalogVERITAS, SourceCatalogObjectVERITAS
+    SourceCatalogVTSCat, SourceCatalogVERITAS
 )
 from .psrcat import (
-    SourceCatalogPSRCAT, SourceCatalogObjectPSRCAT
+    SourceCatalogPSRCAT
 )
 from .lhaaso import (
-    SourceCatalogObjectLHAASO, SourceCatalogLHAASO,
-    SourceCatalogObjectExtraLHAASO, SourceCatalogExtraLHAASO
+    SourceCatalogLHAASO,
+    SourceCatalogExtraLHAASO
 )
 
 # Combine registries

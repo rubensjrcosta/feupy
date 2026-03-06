@@ -6,7 +6,7 @@ from astropy.visualization import quantity_support
 import matplotlib.pyplot as plt
 import astropy.units as u
 from feupy.analysis.irfs import Irfs
-from feupy.visualization.utils.units import DEFAULT_UNIT, DEFAULT_XAXIS_LABEL, DEFAULT_YAXIS_LABEL
+from feupy.visualization.utils.units import DEFAULT_XAXIS_LABEL, DEFAULT_YAXIS_LABEL
 
 
 __all__ = ["plot_irfs"]

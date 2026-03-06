@@ -208,7 +208,6 @@ def create_flux_points_table_2hwc(source, which='point'):
     """
     # Initialize catalog and source data
     catalog = SourceCatalog2HWC()
-    data = source.data
     sed_type = "dnde"
     
     # Check for extended model if specified
@@ -386,7 +385,6 @@ class SourceCatalogObjectEHWC(SourceCatalogObject):
     
     def _add_source_meta(self, table):
         """Copy over some information to `table.meta`."""
-        d = self.data
         m = table.meta
         catalog = SourceCatalogEHWC()
         m["source_name"] = self.name
@@ -527,7 +525,6 @@ class SourceCatalogObjectExtraHAWC(SourceCatalogObject):
     @property
     def flux_points(self):
         """Flux points as a `~gammapy.estimators.FluxPoints` object."""
-        file_path = ""
         filename = f"$FEUPY_DATA/dedicated_publications/hawc/2021ApJ...907L..30A/{string_to_filename_format(self.name)}.fits"
         return FluxPoints.read(filename,  reference_model=self.sky_model(), sed_type='e2dnde')
     

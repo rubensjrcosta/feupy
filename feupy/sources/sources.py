@@ -4,7 +4,6 @@
 import collections.abc
 import copy
 import yaml
-import numpy as np
 import logging
 from astropy.coordinates import SkyCoord
 from feupy.catalog import FEUPY_CATALOG_REGISTRY

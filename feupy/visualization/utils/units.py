@@ -1,7 +1,6 @@
 # Licensed under a 3-clause BSD style license - see LICENSE.rst
 """Units-related utilities and constants for Feupy."""
 
-from astropy.units import Quantity
 from astropy import units as u
 from gammapy.maps.axes import UNIT_STRING_FORMAT
 from gammapy.estimators.map.core import DEFAULT_UNIT

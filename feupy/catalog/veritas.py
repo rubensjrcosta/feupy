@@ -6,11 +6,10 @@ import logging
 import string
 
 import numpy as np
-import pandas as pd
 from pandas import json_normalize
 from astropy.table import Table
 
-from gammapy.modeling.models import (Model, Models, SkyModel, 
+from gammapy.modeling.models import (Models, SkyModel, 
                                      PowerLawSpectralModel, LogParabolaSpectralModel)
 from gammapy.modeling import Fit
 from gammapy.datasets import Datasets, FluxPointsDataset
@@ -124,7 +123,7 @@ class SourceCatalogObjectVTSCat(SourceCatalogObject):
         model = SkyModel(spectral_model=spec_model)
         datasets.models = model
         fitter = Fit()
-        result = fitter.run(datasets=datasets)
+        fitter.run(datasets=datasets)
         
         return model.spectral_model
 
@@ -245,7 +244,6 @@ class SourceCatalogVTSCat(SourceCatalog):
     def __init__(self, filename="$FEUPY_DATA/catalogs/vtscat/sources/vtscat.ecsv"):
         table = Table.read(make_path(filename), format='ascii.ecsv')
         source_name_key = "source_name"
-        source_name_alias = ("veritas_name", "common_name", "other_names", "simbad_id")
         super().__init__(table=table, source_name_key=source_name_key)
 
 class SourceCatalogObjectVERITAS(SourceCatalogObject):
@@ -325,10 +323,11 @@ class SourceCatalogObjectVERITAS(SourceCatalogObject):
                 name = par.name
                 val = par.value
                 err = par.error
-                
+                                
                 try:
                     unit = f"{par.unit:unicode}"
-                except: unit = ""
+                except AttributeError:
+                    unit = ""
 
                 ss += f"{name}: {val:.3} +- {err:.3} {unit}\n"
     
