@@ -216,8 +216,8 @@ class SourceCatalogObjectExtraLHAASO(SourceCatalogObject):
 
     def spectral_model(self):
         """Get the spectral model associated with this source."""
+        
         filename_models = get_feupy_data_path() / "dedicated_publications/lhaaso/2024icrc.confE.643Y/models.yaml"
-
         models = Models.read(filename_models)
         if self.name in models.names:
             return models[self.name].spectral_model

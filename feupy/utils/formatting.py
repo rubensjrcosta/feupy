@@ -16,7 +16,16 @@ __all__ = [
 def string_to_filename(name):
     """
     Convert a string to a filename-safe format.
-
+    
+    Allowed characters:
+    - letters
+    - numbers
+    - _
+    - -
+    - +
+    - *
+    - .
+    
     Parameters
     ----------
     name : str
@@ -27,9 +36,15 @@ def string_to_filename(name):
     str
         Filename-safe string.
     """
+    
+    # Replace whitespace
     name = re.sub(r"\s+", "_", name)
-    name = re.sub(r"[^\w\-]", "", name)
+
+    # Keep only safe characters
+    name = re.sub(r"[^\w\-\+\*\.\_]", "", name)
+
     return name
+
     
 def energy_to_string(energy, unit=None):
     """
