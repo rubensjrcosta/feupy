@@ -36,7 +36,8 @@ from feupy.catalog.hawc import get_flux_points_3hwc, get_flux_points_2hwc
 from feupy.catalog.fermi import get_flux_points_2PC, get_flux_points_3PC
 from feupy.catalog.lhaaso import get_flux_points_1lhaaso
 from feupy.catalog.veritas import generate_unique_name
-from feupy.core.sources import Sources, get_catalog_tag
+from feupy.core.sources import Sources
+from feupy.catalog.utils import get_catalog_tag
 from feupy.utils.coordinates import convert_pos_config_to_skycoord
 from feupy.utils.datasets import cut_energy_flux_points_datasets, flux_points_dataset_from_table
 from feupy.utils.table import write_tables_csv, write_tables_fits

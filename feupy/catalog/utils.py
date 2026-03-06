@@ -64,3 +64,56 @@ def load_catalogs(catalogs: Optional[List] = FEUPY_CATALOG_REGISTRY) -> List:
     
     log.info(f"Loaded {len(source_catalogs)} catalogs.")
     return source_catalogs
+
+def get_catalog_tag(source):
+    """
+    Retrieve the catalog tag for a given source.
+
+    This function checks if the input source is an instance of any class 
+    in the `CATALOG_REGISTRY` and returns the corresponding catalog tag.
+
+    Parameters
+    ----------
+    source : object
+        The source object for which the catalog tag is to be retrieved.
+        The source should be an instance of one of the classes in 
+        `CATALOG_REGISTRY`.
+
+    Returns
+    -------
+    str
+        The tag of the first matching catalog from `FEUPY_CATALOG_REGISTRY`.
+
+    Raises
+    ------
+    ValueError
+        If the input `source` does not match any class in `FEUPY_CATALOG_REGISTRY`, 
+        a `ValueError` is raised indicating no matching catalog was found.
+
+    Examples
+    --------
+    Example usage of the `get_catalog_tag` function:
+
+    >>> source = SourceCatalogObjectGammaCat()
+    >>> tag = get_catalog_tag(source)
+    >>> print(tag)
+    'gamma-cat'
+
+    Notes
+    -----
+    This function assumes that `CATALOG_REGISTRY` is a list of catalog 
+    classes and that each class in the registry has a `tag` attribute. 
+    The function returns the tag of the first catalog that matches 
+    the type of the given source.
+    """
+    # Find the first matching catalog
+    matching_catalog = next(
+        (catalog for catalog in FEUPY_CATALOG_REGISTRY if isinstance(source, catalog.source_object_class)), 
+        None
+    )
+
+    if matching_catalog is None:
+        log.error(f"Failed to found catalog for source: {source}")
+        raise ValueError(f"No matching catalog found for source: {source}")
+
+    return matching_catalog.tag
