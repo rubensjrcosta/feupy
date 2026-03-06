@@ -1,6 +1,7 @@
+# Licensed under a 3-clause BSD style license - see LICENSE.rst
 """Catalog-aware marker assignment."""
 
-from feupy.sources import Sources, get_catalog_tag
+from feupy.core.sources import Sources, get_catalog_tag
 from gammapy.utils.scripts import recursive_merge_dicts
 from .plotting import make_marker_dict
 

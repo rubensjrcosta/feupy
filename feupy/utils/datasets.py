@@ -20,7 +20,7 @@ from astropy import units as u
 import numpy as np
 
 from feupy.utils.scripts import is_documented_by
-from feupy.sources import Sources
+from feupy.core.sources import Sources
 
 
 __all__ = [

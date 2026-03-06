@@ -82,3 +82,32 @@ def energy_range_to_string(Emin, Emax):
     100 GeV – 10 TeV -> "100GeV_10TeV"
     """
     return f"{energy_to_string(Emin)}_{energy_to_string(Emax)}"
+
+
+
+# def string_to_list(string):
+#     """
+#     Convert a string representation of a list into an actual Python list.
+
+#     This function uses `json.loads()` to interpret a string containing
+#     a JSON-like list and returns it as a Python list.
+
+#     Parameters
+#     ----------
+#     string : str
+#         A string representing a list in JSON format.
+
+#     Returns
+#     -------
+#     list
+#         A Python list derived from the string input.
+
+#     Examples
+#     --------
+#     >>> string_to_list("[1, 2, 3]")
+#     [1, 2, 3]
+
+#     >>> string_to_list('["a", "b", "c"]')
+#     ['a', 'b', 'c']
+#     """
+#     return json.loads(string)
