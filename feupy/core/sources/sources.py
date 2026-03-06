@@ -104,14 +104,18 @@ class Sources(collections.abc.MutableSequence):
     @property
     def labels(self):
         return [self._set_source_label(_) for _ in self._sources]
-    
+                
     @property
     def positions(self):
         """Source positions as a `~astropy.coordinates.SkyCoord` object."""
         ra = [_.position.icrs.ra for _ in self._sources]
         dec = [_.position.icrs.dec for _ in self._sources]
         return SkyCoord(ra, dec, frame='icrs')
-    
+
+    def select(self, names):
+        names = set(names)
+        return Sources([src for src in self if src.name in names])
+        
     def write(self, filename, overwrite=False):
         _dict = {}
         dict_sources = {}

@@ -28,7 +28,7 @@ def string_to_filename(name):
         Filename-safe string.
     """
     name = re.sub(r"\s+", "_", name)
-    name = re.sub(r"[^\w]", "", name)
+    name = re.sub(r"[^\w\-]", "", name)
     return name
     
 def energy_to_string(energy, unit=None):

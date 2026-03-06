@@ -11,59 +11,53 @@ Functions:
     - flux_points_dataset_from_table: Create a `FluxPointsDataset` from a table.
 """
 
+import numpy as np
+import os
+from pathlib import Path
+from astropy import units as u
 from gammapy.datasets import Datasets, FluxPointsDataset
 from gammapy.estimators import FluxPoints
 from gammapy.modeling.models import SkyModel
-
-from astropy import units as u
-
-import numpy as np
-
 from feupy.utils.scripts import is_documented_by
-from feupy.core.sources import Sources
 
-
+        
 __all__ = [
-    "get_datasets",
-    "get_sources",
+    "get_feupy_data_path",
+    "select_datasets",
     "get_energy_bounds_from_datasets",
     "cut_energy_flux_points_datasets",
     "flux_points_dataset_from_table",
 ]
 
 
-def get_datasets(datasets, names):
+def get_feupy_data_path():
+    try:
+        return Path(os.environ["FEUPY_DATA"])
+    except KeyError:
+        raise RuntimeError(
+            "FEUPY_DATA environment variable not set.\n"
+            "Install feupy-datasets or define the path."
+        )
+        
+def select_datasets(datasets, names):
     """
-    Retrieve datasets by name from a Datasets object.
-    
-    Parameters:
-    datasets: Datasets
+    Select datasets by name from a Datasets collection.
+
+    Parameters
+    ----------
+    datasets : Datasets
         Collection of datasets.
-    names: list of str
-        Names of the datasets to retrieve.
-        
-    Returns:
+    names : list of str
+        Names of the datasets to select.
+
+    Returns
+    -------
     Datasets
-        Filtered datasets that match the provided names.
+        New Datasets object containing only the selected datasets.
     """
-    return Datasets([x for x in datasets if x.name in names])
-
-
-def get_sources(sources, names):
-    """
-    Retrieve sources by name from a Sources object.
     
-    Parameters:
-    sources: Sources
-        Collection of sources.
-    names: list of str
-        Names of the sources to retrieve.
-        
-    Returns:
-    Sources
-        Filtered sources that match the provided names.
-    """
-    return Sources([x for x in sources if x.name in names])
+    names = set(names)
+    return Datasets([ds for ds in datasets if ds.name in names])
 
 def get_energy_bounds_from_datasets(datasets):
     """
