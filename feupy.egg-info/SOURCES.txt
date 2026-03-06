@@ -27,13 +27,6 @@ feupy/catalog/utils.py
 feupy/catalog/veritas.py
 feupy/catalog/tests/__init__.py
 feupy/catalog/tests/test_catalogs.py
-feupy/naima/__init__.py
-feupy/naima/utils.py
-feupy/naima/gammapy/__init__.py
-feupy/naima/gammapy/spectral.py
-feupy/naima/particles/__init__.py
-feupy/naima/particles/analysis.py
-feupy/naima/particles/mcmc.py
 feupy/sources/__init__.py
 feupy/sources/sources.py
 feupy/tests/__init__.py
