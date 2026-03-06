@@ -167,11 +167,12 @@ class SEDPlotter:
         if self.models:
             ref_names += list(self.models.names)
 
-        if ref_markers is None: ref_markers = make_marker_dict(
-        labels=ref_names,
-        marker="o",
-        marker_size=4,
-    )
+        if ref_markers is None: 
+            ref_markers = make_marker_dict(
+                labels=ref_names,
+                marker="o",
+                marker_size=4,
+            )
     
 
         # Plot datasets

@@ -40,7 +40,6 @@ feupy/utils/geometry.py
 feupy/utils/io.py
 feupy/utils/scripts.py
 feupy/utils/stats.py
-feupy/utils/string_handling.py
 feupy/utils/table.py
 feupy/utils/types.py
 feupy/utils/units.py

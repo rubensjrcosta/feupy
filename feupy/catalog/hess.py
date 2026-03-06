@@ -6,7 +6,7 @@ from gammapy.utils.scripts import make_path
 from gammapy.estimators import FluxPoints
 from gammapy.modeling.models import SkyModel, Models
 from gammapy.catalog.core import SourceCatalog, SourceCatalogObject
-from feupy.utils.string_handling import string_to_filename_format
+from feupy.utils.formatting import string_to_filename
 import logging
 
 # Set up logging
@@ -90,7 +90,7 @@ class SourceCatalogObjectExtraHESS(SourceCatalogObject):
     @property
     def flux_points(self):
         """Flux points as a `~gammapy.estimators.FluxPoints` object."""
-        filename = f"$FEUPY_DATA/dedicated_publications/hess/2019Apercent26A...621A.116H/{string_to_filename_format(self.name)}.fits"
+        filename = f"$FEUPY_DATA/dedicated_publications/hess/2019Apercent26A...621A.116H/{string_to_filename(self.name)}.fits"
         return FluxPoints.read(filename, reference_model=self.sky_model(), sed_type='e2dnde')
     
 class SourceCatalogExtraHESS(SourceCatalog):

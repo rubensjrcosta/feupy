@@ -18,7 +18,7 @@ from gammapy.catalog.core import SourceCatalog, SourceCatalogObject
 from gammapy.utils.scripts import make_path
 
 from feupy.utils.io import read_yaml
-from feupy.utils.string_handling import string_to_filename_format
+from feupy.utils.formatting import string_to_filename
 
 # Set up logging
 log = logging.getLogger(__name__)
@@ -352,7 +352,7 @@ class SourceCatalogObjectVERITAS(SourceCatalogObject):
     @property
     def flux_points(self):
         """Flux points (`~gammapy.estimators.FluxPoints`)."""
-        filename = f'{self._DATA_PATH}/{string_to_filename_format(self.name)}.fits'
+        filename = f'{self._DATA_PATH}/{string_to_filename(self.name)}.fits'
         return FluxPoints.read(filename)
     
 class SourceCatalogVERITAS(SourceCatalog):

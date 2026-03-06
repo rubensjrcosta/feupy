@@ -188,7 +188,7 @@ def calculate_relative_AIC(datasets, fit_result_H0, fit_result_H1):
 
     # Calculate the relative difference in AIC
     delta_AIC = (1 - AICc_1 / AICc_0) * 100
-    print(f"Delta AIC_{tag_H1} = {delta_AIC:.2f}%")
+    #print(f"Delta AIC_{tag_H1} = {delta_AIC:.2f}%")
 
     return delta_AIC
 
@@ -326,7 +326,8 @@ def run_fit_and_plot(
     # ------------------------------------------------------------------
     # 2. Fit
     # ------------------------------------------------------------------
-    if fitter is None: fitter = Fit()
+    if fitter is None: 
+        fitter = Fit()
         
     result_fit = fitter.run(datasets=datasets)
     print(result_fit)

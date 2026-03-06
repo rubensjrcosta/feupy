@@ -16,7 +16,7 @@ from gammapy.catalog.core import SourceCatalog, SourceCatalogObject
 from gammapy.estimators import FluxPoints
 from feupy.utils.table import remove_nan_rows
 from feupy.utils.stats import fit_spectral_model_to_flux_points
-from feupy.utils.string_handling import string_to_filename_format
+from feupy.utils.formatting import string_to_filename
 
 
 # Set up logging
@@ -229,7 +229,7 @@ class SourceCatalogObjectExtraLHAASO(SourceCatalogObject):
     @property
     def flux_points(self):
         """Flux points as a `~gammapy.estimators.FluxPoints` object."""
-        filename = f"$FEUPY_DATA/dedicated_publications/lhaaso/2024icrc.confE.643Y/{string_to_filename_format(self.name)}.fits"
+        filename = f"$FEUPY_DATA/dedicated_publications/lhaaso/2024icrc.confE.643Y/{string_to_filename(self.name)}.fits"
         return FluxPoints.read(filename,  reference_model=self.sky_model(), sed_type='e2dnde')
     
 class SourceCatalogExtraLHAASO(SourceCatalog):
