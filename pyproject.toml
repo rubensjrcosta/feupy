@@ -1,11 +1,11 @@
 [build-system]
-requires = ["setuptools>=61.0", "wheel"]
+requires = ["setuptools>=65", "wheel", "Cython>=0.29"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "feupy"
 version = "0.1.0"
-description = "FeuPy — A Python application for VHE gamma-ray analysis with Gammapy, aiding γ-ray counterpart searches, spectral model fitting across wavelengths. It includes tools for CTAO sensitivity analysis, observation simulations, and non-thermal radiation calculations from relativistic particles."
+description = "FeuPy — A Python application for VHE gamma-ray analysis with Gammapy..."
 authors = [
     { name = "R. Jr. Costa", email = "rubensp@utfpr.edu.br" },
     { name = "R. C. Dos Anjos", email = "ritacassia@ufpr.br" }
@@ -20,13 +20,13 @@ dependencies = [
     "astropy>=6.0",
     "numpy>=1.22",
     "scipy>=1.10",
-    "matplotlib>=3.8",
+    "matplotlib>=3.8,<3.10",
     "pandas>=2.0",
     "pyyaml>=6.0",
     "tqdm>=4.65",
-    "regions>=0.7",           
-    "jupyter>=1.0",            
-    "ipykernel>=6.0"           
+    "regions>=0.7",
+    "jupyter>=1.0",
+    "ipykernel>=6.0"
 ]
 
 [tool.setuptools.package-data]
@@ -38,6 +38,10 @@ feupy = [
 where = ["."]
 include = ["feupy*"]
 
+[tool.pytest.ini_options]
+filterwarnings = [
+    "ignore::pyparsing.PyparsingDeprecationWarning"
+]
 [project.urls]
 Homepage = "https://github.com/rubensjrcosta/feupy"
 Issues = "https://github.com/rubensjrcosta/feupy/issues"

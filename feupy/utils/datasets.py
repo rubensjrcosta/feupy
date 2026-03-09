@@ -23,23 +23,39 @@ from feupy.utils.scripts import is_documented_by
         
 __all__ = [
     "get_feupy_data_path",
-    "select_datasets",
+    "datasets_select_by_name",
     "get_energy_bounds_from_datasets",
     "cut_energy_flux_points_datasets",
     "flux_points_dataset_from_table",
 ]
 
 
-def get_feupy_data_path():
-    try:
-        return Path(os.environ["FEUPY_DATA"])
-    except KeyError:
+def get_feupy_data_path() :
+    """
+    Return FEUPY dataset base path.
+
+    Requires environment variable:
+
+        FEUPY_DATA
+    """
+
+    if "FEUPY_DATA" not in os.environ:
         raise RuntimeError(
             "FEUPY_DATA environment variable not set.\n"
-            "Install feupy-datasets or define the path."
+            "Install feupy-datasets or define FEUPY_DATA path."
         )
+
+    path = Path(os.environ["FEUPY_DATA"]).expanduser().resolve()
+
+    if not path.exists():
+        raise RuntimeError(
+            f"FEUPY_DATA path does not exist:\n{path}\n"
+            "Check dataset installation."
+        )
+
+    return path
         
-def select_datasets(datasets, names):
+def datasets_select_by_name(datasets, names):
     """
     Select datasets by name from a Datasets collection.
 

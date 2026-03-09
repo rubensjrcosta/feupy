@@ -1,7 +1,7 @@
 Metadata-Version: 2.4
 Name: feupy
 Version: 0.1.0
-Summary: FeuPy — A Python application for VHE gamma-ray analysis with Gammapy, aiding γ-ray counterpart searches, spectral model fitting across wavelengths. It includes tools for CTAO sensitivity analysis, observation simulations, and non-thermal radiation calculations from relativistic particles.
+Summary: FeuPy — A Python application for VHE gamma-ray analysis with Gammapy...
 Author-email: "R. Jr. Costa" <rubensp@utfpr.edu.br>, "R. C. Dos Anjos" <ritacassia@ufpr.br>
 License: BSD-3-Clause
 Project-URL: Homepage, https://github.com/rubensjrcosta/feupy
@@ -14,7 +14,7 @@ Requires-Dist: naima>=0.10.0
 Requires-Dist: astropy>=6.0
 Requires-Dist: numpy>=1.22
 Requires-Dist: scipy>=1.10
-Requires-Dist: matplotlib>=3.8
+Requires-Dist: matplotlib<3.10,>=3.8
 Requires-Dist: pandas>=2.0
 Requires-Dist: pyyaml>=6.0
 Requires-Dist: tqdm>=4.65

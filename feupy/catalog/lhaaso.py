@@ -1,7 +1,5 @@
 # Licensed under a 3-clause BSD style license - see LICENSE.rst
 """LHAASO catalog and source classes."""
-
-import logging
 import numpy as np
 import astropy.units as u
 from astropy.table import Table
@@ -17,8 +15,7 @@ from gammapy.estimators import FluxPoints
 from feupy.utils.table import remove_nan_rows
 from feupy.utils.stats import fit_spectral_model_to_flux_points
 from feupy.utils.formatting import string_to_filename
-from feupy.utils.datasets import get_feupy_data_path
-
+import logging
 
 # Set up logging
 log = logging.getLogger(__name__)
@@ -172,6 +169,7 @@ class SourceCatalogObjectExtraLHAASO(SourceCatalogObject):
     _MODELS : Models
         Pre-loaded models from the extra ExtraLHAASO data file.
     """
+    _MODELS = None
     _source_name_key = "source_name"
     
     def __str__(self):
@@ -216,13 +214,17 @@ class SourceCatalogObjectExtraLHAASO(SourceCatalogObject):
 
     def spectral_model(self):
         """Get the spectral model associated with this source."""
-        
-        filename_models = get_feupy_data_path() / "dedicated_publications/lhaaso/2024icrc.confE.643Y/models.yaml"
-        models = Models.read(filename_models)
+        if self._MODELS is None:
+            filename = "$FEUPY_DATA/dedicated_publications/lhaaso/2024icrc.confE.643Y/models.yaml"
+            self.__class__._MODELS = Models.read(make_path(filename))
+    
+        models = self._MODELS
+    
         if self.name in models.names:
             return models[self.name].spectral_model
+    
         return None
-
+        
     def sky_model(self):
         """Create a SkyModel representation of the source."""
         if self.spectral_model():
@@ -232,8 +234,22 @@ class SourceCatalogObjectExtraLHAASO(SourceCatalogObject):
     @property
     def flux_points(self):
         """Flux points as a `~gammapy.estimators.FluxPoints` object."""
-        filename = get_feupy_data_path() / f"dedicated_publications/lhaaso/2024icrc.confE.643Y/{string_to_filename(self.name)}.fits"
-        return FluxPoints.read(filename,  reference_model=self.sky_model(), sed_type='e2dnde')
+    
+        filename = (
+            "$FEUPY_DATA/dedicated_publications/lhaaso/2024icrc.confE.643Y/"
+            f"{string_to_filename(self.name)}.fits"
+        )
+    
+        filename = make_path(filename)
+    
+        if not filename.exists():
+            return None
+    
+        return FluxPoints.read(
+            filename,
+            reference_model=self.sky_model(),
+            sed_type="e2dnde",
+        )
     
 class SourceCatalogExtraLHAASO(SourceCatalog):
     """LHAASO Extra Source Catalog with extended data.
@@ -248,9 +264,13 @@ class SourceCatalogExtraLHAASO(SourceCatalog):
 
     source_object_class = SourceCatalogObjectExtraLHAASO
 
-    def __init__(self, filename=get_feupy_data_path() / f"dedicated_publications/lhaaso/2024icrc.confE.643Y/catalog.ecsv"):
-        table = Table.read(make_path(filename), format='ascii.ecsv')
+    def __init__(
+        self,
+        filename="$FEUPY_DATA/dedicated_publications/lhaaso/2024icrc.confE.643Y/catalog.ecsv",
+    ):
+        table = Table.read(make_path(filename), format="ascii.ecsv")
         super().__init__(table=table, source_name_key="source_name")
+            
 
 class SourceCatalogObjectLHAASO(SourceCatalogObject):
     """One source from the LHAASO first 12 PeVatrons Catalogue.
@@ -391,7 +411,6 @@ class SourceCatalogObjectLHAASO(SourceCatalogObject):
 
         return remove_nan_rows(table)
     
-
 class SourceCatalogLHAASO(SourceCatalog):
     """LHAASO first 12 PeVatrons Catalogue.
 
@@ -407,9 +426,12 @@ class SourceCatalogLHAASO(SourceCatalog):
     description = "LHAASO first 12 PeVatrons Catalogue"
     
     source_object_class = SourceCatalogObjectLHAASO
-    
-    def __init__(self, filename=get_feupy_data_path() / f"catalogs/lhaaso/lhaaso_catalog.ecsv"):
-        table = Table.read(make_path(filename), format='ascii.ecsv')
-        source_name_key = "source_name"
-        super().__init__(table=table, source_name_key=source_name_key)
+
+    def __init__(
+        self,
+        filename="$FEUPY_DATA/catalogs/lhaaso/lhaaso_catalog.ecsv",
+    ):
+        table = Table.read(make_path(filename), format="ascii.ecsv")
+        super().__init__(table=table, source_name_key="source_name")
+            
 

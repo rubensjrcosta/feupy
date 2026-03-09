@@ -1,6 +1,5 @@
 # Licensed under a 3-clause BSD style license - see LICENSE.rst
 """HAWC Source Catalog."""
-
 import numpy as np
 from astropy import units as u
 from astropy.table import Table, Column
@@ -9,8 +8,8 @@ from gammapy.estimators import FluxPoints
 from gammapy.modeling.models import SkyModel, Models
 from gammapy.catalog.core import SourceCatalog, SourceCatalogObject
 from gammapy.catalog.hawc import SourceCatalog3HWC, SourceCatalog2HWC
-import logging
 from feupy.utils.formatting import string_to_filename
+import logging
 
 # Set up logging
 log = logging.getLogger(__name__)
@@ -305,11 +304,12 @@ def get_flux_points_2hwc(source, which='point'):
     )
 
 class SourceCatalogObjectEHWC(SourceCatalogObject):
-    """Represents a single source in the HAWC catalog.
-
+    """
+    Represents a single source in the HAWC catalog.
+    
     Provides detailed information about a source, including position, spectrum,
     and flux points.
-
+    
     Attributes
     ----------
     _source_name_key : str
@@ -317,6 +317,7 @@ class SourceCatalogObjectEHWC(SourceCatalogObject):
     _MODELS : Models
         Pre-loaded models from the extra HAWC data file.
     """
+    _MODELS = None
     _source_name_key = "source_name"
     
     def __str__(self):
@@ -361,11 +362,17 @@ class SourceCatalogObjectEHWC(SourceCatalogObject):
 
     def spectral_model(self):
         """Get the spectral model associated with this source."""
-        models = Models.read("$FEUPY_DATA/catalogs/ehwc/models.yaml")
+        if self._MODELS is None:
+            filename = "$FEUPY_DATA/catalogs/ehwc/models.yaml"
+            self.__class__._MODELS = Models.read(make_path(filename))
+    
+        models = self._MODELS
+    
         if self.name in models.names:
             return models[self.name].spectral_model
+    
         return None
-
+     
     def sky_model(self):
         """Create a SkyModel representation of the source."""
         if self.spectral_model():
@@ -450,8 +457,11 @@ class SourceCatalogEHWC(SourceCatalog):
 
     source_object_class = SourceCatalogObjectEHWC
 
-    def __init__(self, filename="$FEUPY_DATA/catalogs/ehwc/ehwc_catalog.ecsv"):
-        table = Table.read(make_path(filename), format='ascii.ecsv')
+    def __init__(
+        self,
+        filename="$FEUPY_DATA/catalogs/ehwc/ehwc_catalog.ecsv",
+    ):
+        table = Table.read(make_path(filename), format="ascii.ecsv")
         super().__init__(table=table, source_name_key="source_name")
         
 class SourceCatalogObjectExtraHAWC(SourceCatalogObject):
@@ -467,6 +477,7 @@ class SourceCatalogObjectExtraHAWC(SourceCatalogObject):
     _MODELS : Models
         Pre-loaded models from the extra ExtraHAWC data file.
     """
+    _MODELS = None
     _source_name_key = "source_name"
     
     def __str__(self):
@@ -511,9 +522,15 @@ class SourceCatalogObjectExtraHAWC(SourceCatalogObject):
 
     def spectral_model(self):
         """Get the spectral model associated with this source."""
-        models = Models.read("$FEUPY_DATA/dedicated_publications/hawc/2021ApJ...907L..30A/models.yaml")
+        if self._MODELS is None:
+            filename = "$FEUPY_DATA/dedicated_publications/hawc/2021ApJ...907L..30A/models.yaml"
+            self.__class__._MODELS = Models.read(make_path(filename))
+    
+        models = self._MODELS
+    
         if self.name in models.names:
             return models[self.name].spectral_model
+    
         return None
 
     def sky_model(self):
@@ -525,22 +542,40 @@ class SourceCatalogObjectExtraHAWC(SourceCatalogObject):
     @property
     def flux_points(self):
         """Flux points as a `~gammapy.estimators.FluxPoints` object."""
-        filename = f"$FEUPY_DATA/dedicated_publications/hawc/2021ApJ...907L..30A/{string_to_filename(self.name)}.fits"
-        return FluxPoints.read(filename,  reference_model=self.sky_model(), sed_type='e2dnde')
+    
+        filename = (
+            "$FEUPY_DATA/dedicated_publications/hawc/2021ApJ...907L..30A/"
+            f"{string_to_filename(self.name)}.fits"
+        )
+    
+        filename = make_path(filename)
+    
+        if not filename.exists():
+            return None
+    
+        return FluxPoints.read(
+            filename,
+            reference_model=self.sky_model(),
+            sed_type="e2dnde",
+        )
     
 class SourceCatalogExtraHAWC(SourceCatalog):
-    """LHAASO Extra Source Catalog with extended data.
+    """HAWC Extra Source Catalog with extended data.
 
     See: https://iopscience.iop.org/article/10.3847/2041-8213/abd77b
-
+    
     Each source is represented by `SourceCatalogObjectExtraHAWC`.
     """
-    tag = 'hwc-2021ApJ'
-    bibcode = '2021ApJ...907L..30A' 
-    description = "Evidence of 200 TeV Photons from HAWC J1825-134 "
+
+    tag = "hwc-2021ApJ"
+    bibcode = "2021ApJ...907L..30A"
+    description = "Evidence of 200 TeV photons from HAWC J1825-134"
 
     source_object_class = SourceCatalogObjectExtraHAWC
 
-    def __init__(self, filename="$FEUPY_DATA/dedicated_publications/hawc/2021ApJ...907L..30A/catalog.ecsv"):
-        table = Table.read(make_path(filename), format='ascii.ecsv')
+    def __init__(
+        self,
+        filename="$FEUPY_DATA/dedicated_publications/hawc/2021ApJ...907L..30A/catalog.ecsv",
+    ):
+        table = Table.read(make_path(filename), format="ascii.ecsv")
         super().__init__(table=table, source_name_key="source_name")

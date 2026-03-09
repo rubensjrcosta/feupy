@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 
 from regions import CircleSkyRegion, PointSkyRegion
 from gammapy.maps import RegionGeom
-from feupy.visualization.styles.markers.catalogs import make_catalog_marker_dict
+from feupy.visualization.styles.markers.plotting import build_point_kwargs
 
 __all__ = ["ROIMapPlotter"]
 
@@ -71,7 +71,7 @@ class ROIMapPlotter:
         ref_markers : dict, optional
             Dictionary of reference markers for each source.
         """
-        ref_markers = ref_markers or make_catalog_marker_dict(sources
+        ref_markers = ref_markers or build_point_kwargs(sources
                                                       , marker_size=6, palette=None)
             
         # Plot each source with corresponding marker

@@ -8,9 +8,7 @@ This module provides functions to:
 - Group flux points tables by reference.
 - Convert grouped tables into Gammapy datasets.
 """
-
 import yaml
-import logging
 import numpy as np
 from astropy.units import Quantity
 from astropy.table import Table, Column
@@ -18,26 +16,27 @@ from gammapy.utils.scripts import make_path
 from gammapy.datasets import Datasets, FluxPointsDataset
 from gammapy.estimators import FluxPoints
 from feupy.utils.units import Hz_to_eV, Jy_to_erg_by_cm2_s
+import logging
 
 # Set up logging
 log = logging.getLogger(__name__)
 
 
 __all__ = [
-    "read_pulsar_catalog",
-    "create_flux_points_table",
-    "get_tables",
-    "get_datasets",
+    "read_pulsar_spectra_catalog",
+    "create_pulsar_flux_points_table",
+    "get_pulsar_flux_points_tables",
+    "get_pulsar_flux_points_table",
+    "get_pulsar_flux_points_datasets",
 ]
 
-
-def read_pulsar_catalog(filename="$FEUPY_DATA/catalogs/pulsar_spectra/pulsar_spectra.yaml"):
+def read_pulsar_spectra_catalog(filename=None):
     """
     Read the pulsar spectra catalog from a YAML file.
 
     Parameters
     ----------
-    filename : str
+    filename : str, optional
         Path to the pulsar spectra YAML file.
 
     Returns
@@ -45,15 +44,23 @@ def read_pulsar_catalog(filename="$FEUPY_DATA/catalogs/pulsar_spectra/pulsar_spe
     dict
         Dictionary containing the pulsar spectra catalog.
     """
+    if filename is None:
+        filename = "$FEUPY_DATA/catalogs/pulsar_spectra/pulsar_spectra.yaml"
+
     try:
         with open(make_path(filename), "r") as yaml_file:
             return yaml.safe_load(yaml_file)
+
     except yaml.YAMLError as error:
         log.error(f"YAML loading error: {error}")
-        return {}
+
+    except FileNotFoundError:
+        log.error(f"Pulsar catalog file not found: {filename}")
+
+    return {}
 
 
-def create_flux_points_table(pulsar_jname):
+def create_pulsar_flux_points_table(pulsar_jname):
     """
     Create a flux points table for a pulsar from the catalog.
 
@@ -68,7 +75,7 @@ def create_flux_points_table(pulsar_jname):
         Astropy table containing flux points data for the pulsar,
         or None if the pulsar is not found in the catalog.
     """
-    catalog = read_pulsar_catalog()
+    catalog = read_pulsar_spectra_catalog()
     metadata = {
         "source_name": f"PSR {pulsar_jname}",
         "pulsar_jname": pulsar_jname,
@@ -111,7 +118,7 @@ def create_flux_points_table(pulsar_jname):
     return None
 
 
-def get_flux_points_table(pulsar_jname):
+def get_pulsar_flux_points_table(pulsar_jname):
     """
     Retrieve a flux points table for a specific pulsar J-name.
 
@@ -125,10 +132,10 @@ def get_flux_points_table(pulsar_jname):
     table : `~astropy.table.Table` or None
         Flux points table for the pulsar, or None if the pulsar is not found.
     """
-    return create_flux_points_table(pulsar_jname)
+    return create_pulsar_flux_points_table(pulsar_jname)
 
 
-def get_tables(pulsar_jname):
+def get_pulsar_flux_points_tables(pulsar_jname):
     """
     Retrieve grouped flux points tables for a specific pulsar J-name.
 
@@ -143,7 +150,7 @@ def get_tables(pulsar_jname):
         List of grouped flux points tables for the pulsar,
         or an empty list if the pulsar is not found.
     """
-    table = get_flux_points_table(pulsar_jname)
+    table = get_pulsar_flux_points_table(pulsar_jname)
     if table is None:
         return []
 
@@ -157,7 +164,7 @@ def get_tables(pulsar_jname):
     return grouped_tables
 
 
-def get_datasets(pulsar_jname):
+def get_pulsar_flux_points_datasets(pulsar_jname):
     """
     Retrieve datasets for a specific pulsar J-name.
 
@@ -171,7 +178,7 @@ def get_datasets(pulsar_jname):
     datasets : `~gammapy.datasets.Datasets`
         Collection of flux points datasets for the pulsar.
     """
-    grouped_tables = get_tables(pulsar_jname)
+    grouped_tables = get_pulsar_flux_points_tables(pulsar_jname)
     if not grouped_tables:
         return Datasets()
 

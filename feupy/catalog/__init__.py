@@ -1,44 +1,64 @@
 # Licensed under a 3-clause BSD style license - see LICENSE.rst
-"""Source catalogs."""
+"""Source catalogs API."""
 
-from .registry import FEUPY_CATALOG_REGISTRY
+from .registry import FEUPY_CATALOG_REGISTRY, HAS_FEUPY_DATASETS
 
-# Re-export catalog classes so the API stays the same
-from .hawc import (
-    SourceCatalogObjectEHWC, SourceCatalogEHWC,
-    SourceCatalogObjectExtraHAWC, SourceCatalogExtraHAWC,
-)
-from .hess import (
-    SourceCatalogObjectExtraHESS, SourceCatalogExtraHESS,
-)
-from .veritas import (
-    SourceCatalogVTSCat, SourceCatalogObjectVTSCat,
-    SourceCatalogVERITAS, SourceCatalogObjectVERITAS,
-)
-from .psrcat import (
-    SourceCatalogPSRCAT, SourceCatalogObjectPSRCAT,
-)
-from .lhaaso import (
-    SourceCatalogObjectLHAASO, SourceCatalogLHAASO,
-    SourceCatalogObjectExtraLHAASO, SourceCatalogExtraLHAASO,
-)
+# ---------------------------------------------------------
+# Base API (always available)
+# ---------------------------------------------------------
 
 __all__ = [
     "FEUPY_CATALOG_REGISTRY",
-    "SourceCatalogVTSCat",
-    "SourceCatalogObjectVTSCat",
-    "SourceCatalogVERITAS",
-    "SourceCatalogObjectVERITAS",
-    "SourceCatalogPSRCAT",
-    "SourceCatalogObjectPSRCAT",
-    "SourceCatalogObjectLHAASO",
-    "SourceCatalogLHAASO",
-    "SourceCatalogExtraLHAASO",
-    "SourceCatalogObjectExtraLHAASO",
-    "SourceCatalogObjectEHWC",
-    "SourceCatalogObjectExtraHAWC",
-    "SourceCatalogExtraHAWC",
-    "SourceCatalogEHWC",
-    "SourceCatalogObjectExtraHESS",
-    "SourceCatalogExtraHESS",
+    "HAS_FEUPY_DATASETS",
 ]
+
+# ---------------------------------------------------------
+# Optional dataset catalogs
+# ---------------------------------------------------------
+
+if HAS_FEUPY_DATASETS:
+    from .hawc import (
+        SourceCatalogEHWC,
+        SourceCatalogExtraHAWC,
+        SourceCatalogObjectEHWC,
+        SourceCatalogObjectExtraHAWC,
+    )
+    from .hess import (
+        SourceCatalogExtraHESS,
+        SourceCatalogObjectExtraHESS,
+    )
+    from .veritas import (
+        SourceCatalogVTSCat,
+        SourceCatalogVERITAS,
+        SourceCatalogObjectVTSCat,
+        SourceCatalogObjectVERITAS,
+    )
+    from .psrcat import (
+        SourceCatalogPSRCAT,
+        SourceCatalogObjectPSRCAT,
+    )
+    from .lhaaso import (
+        SourceCatalogLHAASO,
+        SourceCatalogExtraLHAASO,
+        SourceCatalogObjectLHAASO,
+        SourceCatalogObjectExtraLHAASO,
+    )
+
+    __all__ += [
+        "SourceCatalogEHWC",
+        "SourceCatalogExtraHAWC",
+        "SourceCatalogObjectEHWC",
+        "SourceCatalogObjectExtraHAWC",
+        "SourceCatalogExtraHESS",
+        "SourceCatalogObjectExtraHESS",
+        "SourceCatalogVTSCat",
+        "SourceCatalogVERITAS",
+        "SourceCatalogObjectVTSCat",
+        "SourceCatalogObjectVERITAS",
+        "SourceCatalogPSRCAT",
+        "SourceCatalogObjectPSRCAT",
+        "SourceCatalogLHAASO",
+        "SourceCatalogExtraLHAASO",
+        "SourceCatalogObjectLHAASO",
+        "SourceCatalogObjectExtraLHAASO",
+    ]

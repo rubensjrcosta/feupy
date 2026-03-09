@@ -4,34 +4,35 @@
 import logging
 from typing import List, Optional
 from feupy.catalog import FEUPY_CATALOG_REGISTRY
+from .registry import HAS_FEUPY_DATASETS
 
 log = logging.getLogger(__name__)
 
-catalog_2fhl = FEUPY_CATALOG_REGISTRY.get_cls('2fhl')()
-catalog_3fhl = FEUPY_CATALOG_REGISTRY.get_cls('3fhl')()
+if HAS_FEUPY_DATASETS:
+    catalog_2fhl = FEUPY_CATALOG_REGISTRY.get_cls('2fhl')()
+    catalog_3fhl = FEUPY_CATALOG_REGISTRY.get_cls('3fhl')()
+    catalog_3fgl = FEUPY_CATALOG_REGISTRY.get_cls('3fgl')()
+    catalog_4fgl = FEUPY_CATALOG_REGISTRY.get_cls('4fgl')()
 
-catalog_3fgl = FEUPY_CATALOG_REGISTRY.get_cls('3fgl')()
-catalog_4fgl = FEUPY_CATALOG_REGISTRY.get_cls('4fgl')()
+    catalog_2hwc = FEUPY_CATALOG_REGISTRY.get_cls('2hwc')()
+    catalog_3hwc = FEUPY_CATALOG_REGISTRY.get_cls('3hwc')()
+    catalog_ehwc = FEUPY_CATALOG_REGISTRY.get_cls('ehwc')()
+    catalog_extra_hawc = FEUPY_CATALOG_REGISTRY.get_cls('hwc-2021ApJ')()
 
-catalog_2hwc = FEUPY_CATALOG_REGISTRY.get_cls('2hwc')()
-catalog_3hwc = FEUPY_CATALOG_REGISTRY.get_cls('3hwc')()
-catalog_ehwc = FEUPY_CATALOG_REGISTRY.get_cls('ehwc')()
-catalog_extra_hawc = FEUPY_CATALOG_REGISTRY.get_cls('hwc-2021ApJ')()
+    catalog_hgps = FEUPY_CATALOG_REGISTRY.get_cls('hgps')()
+    catalog_extra_hess = FEUPY_CATALOG_REGISTRY.get_cls('hess-2019A&A')()
 
-catalog_hgps = FEUPY_CATALOG_REGISTRY.get_cls('hgps')()
-catalog_extra_hess = FEUPY_CATALOG_REGISTRY.get_cls('hess-2019A&A')()
+    catalog_gamma_cat = FEUPY_CATALOG_REGISTRY.get_cls('gamma-cat')()
 
-catalog_gamma_cat = FEUPY_CATALOG_REGISTRY.get_cls('gamma-cat')()
+    catalog_vtscat = FEUPY_CATALOG_REGISTRY.get_cls('vtscat')()
 
-catalog_vtscat = FEUPY_CATALOG_REGISTRY.get_cls('vtscat')()
+    catalog_veritas = FEUPY_CATALOG_REGISTRY.get_cls('veritas-2018ApJ')()
 
-catalog_veritas = FEUPY_CATALOG_REGISTRY.get_cls('veritas-2018ApJ')()
+    catalog_lhaaso = FEUPY_CATALOG_REGISTRY.get_cls('LHAASO')()
+    catalog_1lhaaso = FEUPY_CATALOG_REGISTRY.get_cls('1LHAASO')()
+    catalog_extra_lhaaso = FEUPY_CATALOG_REGISTRY.get_cls('LHAASO-2024icrc')()
 
-catalog_lhaaso = FEUPY_CATALOG_REGISTRY.get_cls('LHAASO')()
-catalog_1lhaaso = FEUPY_CATALOG_REGISTRY.get_cls('1LHAASO')()
-catalog_extra_lhaaso = FEUPY_CATALOG_REGISTRY.get_cls('LHAASO-2024icrc')()
-
-catalog_psrcat = FEUPY_CATALOG_REGISTRY.get_cls('psrcat')()
+    catalog_psrcat = FEUPY_CATALOG_REGISTRY.get_cls('psrcat')()
 
 def load_catalogs(catalogs: Optional[List] = FEUPY_CATALOG_REGISTRY) -> List:
     """Load a list of catalogs from the provided registry.

@@ -1,6 +1,5 @@
 # Licensed under a 3-clause BSD style license - see LICENSE.rst
 """HESS Source Catalog."""
-
 from astropy.table import Table
 from gammapy.utils.scripts import make_path
 from gammapy.estimators import FluxPoints
@@ -12,12 +11,10 @@ import logging
 # Set up logging
 log = logging.getLogger(__name__)
 
-
 __all__ = [
     "SourceCatalogObjectExtraHESS",
     "SourceCatalogExtraHESS",
 ]
-
 
 class SourceCatalogObjectExtraHESS(SourceCatalogObject):
     """Represents a single source in the ExtraHESS catalog.
@@ -32,6 +29,7 @@ class SourceCatalogObjectExtraHESS(SourceCatalogObject):
     _MODELS : Models
         Pre-loaded models from the ExtraHESS data file.
     """
+    _MODELS = None
     _source_name_key = "source_name"
     
     def __str__(self):
@@ -76,9 +74,15 @@ class SourceCatalogObjectExtraHESS(SourceCatalogObject):
 
     def spectral_model(self):
         """Get the spectral model associated with this source."""
-        models = Models.read("$FEUPY_DATA/dedicated_publications/hess/2019Apercent26A...621A.116H/models.yaml")
+        if self._MODELS is None:
+            filename = "$FEUPY_DATA/dedicated_publications/hess/2019Apercent26A...621A.116H/models.yaml"
+            self.__class__._MODELS = Models.read(make_path(filename))
+    
+        models = self._MODELS
+    
         if self.name in models.names:
             return models[self.name].spectral_model
+    
         return None
 
     def sky_model(self):
@@ -90,8 +94,22 @@ class SourceCatalogObjectExtraHESS(SourceCatalogObject):
     @property
     def flux_points(self):
         """Flux points as a `~gammapy.estimators.FluxPoints` object."""
-        filename = f"$FEUPY_DATA/dedicated_publications/hess/2019Apercent26A...621A.116H/{string_to_filename(self.name)}.fits"
-        return FluxPoints.read(filename, reference_model=self.sky_model(), sed_type='e2dnde')
+    
+        filename = (
+            "$FEUPY_DATA/dedicated_publications/hess/2019Apercent26A...621A.116H/"
+            f"{string_to_filename(self.name)}.fits"
+        )
+    
+        filename = make_path(filename)
+    
+        if not filename.exists():
+            return None
+    
+        return FluxPoints.read(
+            filename,
+            reference_model=self.sky_model(),
+            sed_type="e2dnde",
+        )
     
 class SourceCatalogExtraHESS(SourceCatalog):
     """HESS Extra Source Catalog with extended data.
@@ -106,6 +124,10 @@ class SourceCatalogExtraHESS(SourceCatalog):
 
     source_object_class = SourceCatalogObjectExtraHESS
 
-    def __init__(self, filename="$FEUPY_DATA/dedicated_publications/hess/2019Apercent26A...621A.116H/catalog.ecsv"):
-        table = Table.read(make_path(filename), format='ascii.ecsv')
+    def __init__(
+        self,
+        filename="$FEUPY_DATA/dedicated_publications/hess/2019Apercent26A...621A.116H/catalog.ecsv",
+    ):
+        table = Table.read(make_path(filename), format="ascii.ecsv")
         super().__init__(table=table, source_name_key="source_name")
+            

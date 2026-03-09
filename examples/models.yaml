@@ -1,0 +1,163 @@
+components:
+-   name: 3FGL J0007.0+7302 (3fgl)
+    type: SkyModel
+    datasets_names: 3FGL J0007.0+7302 (3fgl)
+    spectral:
+        type: SuperExpCutoffPowerLaw3FGLSpectralModel
+        parameters:
+        -   name: amplitude
+            value: 7.555461117858542e-11
+            unit: MeV-1 s-1 cm-2
+            error: 6.692387529566579e-13
+        -   name: reference
+            value: 913.70947265625
+            unit: MeV
+        -   name: ecut
+            value: 1732.8778076171875
+            unit: MeV
+            error: 422.56439208984375
+        -   name: index_1
+            value: 1.2080625295639038
+            error: 0.047624632716178894
+        -   name: index_2
+            value: 0.6370570063591003
+            error: 0.0442998930811882
+-   name: 4FGL J0007.0+7303 (4fgl)
+    type: SkyModel
+    datasets_names: 4FGL J0007.0+7303 (4fgl)
+    spectral:
+        type: SuperExpCutoffPowerLaw4FGLDR3SpectralModel
+        parameters:
+        -   name: amplitude
+            value: 1.557737619450883e-11
+            unit: MeV-1 s-1 cm-2
+            error: 1.0318533001782079e-13
+        -   name: reference
+            value: 2247.628662109375
+            unit: MeV
+        -   name: expfactor
+            value: 0.4950508773326874
+            error: 0.011712776497006416
+        -   name: index_1
+            value: 1.9758226871490479
+            error: 0.009215405210852623
+        -   name: index_2
+            value: 0.5666522979736328
+            error: 0.03790123015642166
+-   name: 3FHL J0007.0+7303 (3fhl)
+    type: SkyModel
+    datasets_names: 3FHL J0007.0+7303 (3fhl)
+    spectral:
+        type: LogParabolaSpectralModel
+        parameters:
+        -   name: amplitude
+            value: 1.7436407873105964e-10
+            unit: GeV-1 s-1 cm-2
+            error: 7.595028772566792e-12
+        -   name: reference
+            value: 12.802638053894043
+            unit: GeV
+        -   name: alpha
+            value: 3.1750595569610596
+            error: 0.21033158898353577
+        -   name: beta
+            value: 0.9020664691925049
+            error: 0.26585349440574646
+-   name: J0007+7303 (3PC)
+    type: SkyModel
+    datasets_names: J0007+7303 (3PC)
+    spectral:
+        type: SuperExpCutoffPowerLaw4FGLDR3SpectralModel
+        parameters:
+        -   name: amplitude
+            value: 3.426178438181715e-11
+            unit: MeV-1 s-1 cm-2
+            error: 3.142430976890709e-13
+        -   name: reference
+            value: 1472.989990234375
+            unit: MeV
+        -   name: expfactor
+            value: 0.39669233560562134
+            error: 0.015279702842235565
+        -   name: index_1
+            value: 1.7898032665252686
+            error: 0.008742830716073513
+        -   name: index_2
+            value: 0.556814968585968
+            error: 0.04077547416090965
+-   name: PSR J0007+7303 (2PC)
+    type: SkyModel
+    datasets_names: PSR J0007+7303 (2PC)
+    spectral:
+        type: SuperExpCutoffPowerLaw3FGLSpectralModel
+        parameters:
+        -   name: amplitude
+            value: 1.1820000533901975e-10
+            unit: MeV-1 s-1 cm-2
+            error: 1.5169999588102168e-12
+        -   name: reference
+            value: 727.4000244140625
+            unit: MeV
+        -   name: ecut
+            value: 4662.0
+            unit: MeV
+            error: 174.10000610351562
+        -   name: index_1
+            value: 1.3969999551773071
+            error: 0.01600000075995922
+        -   name: index_2
+            value: 1.0
+-   name: 1LHAASO J0007+7303u (1LHAASO) (KM2A)
+    type: SkyModel
+    datasets_names: 1LHAASO J0007+7303u (1LHAASO) (KM2A)
+    spectral:
+        type: PowerLawSpectralModel
+        parameters:
+        -   name: index
+            value: 3.4
+            error: 0.12
+        -   name: amplitude
+            value: 3.41e-16
+            unit: TeV-1 s-1 cm-2
+            error: 2.7e-17
+        -   name: reference
+            value: 50.0
+            unit: TeV
+-   name: 1LHAASO J0007+7303u (1LHAASO) (WCDA)
+    type: SkyModel
+    datasets_names: 1LHAASO J0007+7303u (1LHAASO) (WCDA)
+    spectral:
+        type: PowerLawSpectralModel
+        parameters:
+        -   name: index
+            value: 2.74
+            error: 0.11
+        -   name: amplitude
+            value: 5.01e-13
+            unit: TeV-1 s-1 cm-2
+            error: 1.1100000000000002e-13
+        -   name: reference
+            value: 3.0
+            unit: TeV
+-   name: VER J0006+729 (2013ApJ)
+    type: SkyModel
+    datasets_names: VER J0006+729 (2013ApJ)
+    spectral:
+        type: PowerLawSpectralModel
+        parameters:
+        -   name: index
+            value: 2.203022195365906
+            error: 0.22575624429424884
+        -   name: amplitude
+            value: 1.0148937415377932e-12
+            unit: TeV-1 s-1 cm-2
+            error: 2.683650417338486e-13
+        -   name: reference
+            value: 1.0
+            unit: TeV
+covariance: models_covariance.dat
+metadata:
+    creator: Gammapy 2.0.1
+    date: '2026-03-09T01:06:18.940637'
+    origin: null
+checksum: 2b73de0f6b2c5ea2a7828715bb5d3e97

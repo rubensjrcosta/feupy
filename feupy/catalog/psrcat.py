@@ -1,20 +1,17 @@
 # Licensed under a 3-clause BSD style license - see LICENSE.rst
 """ATNF Pulsar Catalogue and source classes."""
-
-import logging
 from astropy.table import Table
 from gammapy.utils.scripts import make_path
 from gammapy.catalog.core import SourceCatalog, SourceCatalogObject
+import logging
 
 # Set up logging
 log = logging.getLogger(__name__)
-
 
 __all__ = [
     "SourceCatalogPSRCAT",
     "SourceCatalogObjectPSRCAT",
 ]
-
 
 class SourceCatalogObjectPSRCAT(SourceCatalogObject):
     """One source from the ATNF Pulsar Catalogue.
@@ -118,16 +115,13 @@ class SourceCatalogPSRCAT(SourceCatalog):
     description = "ATNF Pulsar Catalogue, a comprehensive database of all published pulsars"
         
     source_object_class = SourceCatalogObjectPSRCAT
-    
-    def __init__(self, filename="$FEUPY_DATA/catalogs/psrcat/psrcat_catalog.fits"):
-        try:
-            table = Table.read(make_path(filename))
-        except Exception as e:
-            log.error(f"Error loading the catalog: {e}")
-            raise
-
+    def __init__(
+        self,
+        filename="$FEUPY_DATA/catalogs/psrcat/psrcat_catalog.fits",
+    ):
+        table = Table.read(make_path(filename), format="fits")
         super().__init__(table=table, source_name_key="NAME")
-    
+             
     @property
     def PSR_PARAMS(self):
         return self.table.colnames

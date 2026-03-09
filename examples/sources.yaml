@@ -1,4 +1,28 @@
 Sources:
   0:
-    catalog: LHAASO-2024icrc
-    name: 1LHAASO J1825-1256u
+    catalog: gamma-cat
+    name: CTA 1
+  1:
+    catalog: 3fgl
+    name: 3FGL J0007.0+7302
+  2:
+    catalog: 4fgl
+    name: 4FGL J0007.0+7303
+  3:
+    catalog: 3fhl
+    name: 3FHL J0007.0+7303
+  4:
+    catalog: 3PC
+    name: J0007+7303
+  5:
+    catalog: 2PC
+    name: J0007+7303
+  6:
+    catalog: 1LHAASO
+    name: 1LHAASO J0007+7303u
+  7:
+    catalog: vtscat
+    name: VER J0006+729
+  8:
+    catalog: psrcat
+    name: PSR J0007+7303
