@@ -3,14 +3,6 @@
 
 from astropy.units import Quantity
 from astropy import units as u
-
-UNIT_DEG = 'deg' 
-# Degree unit
-FRAME_ICRS = 'icrs'
-# Frame icrs
-FRAME_FK5 = 'fk5'
-# Frame fk5
-
     
 ENERGY_COLUMNS = {
     "dnde": (["e_ref"], ),
@@ -68,86 +60,8 @@ DEFAULT_SED_UNIT = {
     "counts": u.Unit("cm-2 s-1"),
 }
 
-def Jy_to_erg_by_cm2_s(freq, flux):
-    """
-    Convert flux density from Jansky (Jy) to flux in erg/cm^2/s.
-
-    Parameters
-    ----------
-    freq : `~astropy.units.Quantity`
-        Frequency in units of Hertz (Hz).
-    flux : `~astropy.units.Quantity`
-        Flux density in units of milliJansky (mJy).
-        
-    Returns
-    -------
-    flux : `~astropy.units.Quantity`
-        Flux in erg/cm^2/s.
-    """
-    return Quantity(flux.to(u.mJy) * freq.to(u.Hz), 'Jy Hz').to('erg cm-2 s-1')
 
 
-def Hz_to_eV(freq):
-    """
-    Convert frequency (Hz) to energy (eV).
-
-    Parameters
-    ----------
-    freq : `~astropy.units.Quantity`
-        Frequency in units of Hertz (Hz).
-        
-    Returns
-    -------
-    energy : `~astropy.units.Quantity`
-        Energy in units of electron volts (eV).
-    """
-    return Quantity(freq).to(u.eV, equivalencies=u.spectral())
-
-
-def get_ecut_from_ecpl(sky_model, fmt="{:.2f} \\pm {:.2f}"):
-    """
-    Extract and format the cutoff energy (E_cut) from an ECPL spectral model.
-
-    Parameters
-    ----------
-    sky_model : `~gammapy.modeling.models.SkyModel`
-        Sky model with an ExpCutoffPowerLawSpectralModel.
-    fmt : str, optional
-        Format string for value ± error.
-
-    Returns
-    -------
-    ecut_latex : str
-        LaTeX-formatted cutoff energy.
-
-    Raises
-    ------
-    TypeError
-        If the spectral model is not an ECPL.
-    """
-
-    spec = sky_model.spectral_model
-
-    # Safety check
-    if not hasattr(spec, "lambda_"):
-        raise TypeError(
-            "Spectral model does not have 'lambda_' parameter "
-            "(not an ExpCutoffPowerLawSpectralModel)."
-        )
-
-    # λ and its uncertainty (with scale)
-    lam = spec.lambda_.value 
-
-    if spec.lambda_.error is None:
-        raise ValueError("Parameter 'lambda_' has no associated error.")
-
-    lam_err = spec.lambda_.error 
-
-    # E_cut = 1 / λ
-    ecut = 1.0 / lam
-    ecut_err = ecut * (lam_err / lam)
-
-    return fmt.format(ecut, ecut_err)
 
 
 # from astropy.units import Quantity
