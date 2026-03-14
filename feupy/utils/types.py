@@ -3,7 +3,6 @@
 
 from typing import Annotated, List, Union
 from pydantic.functional_validators import BeforeValidator
-from feupy.analysis.irfs import Irfs
 
 
 __all__ = [
@@ -11,6 +10,7 @@ __all__ = [
 ]
 
 def validate_irf(v):
+    from feupy.analysis.irfs import Irfs
     if v not in Irfs.IRFS_OPTIONS:
         raise ValueError(f"Invalid IRF option: {v!r}. Choose from: {Irfs.IRFS_OPTIONS!r}")
     return v
