@@ -6,10 +6,13 @@ import pandas as pd
 import numpy as np
 
 import astropy.units as u
-from astropy.coordinates import AltAz
+from astropy.units import Quantity
+from astropy.coordinates import Angle
+from astropy.coordinates import SkyCoord, AltAz
 from astropy.time import Time
 
 from gammapy.irf import load_irf_dict_from_file
+from gammapy.data import observatory_locations
 from gammapy.data import observatory_locations
 
 from datetime import datetime, timedelta
@@ -199,7 +202,7 @@ class Irfs:
     }
     _OBS_TIME = {'0.5h': '1800s', '5h': '18000s', '50h': '180000s'}
     
-    _DIR_FITS = '$PYTHONPATH/data/irfs/cta-prod5-zenodo-v0.1/fits/'
+    _DIR_FITS = '$FEUPY_DATA/irfs/cta-prod5-zenodo-v0.1/fits/'
 
     def __init__(self):
         self.irfs = None
