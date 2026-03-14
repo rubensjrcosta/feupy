@@ -15,7 +15,7 @@ from astropy.table import Table, Column
 from gammapy.utils.scripts import make_path
 from gammapy.datasets import Datasets, FluxPointsDataset
 from gammapy.estimators import FluxPoints
-from feupy.utils.units import Hz_to_eV, Jy_to_erg_by_cm2_s
+from feupy.utils.conversions import frequency_to_energy, jy_to_erg_cm2_s
 import logging
 
 # Set up logging
@@ -97,15 +97,15 @@ def create_pulsar_flux_points_table(pulsar_jname):
         # Create Astropy table with metadata
         table = Table(meta=metadata)
         table["ref"] = Column(data=np.array(refs, dtype="U20"), description="Reference label")
-        table["e_ref"] = Column(data=Hz_to_eV(freqs_mhz), unit="eV", description="Reference energy", format=".3e")
+        table["e_ref"] = Column(data=frequency_to_energy(freqs_mhz), unit="eV", description="Reference energy", format=".3e")
         table["e2dnde"] = Column(
-            data=Jy_to_erg_by_cm2_s(freqs_mhz, fluxs_mjy),
+            data=jy_to_erg_cm2_s(freqs_mhz, fluxs_mjy),
             unit="erg cm^-2 s^-1",
             description="Differential flux",
             format=".3e",
         )
         table["e2dnde_err"] = Column(
-            data=Jy_to_erg_by_cm2_s(freqs_mhz, flux_errs_mjy),
+            data=jy_to_erg_cm2_s(freqs_mhz, flux_errs_mjy),
             unit="erg cm^-2 s^-1",
             description="Differential flux uncertainty",
             format=".3e",
