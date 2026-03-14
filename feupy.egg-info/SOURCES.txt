@@ -45,6 +45,7 @@ feupy/utils/table.py
 feupy/utils/types.py
 feupy/utils/units.py
 feupy/utils/tests/__init__.py
+feupy/utils/tests/test_config.py
 feupy/utils/tests/test_formatting.py
 feupy/visualization/__init__.py
 feupy/visualization/counts.py

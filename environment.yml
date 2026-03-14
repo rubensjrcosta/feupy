@@ -38,5 +38,5 @@ dependencies:
       - -e .
 
 variables:
-  GAMMAPY_DATA: /home/phoenix/Coding/data/gammapy-datasets/2.0
-  FEUPY_DATA: /home/phoenix/Coding/data/feupy-datasets/1.0
+  GAMMAPY_DATA: /home/phoenix/Coding/GitHub/gammapy-data/gammapy-datasets/2.0
+  FEUPY_DATA: /home/phoenix/Coding/GitHub/feupy-data/feupy-datasets/1.0

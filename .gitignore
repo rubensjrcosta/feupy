@@ -1,6 +1,16 @@
-data/
-notebook.ipynb
-.ipynb_checkpoints/
-   notebook-checkpoint.ipynb
+# Python cache
 __pycache__/
-*.pyc
+*.py[cod]
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Environments
+.venv/
+venv/
+.env
+
+# Build
+build/
+dist/
+*.egg-info/
