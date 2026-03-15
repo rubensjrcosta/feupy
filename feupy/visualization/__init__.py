@@ -1,6 +1,7 @@
 # Licensed under a 3-clause BSD style license - see LICENSE.rst
 """Visualization tools."""
 
+# Import core styles and plotting helpers
 from .styles import (
     CatalogStyle,
     CatalogStyleRegistry,
@@ -17,7 +18,12 @@ from .styles import (
     FEUPY_MPL_STYLE,
 )
 
+# Import submodules explicitly
+from .utils import labels
+
+# Expose public API
 __all__ = [
+    # Styles
     "CatalogStyle",
     "CatalogStyleRegistry",
     "CATALOG_STYLE_REGISTRY",
@@ -31,4 +37,6 @@ __all__ = [
     "PALETTE_WONG",
     "LINESTYLES_DEFAULT",
     "FEUPY_MPL_STYLE",
+    # Labels
+    "labels",
 ]
