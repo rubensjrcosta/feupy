@@ -2,6 +2,8 @@
 """Utilities for coordinate conversions."""
 
 from astropy.coordinates import SkyCoord
+import astropy.units as u
+
 import logging
 
 log = logging.getLogger(__name__)
@@ -14,7 +16,7 @@ __all__ = [
 ]
 
 
-def convert_skycoord_to_dict(position: SkyCoord) -> dict:
+def convert_skycoord_to_dict(position: SkyCoord):
     """
     Convert a SkyCoord object to a dictionary.
 
@@ -38,7 +40,7 @@ def convert_skycoord_to_dict(position: SkyCoord) -> dict:
     }
 
 
-def convert_pos_config_to_skycoord(pos_config) -> SkyCoord:
+def convert_pos_config_to_skycoord(pos_config):
     """
     Convert a configuration-like object to SkyCoord.
 
@@ -55,33 +57,40 @@ def convert_pos_config_to_skycoord(pos_config) -> SkyCoord:
 
     return SkyCoord(pos_config.lon, pos_config.lat, frame=pos_config.frame)
 
-
-def convert_dict_to_skycoord(pos_dict: dict) -> SkyCoord:
+def convert_dict_to_skycoord(pos_dict: dict):
     """
     Convert dictionary to SkyCoord.
 
-    Parameters
-    ----------
-    pos_dict : dict
-        Dictionary with keys:
-        - lon
-        - lat
-        - frame
-
-    Returns
-    -------
-    SkyCoord
+    Supports:
+    - lon/lat
+    - ra/dec
     """
-    required = ["lon", "lat", "frame"]
 
-    for key in required:
-        if key not in pos_dict:
-            raise KeyError(f"Missing key '{key}' in pos_dict")
+    # Detect keys automatically
+    if {"lon", "lat"}.issubset(pos_dict):
+        lon_key, lat_key = "lon", "lat"
+    elif {"ra", "dec"}.issubset(pos_dict):
+        lon_key, lat_key = "ra", "dec"
+    else:
+        raise KeyError(
+            "Dictionary must contain ('lon','lat') or ('ra','dec')"
+        )
 
-    return SkyCoord(pos_dict["lon"], pos_dict["lat"], frame=pos_dict["frame"])
+    frame = pos_dict.get("frame", "icrs")
+
+    lon = pos_dict[lon_key]
+    lat = pos_dict[lat_key]
+
+    # Handle missing units
+    if not hasattr(lon, "unit"):
+        lon = lon * u.deg
+    if not hasattr(lat, "unit"):
+        lat = lat * u.deg
+
+    return SkyCoord(lon, lat, frame=frame)
 
 
-def convert_table_to_skycoord(table) -> SkyCoord:
+def convert_table_to_skycoord(table):
     """
     Convert an astropy Table to SkyCoord.
 
