@@ -31,6 +31,12 @@ feupy/catalog/tests/test_pulsar_spectra.py
 feupy/core/sources/__init__.py
 feupy/core/sources/sources.py
 feupy/naima/io.py
+feupy/naima/gammapy/__init__.py
+feupy/naima/gammapy/spectral.py
+feupy/naima/particles/__init__.py
+feupy/naima/particles/analysis.py
+feupy/naima/particles/mcmc.py
+feupy/naima/tests/__init__.py
 feupy/naima/tests/test_naima_io.py
 feupy/tests/__init__.py
 feupy/utils/__init__.py
@@ -54,6 +60,7 @@ feupy/utils/tests/__init__.py
 feupy/utils/tests/test_config.py
 feupy/utils/tests/test_constants.py
 feupy/utils/tests/test_conversions.py
+feupy/utils/tests/test_coordinates.py
 feupy/utils/tests/test_formatting.py
 feupy/utils/tests/test_sed_tables.py
 feupy/utils/tests/test_spectral.py

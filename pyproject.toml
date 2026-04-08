@@ -40,7 +40,7 @@ include = ["feupy*"]
 
 [tool.pytest.ini_options]
 filterwarnings = [
-    "ignore::pyparsing.PyparsingDeprecationWarning"
+    "ignore::DeprecationWarning"
 ]
 [project.urls]
 Homepage = "https://github.com/rubensjrcosta/feupy"

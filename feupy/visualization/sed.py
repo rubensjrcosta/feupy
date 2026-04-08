@@ -14,7 +14,7 @@ from astropy import units as u
 from feupy.visualization.styles.markers import build_fp_kwargs
 from feupy.visualization.styles.linestyles import LINESTYLES_DEFAULT
 from feupy.utils.datasets import get_energy_bounds_from_datasets
-from feupy.visualization.utils.units import (
+from feupy.visualization.utils.labels import (
     DEFAULT_XAXIS_LABEL,
     DEFAULT_YAXIS_LABEL,
 )
