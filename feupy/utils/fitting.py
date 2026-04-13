@@ -18,7 +18,7 @@ def fit_spectral_model_to_flux_points(flux_points_table, spectral_model):
     datasets = Datasets(FluxPointsDataset(data=flux_points))
 
     model = SkyModel(spectral_model=spectral_model)
-    datasets.models = model
+    datasets.models = Models([model])
 
     Fit().run(datasets=datasets)
 

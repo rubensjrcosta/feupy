@@ -20,7 +20,19 @@ def calculate_aic(datasets, fit_result):
     )
 
     Wstat = float(fit_result.total_stat)
-    k = int(len(fit_result.models.parameters.free_parameters.names))
+
+    # SAFE access (Gammapy-compatible)
+    models = getattr(fit_result, "models", None)
+
+    if models is None:
+        raise AttributeError("fit_result.models is missing")
+
+    try:
+        k = len(models.parameters.free_parameters.names)
+    except AttributeError:
+        raise TypeError(
+            "fit_result.models must be a Gammapy Models object, not list"
+        )
 
     AIC = Wstat + 2 * k
     AICc = AIC + ((2 * k**2 + 2 * k) / (N_pt - k - 1))
