@@ -13,7 +13,7 @@ from gammapy.utils.scripts import make_path
 from gammapy.catalog.core import SourceCatalog, SourceCatalogObject
 from gammapy.estimators import FluxPoints
 from feupy.utils.tables.utils import remove_nan_rows
-from feupy.utils.stats import fit_spectral_model_to_flux_points
+from feupy.utils.fitting import fit_spectral_model_to_flux_points
 from feupy.utils.formatting import string_to_filename
 import logging
 
