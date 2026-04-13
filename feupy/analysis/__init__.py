@@ -8,5 +8,4 @@ __all__ = [
     "ROIAnalysisConfig",
     "CTAOAnalysis",
     "CTAOAnalysisConfig",
-    # "Irfs",
 ]

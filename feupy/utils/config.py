@@ -105,4 +105,4 @@ class ObservationConfig(GammapyBaseConfig):
     offset: Optional[QuantityType] = None
     position_angle: Optional[AngleType] = None
 
-    required_irfs: IrfType = ["South", "AverageAz", "20deg", "50h"]
+    required_irfs: IrfType = ("South", "AverageAz", "20deg", "50h")

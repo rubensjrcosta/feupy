@@ -10,11 +10,9 @@ feupy.egg-info/top_level.txt
 feupy/analysis/__init__.py
 feupy/analysis/config.py
 feupy/analysis/core.py
-feupy/analysis/irfs.py
 feupy/analysis/tests/__init__.py
 feupy/analysis/tests/test_analysis.py
 feupy/analysis/tests/test_config.py
-feupy/analysis/tests/test_irfs.py
 feupy/catalog/__init__.py
 feupy/catalog/fermi.py
 feupy/catalog/hawc.py
@@ -30,6 +28,12 @@ feupy/catalog/tests/test_catalogs.py
 feupy/catalog/tests/test_pulsar_spectra.py
 feupy/core/sources/__init__.py
 feupy/core/sources/sources.py
+feupy/irf/__init__.py
+feupy/irf/manager.py
+feupy/irf/visibility.py
+feupy/irf/tests/__init__.py
+feupy/irf/tests/test_irf_manager.py
+feupy/irf/tests/test_visibility.py
 feupy/naima/io.py
 feupy/naima/gammapy/__init__.py
 feupy/naima/gammapy/spectral.py
@@ -64,6 +68,7 @@ feupy/utils/tests/test_coordinates.py
 feupy/utils/tests/test_formatting.py
 feupy/utils/tests/test_sed_tables.py
 feupy/utils/tests/test_spectral.py
+feupy/utils/tests/test_types.py
 feupy/utils/tests/test_units.py
 feupy/visualization/__init__.py
 feupy/visualization/counts.py

@@ -30,7 +30,8 @@ from gammapy.modeling.models import (
 from gammapy.utils.scripts import make_path
 
 from feupy.analysis.config import ROIAnalysisConfig, CTAOAnalysisConfig
-from feupy.analysis.irfs import Irfs
+
+from feupy.irf import CTAOIRFManager
 from feupy.catalog.utils import load_catalogs
 from feupy.catalog.hawc import get_flux_points_3hwc, get_flux_points_2hwc
 from feupy.catalog.fermi import get_flux_points_2PC, get_flux_points_3PC
@@ -432,48 +433,28 @@ class ROIAnalysis:
 
 
 class CTAOAnalysis:
-    """Config-driven high level analysis interface.
-
-    It is initialized by default with a set of configuration parameters and values declared in
-    an internal high level interface model, though the user can also provide configuration
-    parameters passed as a nested dictionary at the moment of instantiation. In that case these
-    parameters will overwrite the default values of those present in the configuration file.
-
-    Parameters
-    ----------
-    config : dict or `~gammapy.analysis.AnalysisConfig`
-        Configuration options following `AnalysisConfig` schema.
-    """
+    """Config-driven high level analysis interface (ON/OFF 1D only)."""
 
     def __init__(self, config):
         self.config = config
         self.config.set_logging()
-        self.datastore = None
-        self.observations = None
+
+        self.observations = Observations()
         self.datasets = None
+        self.spectrum_dataset = None
+
         self.fit = Fit()
         self.fit_result = None
         self.flux_points = None
+        self.table_sens = None
 
-    def _repr_html_(self):
-        try:
-            return self.to_html()
-        except AttributeError:
-            return f"<pre>{html.escape(str(self))}</pre>"
+        self.irf_manager = CTAOIRFManager()
 
-    @property
-    def models(self):
-        if not self.datasets:
-            raise RuntimeError("No datasets defined. Impossible to set models.")
-        return self.datasets.models
-
-    @models.setter
-    def models(self, models):
-        self.set_models(models, extend=False)
-
+    # =====================
+    # Config
+    # =====================
     @property
     def config(self):
-        """Analysis configuration as an `~gammapy.analysis.AnalysisConfig` object."""
         return self._config
 
     @config.setter
@@ -485,421 +466,19 @@ class CTAOAnalysis:
         else:
             raise TypeError("config must be dict or CTAOAnalysisConfig.")
 
-    def simulate_observation(self, obs_id=0):
-        """
-        Simulate observation with given parameters
-
-        Parameters
-        ----------
-        obs_settings : `~gammapy.scripts.ObservationParameters`
-            Observation parameters
-        """
-                
-        if not self.observations:
-            observations = Observations()
-        else: 
-            observations = self.observations
-
-        if obs_id in observations.ids:
-                raise (ValueError("Observation ids must be unique"))
-                
-        on_region_settings = self.config.datasets.on_region
-        observation_settings = self.config.observation
-        
-        on_lon = on_region_settings.lon
-        on_lat = on_region_settings.lat
-        frame = on_region_settings.frame
-        log.info("Creating the pointing.")
-        on_center = SkyCoord(on_lon, on_lat, frame=frame)
-        log.info("\n ON center:\n{}".format(on_center))
-        
-        position_angle = observation_settings.position_angle
-        separation = observation_settings.offset
-        log.info("\n Obsevation offset:\n{}".format(separation))
-        pointing_position = self._create_pointing_position(on_center, position_angle, separation)
-        log.info(f"\nPointing position:\n{pointing_position}\n")
-        pointing = self._create_pointing(pointing_position)
-        log.info(f"\nPointing:\n{pointing}\n")
-        
-        log.info("\nSetting observation parameters.")
-        livetime = observation_settings.livetime
-        required_irfs = observation_settings.required_irfs
-        irfs = Irfs.get_irfs(required_irfs)
-        location = Irfs.get_obs_loc(required_irfs)
-        log.info("\nirfs: {}".format(Irfs.get_irfs_label(required_irfs)))
-        log.info("\nlocation: {}".format(location))
-        log.info("\nlivetime: {}".format(livetime))
-        observation = Observation.create(pointing=pointing, livetime=livetime, irfs=irfs, location=location, obs_id=obs_id)
-                        
-        observations.append(observation)
-        self.observations = observations
-        log.info(f"\n{observation}\n")
-        log.info(f"Observation {observation.obs_id} loaded.")
-
-    
-    @staticmethod
-    def _create_pointing_position(position, position_angle, separation):
-        """Create the pointing position"""
-        return position.directional_offset_by(position_angle, separation)
-
-    @staticmethod
-    def _create_pointing(pointing_position):
-        """Create the pointing."""
-        return FixedPointingInfo(
-            # mode=PointingMode.POINTING,
-            fixed_icrs=pointing_position.icrs,
-    
-        )
-        
-    def get_spectrum_dataset(self, model=None, obs_id=0, random_state=42):
-        """
-        Produce reduced datasets.
-
-        Notes
-        -----
-        The progress bar can be displayed for this function.
-        """
-        datasets_settings = self.config.datasets
-        if not self.observations or len(self.observations) == 0:
-            raise RuntimeError("No observations have been selected.")
-
-        if datasets_settings.type == "1d":
-            self._spectrum_extraction(
-                model=model, 
-                obs_id=obs_id, 
-                random_state=random_state,
-            )
-        else: 
-            raise ValueError(
-                    f"Incorrect dataset type. Expect '1d'. Got {datasets_settings.type}."
-                )
     def update_config(self, config):
-        """Update the configuration."""
         self.config = self.config.update(config=config)
         
-    def _spectrum_extraction(self, model=None, obs_id=0, random_state=42):
-        """Make the SpectrumDataset for ON-OFF analysis"""
-        datasets_settings = self.config.datasets
-        obs_settings = self.config.observation   
-        energy_axis = self._make_energy_axis(self.config.datasets.geom.axes.energy)
-        self._make_energy_axis(self.config.datasets.geom.axes.energy_true)
-
-        dataset_maker = self._create_dataset_maker()
-        safe_mask_maker = self._create_safe_mask_maker()
-        bkg_maker = self._create_background_maker()
-        
-        log.info("Getting the observation.")
-        observation = self.observations[obs_id]
-        log.info(f"\n{observation}\n")
-        log.info("Getting the reference Dataset.")    
-        reference = self._create_reference_dataset(str(observation.obs_id))
-        log.info("\nreference: {}".format(reference))
-        
-        log.info("Reducing spectrum datasets.")
-        dataset = dataset_maker.run(reference, observation)
-        log.info("\nMaker: {}".format(dataset))
-
-        if not datasets_settings.containment_correction:
-            
-            if datasets_settings.containment:
-                
-                containment = datasets_settings.containment
-
-                dataset.exposure *= containment
-                log.info("\nCorrected exposure (containment: {}%):\n{}\n".format(containment, dataset)) 
-
-                offset = obs_settings.offset
-
-                on_radii = observation.psf.containment_radius(
-                    energy_true=energy_axis.center, offset=offset, fraction=containment
-                )
-                self._on_radii = on_radii
-                on_region_radius = datasets_settings.on_region.radius
-                factor = (1 - np.cos(on_radii)) / (1 - np.cos(on_region_radius))
-                dataset.background *= factor.value.reshape((-1, 1, 1))
-                log.info("\nCorrected background (containment: {}%):\n{}\n".format(containment, dataset)) 
-                
-        if bkg_maker is not None:
-            dataset = bkg_maker.run(dataset, observation)
-            if dataset.counts_off is None:
-                raise ValueError(
-                    f"No OFF region found for observation {observation.obs_id}. Discarding."
-                )
-        dataset = safe_mask_maker.run(dataset, observation)
-        log.info("\nSafe mask maker: {}".format(dataset))
-        
-        
-        if model is not None:
-            dataset.models = model
-            dataset.fake(random_state=random_state)
-            log.info(f"\nDataset Model:\n{dataset}\n")      
-        
-        self.spectrum_dataset = dataset
-        log.info(f"\nDataset:\n{self.spectrum_dataset}\n")
-
-    def _create_dataset_maker(self):
-        """Create the Dataset Maker."""
-        log.debug("Creating the target Dataset Maker.")
-
-        datasets_settings = self.config.datasets
-        if datasets_settings.type == "3d":
-            maker = MapDatasetMaker(selection=datasets_settings.map_selection)
-        elif datasets_settings.type == "1d":
-            maker_config = {}
-            if datasets_settings.containment_correction:
-                maker_config["containment_correction"] = (
-                    datasets_settings.containment_correction
-                )
-
-            maker_config["selection"] = datasets_settings.map_selection
-            maker_config["use_region_center"] = datasets_settings.use_region_center
-            maker = SpectrumDatasetMaker(**maker_config)
-
-        return maker
-
-    def _create_safe_mask_maker(self):
-        """Create the SafeMaskMaker."""
-        log.debug("Creating the mask_safe Maker.")
-
-        safe_mask_selection = self.config.datasets.safe_mask.methods
-        safe_mask_settings = self.config.datasets.safe_mask.parameters
-        return SafeMaskMaker(methods=safe_mask_selection, **safe_mask_settings)
-
-    def _create_background_maker(self):
-        """Create the Background maker."""
-        log.info("Creating the background Maker.")
-
-        datasets_settings = self.config.datasets
-        bkg_maker_config = {}
-        if datasets_settings.background.exclusion:
-            path = make_path(datasets_settings.background.exclusion)
-            exclusion_mask = Map.read(path)
-            exclusion_mask.data = exclusion_mask.data.astype(bool)
-            bkg_maker_config["exclusion_mask"] = exclusion_mask
-        bkg_maker_config.update(datasets_settings.background.parameters)
-
-        bkg_method = datasets_settings.background.method
-
-        bkg_maker = None
-        if bkg_method == "fov_background":
-            log.debug(f"Creating FoVBackgroundMaker with arguments {bkg_maker_config}")
-            bkg_maker = FoVBackgroundMaker(**bkg_maker_config)
-        elif bkg_method == "ring":
-            bkg_maker = RingBackgroundMaker(**bkg_maker_config)
-            log.debug(f"Creating RingBackgroundMaker with arguments {bkg_maker_config}")
-            if datasets_settings.geom.axes.energy.nbins > 1:
-                raise ValueError(
-                    "You need to define a single-bin energy geometry for your dataset."
-                )
-        elif bkg_method == "reflected":
-            bkg_maker = ReflectedRegionsBackgroundMaker(**bkg_maker_config)
-            log.debug(
-                f"Creating ReflectedRegionsBackgroundMaker with arguments {bkg_maker_config}"
-            )
-        else:
-            log.warning("No background maker set. Check configuration.")
-        return bkg_maker
-
-    def _create_reference_dataset(self, name=None):
-        """Create the reference dataset for the current analysis."""
-        log.debug("Creating target Dataset.")
-        geom = self._create_geometry()
-
-        geom_settings = self.config.datasets.geom
-        geom_irf = dict(energy_axis_true=None, binsz_irf=None)
-        if geom_settings.axes.energy_true.min is not None:
-            geom_irf["energy_axis_true"] = self._make_energy_axis(
-                geom_settings.axes.energy_true, name="energy_true"
-            )
-        if geom_settings.wcs.binsize_irf is not None:
-            geom_irf["binsz_irf"] = geom_settings.wcs.binsize_irf.to("deg").value
-
-        if self.config.datasets.type == "1d":
-            return SpectrumDataset.create(geom, name=name, **geom_irf)
-        else:
-            return MapDataset.create(geom, name=name, **geom_irf)
-
-    @staticmethod
-    def _create_region_geometry(on_region_settings, axes):
-        """Create the region geometry."""
-        on_lon = on_region_settings.lon
-        on_lat = on_region_settings.lat
-        on_center = SkyCoord(on_lon, on_lat, frame=on_region_settings.frame)
-        on_region = CircleSkyRegion(on_center, on_region_settings.radius)
-
-        return RegionGeom.create(region=on_region, axes=axes)
-
-    def _create_geometry(self):
-        """Create the geometry."""
-        log.debug("Creating geometry.")
-        datasets_settings = self.config.datasets
-        geom_settings = datasets_settings.geom
-        axes = [self._make_energy_axis(geom_settings.axes.energy)]
-        if datasets_settings.type == "3d":
-            geom = self._create_wcs_geometry(geom_settings.wcs, axes)
-        elif datasets_settings.type == "1d":
-            geom = self._create_region_geometry(datasets_settings.on_region, axes)
-        else:
-            raise ValueError(
-                f"Incorrect dataset type. Expect '1d' or '3d'. Got {datasets_settings.type}."
-            )
-        return geom
-
-    @staticmethod
-    def _create_wcs_geometry(wcs_geom_settings, axes):
-        """Create the WCS geometry."""
-        geom_params = {}
-        skydir_settings = wcs_geom_settings.skydir
-        if skydir_settings.lon is not None:
-            skydir = SkyCoord(
-                skydir_settings.lon, skydir_settings.lat, frame=skydir_settings.frame
-            )
-            geom_params["skydir"] = skydir
-
-        if skydir_settings.frame in ["icrs", "galactic"]:
-            geom_params["frame"] = skydir_settings.frame
-        else:
-            raise ValueError(
-                f"Incorrect skydir frame: expect 'icrs' or 'galactic'. Got {skydir_settings.frame}"
-            )
-
-        geom_params["axes"] = axes
-        geom_params["binsz"] = wcs_geom_settings.binsize
-        width = wcs_geom_settings.width.width.to("deg").value
-        height = wcs_geom_settings.width.height.to("deg").value
-        geom_params["width"] = (width, height)
-
-        return WcsGeom.create(**geom_params)
-        
-    def get_datasets(self):
-        """
-        Produce reduced datasets.
-
-        Notes
-        -----
-        The progress bar can be displayed for this function.
-        """
-        datasets_settings = self.config.datasets
-        
-        if not self.observations or len(self.observations) == 0:
-            raise RuntimeError("No observations have been selected.")
-
-        if not self.spectrum_dataset:
-            raise RuntimeError("No spectrum dataset have been selected.")
-
-        
-        if datasets_settings.type == "1d":
-            self._run_on_off()
-            
-        else: 
-            raise ValueError(
-                    f"Incorrect dataset type. Expect '1d'. Got {datasets_settings.type}."
-                )
-
-    def run_fit(self):
-        """Fitting reduced datasets to model."""
-        if not self.models:
-            raise RuntimeError("Missing models")
-
-        fit_settings = self.config.fit
-        for dataset in self.datasets:
-            if fit_settings.fit_range:
-                energy_min = fit_settings.fit_range.min
-                energy_max = fit_settings.fit_range.max
-                geom = dataset.counts.geom
-                dataset.mask_fit = geom.energy_mask(energy_min, energy_max)
-
-        log.info("Fitting datasets.")
-        result = self.fit.run(datasets=self.datasets)
-        self.fit_result = result
-        log.info(self.fit_result)
-        
-    def _run_on_off(self):
-        datasets_settings = self.config.datasets
-        # on_off_settings = self.config.on_off
-        stat_settings = self.config.statistics
-        
-        dataset = self.spectrum_dataset
-        
-        acceptance = datasets_settings.on_off.acceptance 
-        acceptance_off = datasets_settings.on_off.acceptance_off
-        
-        dataset_on_off = self._create_dataset_on_off(dataset, acceptance, acceptance_off)
-        
-        n_obs =  stat_settings.n_obs
-        datasets = Datasets()
-        for idx in range(n_obs):
-            dataset_on_off.fake(random_state=idx, npred_background=dataset.npred_background())
-            dataset_fake = dataset_on_off.copy(name=f"obs-{idx}")
-            dataset_fake.meta_table["OBS_ID"] = [idx]
-            datasets.append(dataset_fake)
-        table = datasets.info_table()
-        print(table)
-        # self.datasets_on_off = datasets
-        self.datasets = datasets
-
-        if datasets_settings.stack:
-            stacked = self.datasets.stack_reduce(name="stacked")
-            self.datasets = Datasets([stacked])
-    
-    def get_flux_points(self):
-        """Calculate flux points for a specific model component."""
+    @property
+    def models(self):
         if not self.datasets:
-            raise RuntimeError(
-                "No datasets defined. Impossible to compute flux points."
-            )
+            raise RuntimeError("No datasets defined. Impossible to set models.")
+        return self.datasets.models
 
-        fp_settings = self.config.flux_points
-        log.info("Calculating flux points.")
-        energy_edges = self._make_energy_axis(fp_settings.energy).edges
-        flux_point_estimator = FluxPointsEstimator(
-            energy_edges=energy_edges,
-            source=fp_settings.source,
-            fit=self.fit,
-            n_jobs=self.config.general.n_jobs,
-            **fp_settings.parameters,
-        )
-
-        fp = flux_point_estimator.run(datasets=self.datasets)
-
-        self.flux_points = FluxPointsDataset(
-            data=fp, models=self.models[fp_settings.source]
-        )
-        cols = ["e_ref", "dnde", "dnde_ul", "dnde_err", "sqrt_ts"]
-        table = self.flux_points.data.to_table(sed_type="dnde")
-        log.info("\n{}".format(table[cols]))                
-
-    @staticmethod    
-    def _create_dataset_on_off(dataset, acceptance, acceptance_off):
-    # Spectrum dataset for on-off likelihood fitting.
-        dataset_on_off = SpectrumDatasetOnOff.from_spectrum_dataset(
-            dataset=dataset, 
-            acceptance=acceptance, 
-            acceptance_off=acceptance_off,
-        )
-        dataset_on_off.fake(
-            random_state='random-seed', 
-            npred_background=dataset.npred_background()
-        )
-        return(dataset_on_off)
+    @models.setter
+    def models(self, models):
+        self.set_models(models, extend=False)
         
-    @staticmethod
-    def _make_energy_axis(axis, name="energy"):
-        if axis.min is None or axis.max is None:
-            return None
-        elif axis.nbins is None or axis.nbins < 1:
-            return None
-        else:
-            return MapAxis.from_bounds(
-                name=name,
-                lo_bnd=axis.min.value,
-                hi_bnd=axis.max.to_value(axis.min.unit),
-                nbin=axis.nbins,
-                unit=axis.min.unit,
-                interp="log",
-                node_type="edges",
-            )
-
     def set_models(self, models, extend=True):
         """Set models on datasets.
 
@@ -970,130 +549,253 @@ class CTAOAnalysis:
             log.info(f"Models loaded from {filename_models}.")
         else:
             raise RuntimeError("Missing models_file in config.general")
+            
+    # =====================
+    # Observation
+    # =====================
+    def simulate_observation(self, obs_id=0):
 
-    def read_datasets(self):
-        """Read datasets from YAML file.
+        if obs_id in self.observations.ids:
+            raise ValueError("Observation ids must be unique")
 
-        File names are taken from the configuration file.
-        """
-        filename = self.config.general.datasets_file
-        filename_models = self.config.general.models_file
-        if filename is not None:
-            self.datasets = Datasets.read(filename)
-            log.info(f"Datasets loaded from {filename}.")
-            if filename_models is not None:
-                self.read_models(filename_models, extend=False)
-        else:
-            raise RuntimeError("Missing datasets_file in config.general")
+        obs_cfg = self.config.observation
+        on_region = self.config.datasets.on_region
 
-    def write_datasets(self, overwrite=True, write_covariance=True):
-        """Write datasets to YAML file.
+        on_center = SkyCoord(on_region.lon, on_region.lat, frame=on_region.frame)
 
-        File names are taken from the configuration file.
+        pointing_pos = self._create_pointing_position(
+            on_center,
+            obs_cfg.position_angle,
+            obs_cfg.offset,
+        )
 
-        Parameters
-        ----------
-        overwrite : bool, optional
-            Overwrite existing file. Default is True.
-        write_covariance : bool, optional
-            Save covariance or not. Default is True.
-        """
-        filename = self.config.general.datasets_file
-        filename_models = self.config.general.models_file
-        if filename is not None:
-            self.datasets.write(
-                filename,
-                filename_models,
-                overwrite=overwrite,
-                write_covariance=write_covariance,
+        pointing = self._create_pointing(pointing_pos)
+
+        # IRFs via manager (única fonte)
+        irf_data = self.irf_manager.get_irf(obs_cfg.required_irfs)
+
+        observation = Observation.create(
+            pointing=pointing,
+            livetime=obs_cfg.livetime,
+            irfs=irf_data["irf"],
+            location=irf_data["obs_location"],
+            obs_id=obs_id,
+        )
+
+        self.observations.append(observation)
+        log.info(f"Observation {obs_id} created")
+
+    @staticmethod
+    def _create_pointing_position(position, position_angle, separation):
+        return position.directional_offset_by(position_angle, separation)
+
+    @staticmethod
+    def _create_pointing(pointing_position):
+        return FixedPointingInfo(fixed_icrs=pointing_position.icrs)
+
+    # =====================
+    # Dataset
+    # =====================
+    def get_spectrum_dataset(self, model=None, obs_id=0, random_state=42):
+
+        if not self.observations:
+            raise RuntimeError("No observations defined")
+
+        if self.config.datasets.type != "1d":
+            raise ValueError("Only 1D ON/OFF supported")
+
+        self._spectrum_extraction(model, obs_id, random_state)
+
+    def _spectrum_extraction(self, model=None, obs_id=0, random_state=42):
+
+        obs = self.observations[obs_id]
+
+        dataset = self._create_dataset_maker().run(
+            self._create_reference_dataset(str(obs.obs_id)), obs
+        )
+
+        bkg_maker = self._create_background_maker()
+        if bkg_maker:
+            dataset = bkg_maker.run(dataset, obs)
+
+        dataset = self._create_safe_mask_maker().run(dataset, obs)
+
+        if model:
+            dataset.models = model
+            dataset.fake(random_state=random_state)
+
+        self.spectrum_dataset = dataset
+
+    # =====================
+    # ON/OFF
+    # =====================
+    def get_datasets(self):
+
+        if self.spectrum_dataset is None:
+            raise RuntimeError("No spectrum dataset")
+
+        self._run_on_off()
+
+    def _run_on_off(self):
+
+        cfg = self.config
+
+        dataset_on_off = self._create_dataset_on_off(
+            self.spectrum_dataset,
+            cfg.datasets.on_off.acceptance,
+            cfg.datasets.on_off.acceptance_off,
+        )
+
+        datasets = Datasets()
+
+        for i in range(cfg.statistics.n_obs):
+            dataset_on_off.fake(
+                random_state=i,
+                npred_background=self.spectrum_dataset.npred_background(),
             )
-            log.info(f"Datasets stored to {filename}.")
-            log.info(f"Datasets stored to {filename_models}.")
-        else:
-            raise RuntimeError("Missing datasets_file in config.general")
 
+            ds = dataset_on_off.copy(name=f"obs-{i}")
+            ds.meta_table["OBS_ID"] = [i]
+            datasets.append(ds)
 
-    # Sensitivity Computation
+        self.datasets = datasets
+
+        if cfg.datasets.stack:
+            self.datasets = Datasets([self.datasets.stack_reduce(name="stacked")])
+
+    @staticmethod
+    def _create_dataset_on_off(dataset, acceptance, acceptance_off):
+
+        ds = SpectrumDatasetOnOff.from_spectrum_dataset(
+            dataset=dataset,
+            acceptance=acceptance,
+            acceptance_off=acceptance_off,
+        )
+
+        ds.fake(
+            random_state="random-seed",
+            npred_background=dataset.npred_background(),
+        )
+
+        return ds
+
+    # =====================
+    # Makers
+    # =====================
+    def _create_dataset_maker(self):
+        cfg = self.config.datasets
+        return SpectrumDatasetMaker(
+            selection=cfg.map_selection,
+            use_region_center=cfg.use_region_center,
+            containment_correction=cfg.containment_correction,
+        )
+
+    def _create_safe_mask_maker(self):
+        return SafeMaskMaker(
+            methods=self.config.datasets.safe_mask.methods,
+            **self.config.datasets.safe_mask.parameters,
+        )
+
+    def _create_background_maker(self):
+
+        cfg = self.config.datasets.background
+
+        if cfg.method == "reflected":
+            return ReflectedRegionsBackgroundMaker(**cfg.parameters)
+        if cfg.method == "ring":
+            return RingBackgroundMaker(**cfg.parameters)
+        if cfg.method == "fov_background":
+            return FoVBackgroundMaker(**cfg.parameters)
+
+        return None
+
+    # =====================
+    # Geometry
+    # =====================
+    def _create_reference_dataset(self, name=None):
+        return SpectrumDataset.create(self._create_geometry(), name=name)
+
+    def _create_geometry(self):
+
+        axis = self._make_energy_axis(self.config.datasets.geom.axes.energy)
+
+        center = SkyCoord(
+            self.config.datasets.on_region.lon,
+            self.config.datasets.on_region.lat,
+            frame=self.config.datasets.on_region.frame,
+        )
+
+        region = CircleSkyRegion(center, self.config.datasets.on_region.radius)
+
+        return RegionGeom.create(region=region, axes=[axis])
+
+    # =====================
+    # Fit & Estimators
+    # =====================
+    def run_fit(self):
+
+        if not self.datasets:
+            raise RuntimeError("No datasets")
+
+        self.fit_result = self.fit.run(datasets=self.datasets)
+
+    def get_flux_points(self):
+
+        cfg = self.config.flux_points
+
+        estimator = FluxPointsEstimator(
+            energy_edges=self._make_energy_axis(cfg.energy).edges,
+            source=cfg.source,
+            fit=self.fit,
+        )
+
+        fp = estimator.run(self.datasets)
+
+        self.flux_points = FluxPointsDataset(
+            data=fp,
+            models=self.models[cfg.source],
+        )
+
+    # =====================
+    # Sensitivity
+    # =====================
     def compute_sensitivity(self):
-        """Compute the sensitivity of the analysis."""
-        sens_settings = self.config.sensitivity
-        obs_settings = self.config.observation
-        energy_settings = self.config.datasets.geom.axes.energy
-        datasets_settings = self.config.datasets
-        dataset = self.spectrum_dataset
 
-        acceptance = datasets_settings.on_off.acceptance 
-        acceptance_off = datasets_settings.on_off.acceptance_off
-        
-        
+        cfg = self.config
 
-
-        sensitivity_estimator = SensitivityEstimator(
-            gamma_min=sens_settings.gamma_min,
-            n_sigma=sens_settings.n_sigma,
-            bkg_syst_fraction=sens_settings.bkg_syst_fraction
+        dataset_on_off = self._create_dataset_on_off(
+            self.spectrum_dataset,
+            cfg.datasets.on_off.acceptance,
+            cfg.datasets.on_off.acceptance_off,
         )
-        
-        log.info("\nCreating ON/OFF Dataset:")
-        dataset_on_off = self._create_dataset_on_off(dataset, acceptance, acceptance_off)
-        log.info("\nON/OFF Dataset:\n{}\n".format(dataset_on_off))
-        
-        table = sensitivity_estimator.run(dataset_on_off)
 
-        if self._on_radii is not None:
-            table["on_radii"] = self._on_radii
-            table["on_radii"].format = '.3e'
-
-        required_irfs = obs_settings.required_irfs
-        irfs_label = Irfs.get_irfs_label(required_irfs, which='both')
-        dataset_label = f'sens {irfs_label}'
-
-        dataset = flux_points_dataset_from_table(table, name=dataset_label)
-        self.dataset_sens = dataset
-
-        dataset_on_off1 = dataset_on_off.to_image()
-
-        sensitivity_estimator1 = SensitivityEstimator(
-            gamma_min=sens_settings.gamma_min,
-            n_sigma=sens_settings.n_sigma,
-            bkg_syst_fraction=sens_settings.bkg_syst_fraction
+        estimator = SensitivityEstimator(
+            gamma_min=cfg.sensitivity.gamma_min,
+            n_sigma=cfg.sensitivity.n_sigma,
+            bkg_syst_fraction=cfg.sensitivity.bkg_syst_fraction,
         )
-        table1 = sensitivity_estimator1.run(dataset_on_off1)
-        log.info("\n{}".format(table1))
 
-        # Convert to a `FluxPoints` object for integral flux
+        table = estimator.run(dataset_on_off)
+
+        # Integral sensitivity
+        table_img = estimator.run(dataset_on_off.to_image())
+
         flux_points = FluxPoints.from_table(
-            table1,
+            table_img,
             sed_type="e2dnde",
-            reference_model=sensitivity_estimator1.spectral_model
+            reference_model=estimator.spectral_model,
         )
+
         int_sens = np.squeeze(flux_points.flux.quantity)
 
-        livetime = obs_settings.livetime
-        log.info(
-            f"Integral sensitivity in {livetime:.2f} above {energy_settings.min:.2e} "
-            f"is {int_sens:.2e}"
-        )
-        
         table.meta = self._get_table_meta()
-        table.meta['INT_SENS'] = f"{int_sens:.2e}"
+        table.meta["INT_SENS"] = f"{int_sens:.2e}"
+
         self.table_sens = table
 
-    def _get_table_meta(self):
-        """Retrieve metadata for the sensitivity table."""
-        obs_settings = self.config.observation
-        meta = {
-            # "SOURCE": obs_settings.target.name,
-            "ONRADIUS": f"{self.config.datasets.on_region.radius.to('deg').value} deg",
-            "OFFSET": obs_settings.offset.to_string(),
-            "LIVETIME": obs_settings.livetime.to_string(),
-            "ARRAY": Irfs.get_irfs_array(obs_settings.required_irfs),
-            "AZIMUTH": obs_settings.required_irfs[1],
-            "ZENITH": u.Quantity(obs_settings.required_irfs[2]).to_string(),
-            "OBS_TIME": u.Quantity(obs_settings.required_irfs[3]).to_string(),
-            'IRFS': obs_settings.required_irfs
-        }
-        return meta
+    # =====================
+    # Utils
+    # =====================
 
     # File Handling Methods
     def write_table_sensitivity(self, overwrite=True):
@@ -1123,14 +825,40 @@ class CTAOAnalysis:
                 return Table.read(f'{path_file}/{file_name}.fits', format='fits')
         except Exception as error:
             log.error(f'Error reading sensitivity table: {error}')
-            raise
+            
+    @staticmethod
+    def _make_energy_axis(axis, name="energy"):
 
-    def get_file_name(self, which='both'):
-        """Generate file name for saving sensitivity data."""
-        obs_settings = self.config.observation
-        irfs_name = Irfs.get_irfs_name(obs_settings.required_irfs, which=which)
-        dataset_name = f'sens_{irfs_name}'
-        livetime = obs_settings.livetime        
-        return f"{dataset_name.replace(' ', '-')}_livetime{livetime.to_string().replace(' ', '')}"
+        if axis.min is None or axis.max is None:
+            return None
 
+        return MapAxis.from_bounds(
+            name=name,
+            lo_bnd=axis.min.value,
+            hi_bnd=axis.max.to_value(axis.min.unit),
+            nbin=axis.nbins,
+            unit=axis.min.unit,
+            interp="log",
+        )
 
+    def _get_table_meta(self):
+
+        obs = self.config.observation
+        irf_data = self.irf_manager.get_irf(obs.required_irfs)
+
+        return {
+            "ONRADIUS": f"{self.config.datasets.on_region.radius.to('deg').value} deg",
+            "OFFSET": obs.offset.to_string(),
+            "LIVETIME": obs.livetime.to_string(),
+            "IRF_NAME": irf_data["name"],
+            "IRFS": obs.required_irfs,
+        }
+
+    def get_file_name(self):
+
+        obs = self.config.observation
+        irf_name = self.irf_manager.get_irf(obs.required_irfs)["name"]
+
+        livetime = obs.livetime.to_string().replace(" ", "")
+
+        return f"sens_{irf_name}_livetime{livetime}"

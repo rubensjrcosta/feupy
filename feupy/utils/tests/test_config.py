@@ -52,5 +52,5 @@ def test_observation_defaults():
     assert config.livetime is None
     assert config.offset is None
     assert config.position_angle is None
-    assert config.required_irfs == ["South", "AverageAz", "20deg", "50h"]
+    assert tuple(config.required_irfs) == ("South", "AverageAz", "20deg", "50h")
 
