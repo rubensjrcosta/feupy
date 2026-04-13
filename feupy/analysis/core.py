@@ -41,7 +41,7 @@ from feupy.core.sources import Sources
 from feupy.catalog.utils import get_catalog_tag
 from feupy.utils.coordinates import convert_pos_config_to_skycoord
 from feupy.utils.datasets import cut_energy_flux_points_datasets, flux_points_dataset_from_table
-from feupy.utils.table import write_tables_csv, write_tables_fits
+from feupy.utils.tables.io import write_table, read_table
 
 
 __all__ = ["ROIAnalysis", "CTAOAnalysis"]
@@ -799,32 +799,41 @@ class CTAOAnalysis:
 
     # File Handling Methods
     def write_table_sensitivity(self, overwrite=True):
-        """Write sensitivity table to file in specified format."""
-        if self.table_sens is not None:
-            path_file = self.config.sensitivity.data_path
-            file_name = self.get_file_name()
-            file_format = self.config.sensitivity.table_format
-            
-            if file_format == 'csv':
-                write_tables_csv(self.table_sens, path_file, file_name)
-                log.info(f"Table ({file_name}.csv) stored to {path_file}.")
-            else:
-                write_tables_fits(self.table_sens, path_file, file_name)
-                log.info(f"Table ({file_name}.fits) stored to {path_file}.")
-        else:
+        """Write sensitivity table to file in configured format."""
+    
+        if self.table_sens is None:
             raise RuntimeError("Missing table_sens")
+    
+        path_file = self.config.sensitivity.data_path
+        file_name = self.get_file_name()
+        file_format = self.config.sensitivity.table_format
+    
+        full_name = f"{file_name}.{file_format}"
+    
+        write_table(
+            self.table_sens,
+            path_file,
+            full_name,
+            overwrite=overwrite,
+        )
+    
+        log.info(f"Table ({full_name}) stored to {path_file}.")
 
     def read_table_sensitivity(self):
-        """Read datasets from file based on the configuration format."""
+        """Read sensitivity table from file based on configuration."""
+    
+        path_file = self.config.sensitivity.data_path
+        file_name = self.get_file_name()
+        file_format = self.config.sensitivity.table_format
+    
+        full_name = f"{file_name}.{file_format}"
+    
         try:
-            path_file = self.config.sensitivity.data_path
-            file_name = self.get_file_name()
-            if self.config.sensitivity.table_format == 'csv':
-                return Table.read(f'{path_file}/{file_name}.csv', format='ascii')
-            else:
-                return Table.read(f'{path_file}/{file_name}.fits', format='fits')
+            return read_table(path_file, full_name)
+    
         except Exception as error:
-            log.error(f'Error reading sensitivity table: {error}')
+            log.error(f"Error reading sensitivity table: {error}")
+            raise
             
     @staticmethod
     def _make_energy_axis(axis, name="energy"):

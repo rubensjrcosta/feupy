@@ -57,9 +57,16 @@ feupy/utils/scripts.py
 feupy/utils/sed_tables.py
 feupy/utils/spectral.py
 feupy/utils/stats.py
-feupy/utils/table.py
 feupy/utils/types.py
 feupy/utils/units.py
+feupy/utils/tables/__init__.py
+feupy/utils/tables/_legacy.py
+feupy/utils/tables/io.py
+feupy/utils/tables/utils.py
+feupy/utils/tables/tests/__init__.py
+feupy/utils/tables/tests/test_io.py
+feupy/utils/tables/tests/test_legacy.py
+feupy/utils/tables/tests/test_utils.py
 feupy/utils/tests/__init__.py
 feupy/utils/tests/test_config.py
 feupy/utils/tests/test_constants.py
