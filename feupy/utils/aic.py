@@ -18,7 +18,6 @@ def calculate_aic(datasets, fit_result):
         int(np.sum(~dataset.data.is_ul.data))
         for dataset in datasets
     )
-
     Wstat = float(fit_result.total_stat)
 
     # SAFE access (Gammapy-compatible)

@@ -9,8 +9,8 @@ from gammapy.modeling import Fit
 from gammapy.modeling.models import Models
 
 from feupy.visualization.sed import SEDPlotter
-from feupy.visualization.styles.markers import make_marker_dict
-from .aic import calculate_aic
+from feupy.visualization.styles.markers.plotting import build_fp_kwargs
+from feupy.utils.aic import calculate_aic
 
 __all__ = ["run_fit_and_plot"]
 
@@ -26,7 +26,7 @@ def run_fit_and_plot(datasets, model, fitter=None, show_plot=True, **kwargs):
     print(result_fit)
     calculate_aic(datasets, result_fit)
 
-    ref_markers = make_marker_dict(datasets_in.names, marker_size=4)
+    ref_markers = build_fp_kwargs(datasets_in.names, marker_size=4)
 
     sed_plotter = SEDPlotter(
         datasets=datasets_in,

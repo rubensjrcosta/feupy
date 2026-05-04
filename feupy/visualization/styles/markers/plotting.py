@@ -57,8 +57,8 @@ def build_point_kwargs(
             marker=marker,
             markersize=size,
             color=color,
-            markeredgecolor="black",
-            mew=0.4,
+            #markeredgecolor="black",
+            #mew=0.4,
         )
 
     return result

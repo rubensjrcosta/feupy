@@ -179,4 +179,4 @@ class ROIMapPlotter:
 # def save_map(self, file_path):
 #     """Save the map to a file."""
 #     if self.ax:
-#         self.ax.figure.savefig(file_path, bbox_inches='tight')
+#         self.ax.figure.savefig(file_path, bbox_inches='tight')self.ax.grid(True)
