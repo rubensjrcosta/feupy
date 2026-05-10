@@ -1,6 +1,8 @@
+# Licensed under a 3-clause BSD style license - see LICENSE.rst
+
 import astropy.units as u
 
-from feupy.utils.sed_tables import (
+from feupy.utils.sed import (
     ENERGY_COLUMNS,
     SED_COLUMNS,
     DEFAULT_ENERGY_UNIT,

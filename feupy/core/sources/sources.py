@@ -54,9 +54,9 @@ class Sources(collections.abc.MutableSequence):
         del self._sources[self.index(key)]
 
     def __setitem__(self, key, source):
-        if any(isinstance(source, _) for _ in self._sources):
+        if any(isinstance(source, _.source_object_class)
+           for _ in FEUPY_CATALOG_REGISTRY):            
             label = self._set_source_label(source)
-#             label = (source_name, catalog_tag)
             if label in self.labels:
                 log.error(f"Failed Source name '{source.name}' from {get_catalog_tag(source)} already exists!")
                 raise ValueError(f"Source name '{source.name}' from {get_catalog_tag(source)} already exists!")
