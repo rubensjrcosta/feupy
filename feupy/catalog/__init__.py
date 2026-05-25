@@ -20,7 +20,7 @@ if HAS_FEUPY_DATASETS:
     from .hawc import (
         SourceCatalogEHWC,
         SourceCatalogExtraHAWC,
-        SourceCatalogObjectEHWC,
+        SourceCatalogHAWC56TeV,
         SourceCatalogObjectExtraHAWC,
     )
     from .hess import (
@@ -47,7 +47,7 @@ if HAS_FEUPY_DATASETS:
     __all__ += [
         "SourceCatalogEHWC",
         "SourceCatalogExtraHAWC",
-        "SourceCatalogObjectEHWC",
+        "SourceCatalogHAWC56TeV",
         "SourceCatalogObjectExtraHAWC",
         "SourceCatalogExtraHESS",
         "SourceCatalogObjectExtraHESS",
