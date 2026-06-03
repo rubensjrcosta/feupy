@@ -2,19 +2,36 @@
 
 import astropy.units as u
 
+from feupy.utils import formatting
 from feupy.utils.formatting import (
     string_to_filename,
     energy_to_string,
     energy_range_to_string,
 )
 
+    
+def test_all():
+    expected = {
+        "string_to_filename",
+        "energy_to_string",
+        "energy_range_to_string",
+    }
 
+    assert set(formatting.__all__) == expected
+
+    for name in formatting.__all__:
+        assert hasattr(formatting, name)
+        
 def test_string_to_filename_spaces():
     assert string_to_filename("Crab Nebula") == "Crab_Nebula"
 
 
 def test_string_to_filename_colon():
-    assert string_to_filename("HESS J1825:137") == "HESS_J1825137"
+    assert string_to_filename("HESS J1825:137") == "HESS_J1825:137"
+
+
+def test_string_to_filename_colon_strict():
+    assert string_to_filename("HESS J1825:137", strict=True) == "HESS_J1825137"
 
 
 def test_energy_to_string_tev():

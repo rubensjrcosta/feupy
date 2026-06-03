@@ -13,35 +13,33 @@ __all__ = [
 ]
 
 
-def string_to_filename(name):
+def string_to_filename(name, strict=False):
     """
     Convert a string to a filename-safe format.
-    
-    Allowed characters:
-    - letters
-    - numbers
-    - _
-    - -
-    - +
-    - *
-    - .
-    
+
     Parameters
     ----------
     name : str
         Input string.
+    strict : bool, optional
+        Remove characters outside the allowed set.
+        Default is False.
 
     Returns
     -------
-    str
+    filename : str
         Filename-safe string.
+
+    Notes
+    -----
+    When ``strict=True``, only alphanumeric characters and
+    ``_``, ``-``, ``+``, ``*`` and ``.`` are preserved.
     """
-    
-    # Replace whitespace
+
     name = re.sub(r"\s+", "_", name)
 
-    # Keep only safe characters
-    name = re.sub(r"[^\w\-\+\*\.\_]", "", name)
+    if strict:
+        name = re.sub(r"[^\w\-\+\*\.\_]", "", name)
 
     return name
 
