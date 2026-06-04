@@ -35,7 +35,7 @@ Notes
 Example
 -------
 
->>> from feupy.catalog import load_catalog
+>>> from feupy.catalogs import load_catalog
 >>> from feupy.visualization.sed import SEDPlotter
 >>> from feupy.analysis.config import CTAOAnalysisConfig
 >>> from feupy.analysis.core import CTAOAnalysis

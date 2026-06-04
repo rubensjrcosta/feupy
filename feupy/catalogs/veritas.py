@@ -18,7 +18,8 @@ from gammapy.catalog.core import SourceCatalog, SourceCatalogObject
 from gammapy.utils.scripts import make_path
 
 from feupy.utils.io import read_yaml
-from feupy.utils.string_handling import string_to_filename_format
+from feupy.utils.formatting import string_to_filename
+from feupy.utils.datasets import get_feupy_data_path
 
 # Set up logging
 log = logging.getLogger(__name__)
@@ -26,8 +27,8 @@ log = logging.getLogger(__name__)
 __all__ = [
     "SourceCatalogVTSCat",
     "SourceCatalogObjectVTSCat",
-    "SourceCatalogVERITAS",
-    "SourceCatalogObjectVERITAS",
+    "SourceCatalogVERITASCygnus",
+    "SourceCatalogObjectVERITASCygnus",
 ]
 
 def generate_unique_name(name, reference_id, unique_names):
@@ -47,10 +48,10 @@ class SourceCatalogObjectVTSCat(SourceCatalogObject):
     The data are available through the web page (https://iopscience.iop.org/article/10.3847/1538-4357/aac4a2) 
     in tables 8-13.
 
-    One source is represented by `~feupy.catalog.SourceCatalogVTSCat`.
+    One source is represented by `~feupy.catalogs.SourceCatalogVTSCat`.
     """    
 
-    _DATASETS_PATH = '$FEUPY_DATA/catalogs/vtscat/datasets'
+    _DATASETS_PATH =  get_feupy_data_path() / 'catalogs/vtscat/datasets'
     _source_name_key = "source_name"
         
     def __str__(self):
@@ -232,7 +233,7 @@ class SourceCatalogObjectVTSCat(SourceCatalogObject):
 
 class SourceCatalogVTSCat(SourceCatalog):
     """VTSCat Catalogue.
-        One source is represented by `~feupy.catalog.SourceCatalogVTSCat`.
+        One source is represented by `~feupy.catalogs.SourceCatalogVTSCat`.
         See https://iopscience.iop.org/article/10.3847/2515-5172/acb147
     """    
     tag = "vtscat"
@@ -240,18 +241,18 @@ class SourceCatalogVTSCat(SourceCatalog):
     description = "VTSCat catalog from the VTSCat observatory"
     
     source_object_class = SourceCatalogObjectVTSCat
-    
-    def __init__(self, filename="$FEUPY_DATA/catalogs/vtscat/sources/vtscat.ecsv"):
+
+    def __init__(self, filename=get_feupy_data_path() / "catalogs/vtscat/sources/vtscat.ecsv"):
         table = Table.read(make_path(filename), format='ascii.ecsv')
         source_name_key = "source_name"
         super().__init__(table=table, source_name_key=source_name_key)
 
-class SourceCatalogObjectVERITAS(SourceCatalogObject):
+class SourceCatalogObjectVERITASCygnus(SourceCatalogObject):
     """One source from the VERITAS Catalogue.    
     The data are available through the web page (https://iopscience.iop.org/article/10.3847/1538-4357/aac4a2) 
     in the tables 8-13. 
 
-    One source is represented by `~feupy.catalog.SourceCatalogVERITAS`.
+    One source is represented by `~feupy.catalogs.SourceCatalogVERITASCygnus`.
     """    
     _source_name_key = "source_name"
 
@@ -323,10 +324,11 @@ class SourceCatalogObjectVERITAS(SourceCatalogObject):
                 name = par.name
                 val = par.value
                 err = par.error
-                
+                                
                 try:
                     unit = f"{par.unit:unicode}"
-                except: unit = ""
+                except AttributeError:
+                    unit = ""
 
                 ss += f"{name}: {val:.3} +- {err:.3} {unit}\n"
     
@@ -351,23 +353,24 @@ class SourceCatalogObjectVERITAS(SourceCatalogObject):
     @property
     def flux_points(self):
         """Flux points (`~gammapy.estimators.FluxPoints`)."""
-        filename = f'{self._DATA_PATH}/{string_to_filename_format(self.name)}.fits'
+        filename = f'{self._DATA_PATH}/{string_to_filename(self.name)}.fits'
         return FluxPoints.read(filename)
     
-class SourceCatalogVERITAS(SourceCatalog):
+class SourceCatalogVERITASCygnus(SourceCatalog):
     """VERITAS  Catalogue.
 
     See: https://iopscience.iop.org/article/10.3847/1538-4357/aac4a2
 
-    One source is represented by `~feupy.catalog.SourceCatalogVERITAS`.
+    One source is represented by `~feupy.catalogs.SourceCatalogVERITASCygnus`.
     """    
     tag = "veritas-2018ApJ"
     bibcode = '2018ApJ...861..134A'         
     description = "A Very High Energy γ-Ray Survey toward the Cygnus Region of the Galaxy"
     
-    source_object_class = SourceCatalogObjectVERITAS
+    source_object_class = SourceCatalogObjectVERITASCygnus
+
     
-    def __init__(self, filename="$FEUPY_DATA/catalogs/veritas/veritas.fits"):
+    def __init__(self, filename=get_feupy_data_path() / "catalogs/veritas/veritas.fits"):
         table = Table.read(make_path(filename))
         source_name_key = "source_name"
         super().__init__(table=table, source_name_key=source_name_key)

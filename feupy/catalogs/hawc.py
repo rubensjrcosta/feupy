@@ -19,7 +19,7 @@ __all__ = [
     "get_flux_points_3hwc",
     "create_flux_points_table_2hwc",
     "get_flux_points_2hwc",
-    "SourceCatalogHAWC56TeV",
+    "SourceCatalogObjectEHWC",
     "SourceCatalogEHWC",
     "SourceCatalogObjectExtraHAWC",
     "SourceCatalogExtraHAWC",
@@ -303,7 +303,7 @@ def get_flux_points_2hwc(source, which='point'):
         reference_model=spec_model
     )
 
-class SourceCatalogHAWC56TeV(SourceCatalogObject):
+class SourceCatalogObjectEHWC(SourceCatalogObject):
     """
     Represents a single source in the HAWC catalog.
     
@@ -455,7 +455,7 @@ class SourceCatalogEHWC(SourceCatalog):
     bibcode = '2020PhRvL.124b1102A' 
     description = "Extra HAWC catalog data"
 
-    source_object_class = SourceCatalogHAWC56TeV
+    source_object_class = SourceCatalogObjectEHWC
 
     def __init__(
         self,

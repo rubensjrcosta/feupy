@@ -6,8 +6,8 @@ import copy
 import yaml
 import logging
 from astropy.coordinates import SkyCoord
-from feupy.catalog import FEUPY_CATALOG_REGISTRY
-from feupy.catalog.utils import get_catalog_tag
+from feupy.catalogs import FEUPY_CATALOG_REGISTRY
+from feupy.catalogs.utils import get_catalog_tag
 
 log = logging.getLogger(__name__)
 

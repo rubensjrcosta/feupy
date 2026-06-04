@@ -35,7 +35,7 @@ if HAS_FEUPY_DATASETS:
 
     from .veritas import (
         SourceCatalogVTSCat,
-        SourceCatalogVERITAS,
+        SourceCatalogVERITASCygnus,
     )
 
     from .psrcat import SourceCatalogPSRCAT
@@ -50,7 +50,7 @@ if HAS_FEUPY_DATASETS:
         SourceCatalogExtraHAWC,
         SourceCatalogExtraHESS,
         SourceCatalogVTSCat,
-        SourceCatalogVERITAS,
+        SourceCatalogVERITASCygnus,
         SourceCatalogPSRCAT,
         SourceCatalogLHAASO,
         SourceCatalogExtraLHAASO,

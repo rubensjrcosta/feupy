@@ -2,7 +2,7 @@
 import pytest
 from astropy.table import Table
 
-from feupy.catalog.pulsar_spectra import (
+from feupy.catalogs.pulsar_spectra import (
     read_pulsar_spectra_catalog,
     create_pulsar_flux_points_table,
     get_pulsar_flux_points_tables,

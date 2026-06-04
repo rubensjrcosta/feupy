@@ -32,13 +32,13 @@ from gammapy.utils.scripts import make_path
 from feupy.analysis.config import ROIAnalysisConfig, CTAOAnalysisConfig
 
 from feupy.irf import CTAOIRFManager
-from feupy.catalog.utils import load_catalogs
-from feupy.catalog.hawc import get_flux_points_3hwc, get_flux_points_2hwc
-from feupy.catalog.fermi import get_flux_points_2PC, get_flux_points_3PC
-from feupy.catalog.lhaaso import get_flux_points_1lhaaso
-from feupy.catalog.veritas import generate_unique_name
+from feupy.catalogs.utils import load_catalogs
+from feupy.catalogs.hawc import get_flux_points_3hwc, get_flux_points_2hwc
+from feupy.catalogs.fermi import get_flux_points_2PC, get_flux_points_3PC
+from feupy.catalogs.lhaaso import get_flux_points_1lhaaso
+from feupy.catalogs.veritas import generate_unique_name
 from feupy.core.sources import Sources
-from feupy.catalog.utils import get_catalog_tag
+from feupy.catalogs.utils import get_catalog_tag
 from feupy.utils.coordinates import convert_pos_config_to_skycoord
 from feupy.utils.datasets import cut_energy_flux_points_datasets, flux_points_dataset_from_table
 from feupy.utils.tables.io import write_table, read_table

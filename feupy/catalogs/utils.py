@@ -3,7 +3,7 @@
 
 import logging
 from typing import List, Optional
-from feupy.catalog import FEUPY_CATALOG_REGISTRY
+from feupy.catalogs import FEUPY_CATALOG_REGISTRY
 from .registry import HAS_FEUPY_DATASETS
 
 log = logging.getLogger(__name__)

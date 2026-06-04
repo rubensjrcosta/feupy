@@ -280,7 +280,7 @@ class SourceCatalogObjectLHAASO(SourceCatalogObject):
     The data are available through the web page (http://english.ihep.cas.cn/lhaaso/index.html) 
     in the section ‘Public Data’. 
 
-    One source is represented by `~feupy.catalog.SourceCatalogLHAASO`.
+    One source is represented by `~feupy.catalogs.SourceCatalogLHAASO`.
     """    
     _source_name_key = "source_name"
     _sed_type = 'e2dnde'
@@ -419,7 +419,7 @@ class SourceCatalogLHAASO(SourceCatalog):
     The data are available through the web page (http://english.ihep.cas.cn/lhaaso/index.html) 
     in the section ‘Public Data’. 
 
-    One source is represented by `~feupy.catalog.SourceCatalogLHAASO`.
+    One source is represented by `~feupy.catalogs.SourceCatalogLHAASO`.
     """    
     tag = "LHAASO"
     bibcode = '2021Natur.594...33C' 

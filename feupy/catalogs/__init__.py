@@ -20,7 +20,7 @@ if HAS_FEUPY_DATASETS:
     from .hawc import (
         SourceCatalogEHWC,
         SourceCatalogExtraHAWC,
-        SourceCatalogHAWC56TeV,
+        SourceCatalogObjectEHWC,
         SourceCatalogObjectExtraHAWC,
     )
     from .hess import (
@@ -29,9 +29,9 @@ if HAS_FEUPY_DATASETS:
     )
     from .veritas import (
         SourceCatalogVTSCat,
-        SourceCatalogVERITAS,
+        SourceCatalogVERITASCygnus,
         SourceCatalogObjectVTSCat,
-        SourceCatalogObjectVERITAS,
+        SourceCatalogObjectVERITASCygnus,
     )
     from .psrcat import (
         SourceCatalogPSRCAT,
@@ -47,14 +47,14 @@ if HAS_FEUPY_DATASETS:
     __all__ += [
         "SourceCatalogEHWC",
         "SourceCatalogExtraHAWC",
-        "SourceCatalogHAWC56TeV",
+        "SourceCatalogObjectEHWC",
         "SourceCatalogObjectExtraHAWC",
         "SourceCatalogExtraHESS",
         "SourceCatalogObjectExtraHESS",
         "SourceCatalogVTSCat",
-        "SourceCatalogVERITAS",
+        "SourceCatalogVERITASCygnus",
         "SourceCatalogObjectVTSCat",
-        "SourceCatalogObjectVERITAS",
+        "SourceCatalogObjectVERITASCygnus",
         "SourceCatalogPSRCAT",
         "SourceCatalogObjectPSRCAT",
         "SourceCatalogLHAASO",
