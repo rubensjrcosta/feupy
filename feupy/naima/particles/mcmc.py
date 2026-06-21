@@ -61,7 +61,7 @@ def make_exponentialcutoff_powerlaw_from_mcmc(table, e_ref):
         amplitude=_get_amplitude_from_mcmc(table),
         e_0=e_ref,
         alpha=_get_mcmc_median(table, "index"),
-        e_cutoff=_get_energy_from_log10(table, "log10(cutoff/TeV)"),
+        e_cutoff=_get_energy_from_log10(table, "log10(e_cutoff/TeV)"),
     )
 
 
