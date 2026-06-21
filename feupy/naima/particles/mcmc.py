@@ -11,8 +11,8 @@ def _get_mcmc_median(table, label):
     return table[table["label"] == label]["median"][0]
 
 
-def _get_amplitude_from_mcmc(table, label="log10(norm)", unit=u.eV):
-    """Return amplitude from log10(norm) parameter."""
+def _get_amplitude_from_mcmc(table, label="log10_norm", unit=u.eV):
+    """Return amplitude from log10_norm parameter."""
     return 10 ** _get_mcmc_median(table, label) / unit
 
 
