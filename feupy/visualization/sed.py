@@ -69,7 +69,7 @@ class SEDPlotter:
             File path or name where the plot will be saved.
         """
         if file_path:
-            plt.savefig(file_path, bbox_inches='tight')
+            plt.savefig(file_path, dpi=300, bbox_inches='tight')
             
     def _set_axis_labels(self, ax, axis_kwargs):
         xlabel, ylabel = axis_kwargs["label"]

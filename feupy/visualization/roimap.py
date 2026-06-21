@@ -121,7 +121,7 @@ class ROIMapPlotter:
             Path to save the plot.
         """
         if file_path:
-            plt.savefig(file_path, bbox_inches='tight')
+            plt.savefig(file_path, dpi=300, bbox_inches='tight')
 
     def plot(self, sources=None, file_path=None, **kwargs):
         """
