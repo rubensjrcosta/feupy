@@ -1,68 +1,47 @@
 # Licensed under a 3-clause BSD style license - see LICENSE.rst
-"""
-Plotting styles for feupy.
-
-This subpackage provides:
-- Matplotlib style sheets (.mplstyle)
-- Color palettes
-- Line styles
-- Marker utilities
-
-The public API is intentionally small and stable, following the
-Gammapy and Astropy visualization design.
-"""
+"""Styles tools."""
 
 from importlib.resources import files
 
-# ============================================================================
-# Matplotlib style
-# ============================================================================
-
-FEUPY_MPL_STYLE = files(__name__) / "mystyle.mplstyle"
-
-# ============================================================================
-# Color palettes
-# ============================================================================
-
-from .palettes import (  # noqa: F401
+# Palettes
+from .palettes import (
     PALETTE_DEFAULT,
     PALETTE_TABLEAU,
     PALETTE_IBM,
     PALETTE_WONG,
 )
 
-# ============================================================================
 # Line styles
-# ============================================================================
-
-from .linestyles import LINESTYLES_DEFAULT  # noqa: F401
-
-# ============================================================================
-# Marker utilities (public API only)
-# ============================================================================
-
-from .markers import (  # noqa: F401
-    map_catalog_to_marker,
-    make_marker_dict,
-    get_fit_plot_kwargs,
+from .linestyles import (
+    LINESTYLES_DEFAULT,
 )
 
-# ============================================================================
-# Public API
-# ============================================================================
+# Marker styles
+from .markers import (
+    CatalogStyle,
+    CatalogStyleRegistry,
+    CATALOG_STYLE_REGISTRY,
+    resolve_marker,
+    resolve_marker_size,
+    build_point_kwargs,
+    build_fp_kwargs,
+)
+
+# Matplotlib style
+FEUPY_MPL_STYLE = str(files(__name__) / "mystyle.mplstyle")
 
 __all__ = [
-    # Matplotlib style
-    "FEUPY_MPL_STYLE",
-    # Palettes
+    "CatalogStyle",
+    "CatalogStyleRegistry",
+    "CATALOG_STYLE_REGISTRY",
+    "resolve_marker",
+    "resolve_marker_size",
+    "build_point_kwargs",
+    "build_fp_kwargs",
     "PALETTE_DEFAULT",
     "PALETTE_TABLEAU",
     "PALETTE_IBM",
     "PALETTE_WONG",
-    # Line styles
     "LINESTYLES_DEFAULT",
-    # Marker helpers
-    "map_catalog_to_marker",
-    "make_marker_dict",
-    "get_fit_plot_kwargs",
+    "FEUPY_MPL_STYLE",
 ]

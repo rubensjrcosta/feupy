@@ -1,20 +1,35 @@
 # Licensed under a 3-clause BSD style license - see LICENSE.rst
-"""Default marker definitions."""
+"""Default marker styles for catalogs."""
 
-MARKERS_DEFAULT_DICT = {
-    "o": [0.95, "circle"],
-    "v": [1.0, "down triangle"],
-    "^": [1.0, "up triangle"],
-    "<": [1.0, "left triangle"],
-    ">": [1.0, "right triangle"],
-    "8": [1.0, "octagon"],
-    "s": [0.9, "square"],
-    "p": [1.0, "pentagon"],
-    "P": [1.2, "plus"],
-    "*": [1.5, "star"],
-    "h": [1.0, "hexagon"],
-    "H": [1.0, "rotated hexagon"],
-    "X": [1.0, "cross"],
-    "D": [0.75, "diamond"],
-    "d": [0.9, "thin diamond"],
+from .registry import CatalogStyle, CATALOG_STYLE_REGISTRY
+
+__all__ = ["DEFAULT_MARKERS"]
+
+
+DEFAULT_MARKERS = {
+    "psrcat": "*",
+    "2pc": "*",
+    "3pc": "*",
+    "gamma-cat": "h",
+    "hgps": "p",
+    "hess-2019a&a": "p",
+    "3fgl": "v",
+    "4fgl": "v",
+    "2fhl": "v",
+    "3fhl": "v",
+    "2hwc": "8",
+    "3hwc": "8",
+    "ehwc": "8",
+    "hwc-2021apj": "8",
+    "veritas-2018apj": ">",
+    "vtscat": ">",
+    "1lhaaso": "s",
+    "lhaaso": "s",
 }
+
+
+# Register defaults in the global registry
+for tag, marker in DEFAULT_MARKERS.items():
+    CATALOG_STYLE_REGISTRY.register(
+        CatalogStyle(tag=tag, marker=marker)
+    )

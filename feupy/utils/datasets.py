@@ -11,60 +11,69 @@ Functions:
     - flux_points_dataset_from_table: Create a `FluxPointsDataset` from a table.
 """
 
+import numpy as np
+import os
+from pathlib import Path
+from astropy import units as u
 from gammapy.datasets import Datasets, FluxPointsDataset
 from gammapy.estimators import FluxPoints
 from gammapy.modeling.models import SkyModel
-from gammapy.modeling import Fit
-
-from astropy import units as u
-
-import numpy as np
-
 from feupy.utils.scripts import is_documented_by
-from feupy.sources import Sources
 
-
+        
 __all__ = [
-    "get_datasets",
-    "get_sources",
+    "get_feupy_data_path",
+    "datasets_select_by_name",
     "get_energy_bounds_from_datasets",
     "cut_energy_flux_points_datasets",
     "flux_points_dataset_from_table",
 ]
 
 
-def get_datasets(datasets, names):
+def get_feupy_data_path() :
     """
-    Retrieve datasets by name from a Datasets object.
-    
-    Parameters:
-    datasets: Datasets
+    Return FEUPY dataset base path.
+
+    Requires environment variable:
+
+        FEUPY_DATA
+    """
+
+    if "FEUPY_DATA" not in os.environ:
+        raise RuntimeError(
+            "FEUPY_DATA environment variable not set.\n"
+            "Install feupy-datasets or define FEUPY_DATA path."
+        )
+
+    path = Path(os.environ["FEUPY_DATA"]).expanduser().resolve()
+
+    if not path.exists():
+        raise RuntimeError(
+            f"FEUPY_DATA path does not exist:\n{path}\n"
+            "Check dataset installation."
+        )
+
+    return path
+        
+def datasets_select_by_name(datasets, names):
+    """
+    Select datasets by name from a Datasets collection.
+
+    Parameters
+    ----------
+    datasets : Datasets
         Collection of datasets.
-    names: list of str
-        Names of the datasets to retrieve.
-        
-    Returns:
+    names : list of str
+        Names of the datasets to select.
+
+    Returns
+    -------
     Datasets
-        Filtered datasets that match the provided names.
+        New Datasets object containing only the selected datasets.
     """
-    return Datasets([x for x in datasets if x.name in names])
-
-
-def get_sources(sources, names):
-    """
-    Retrieve sources by name from a Sources object.
     
-    Parameters:
-    sources: Sources
-        Collection of sources.
-    names: list of str
-        Names of the sources to retrieve.
-        
-    Returns:
-    Sources
-        Filtered sources that match the provided names.
-    """
-    return Sources([x for x in sources if x.name in names])
+    names = set(names)
+    return Datasets([ds for ds in datasets if ds.name in names])
 
 def get_energy_bounds_from_datasets(datasets):
     """

@@ -6,6 +6,11 @@ dependencies:
   - python=3.12
   - pip
 
+  # System libraries (C extensions support)
+  - libxml2
+  - lxml
+  - gcc
+
   # Core scientific stack
   - numpy>=1.22
   - scipy>=1.10
@@ -22,16 +27,16 @@ dependencies:
   # Jupyter ecosystem
   - jupyter
   - ipykernel
-  
+
   # Test dependencies
   - pytest
   - pytest-cov
   - pytest-mock
 
-  # pip install (editable mode)
+  # Editable project install (LAST)
   - pip:
       - -e .
 
 variables:
-  GAMMAPY_DATA: /home/phoenix/Coding/data/gammapy-datasets/2.0
-  FEUPY_DATA: /home/phoenix/Coding/data/feupy-datasets/1.0
+  GAMMAPY_DATA: /home/phoenix/Coding/GitHub/gammapy-data/gammapy-datasets/2.0
+  FEUPY_DATA: /home/phoenix/Coding/GitHub/feupy-data/feupy-datasets/1.0

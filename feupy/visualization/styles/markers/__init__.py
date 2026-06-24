@@ -1,24 +1,22 @@
 # Licensed under a 3-clause BSD style license - see LICENSE.rst
-"""
-Marker utilities for feupy.
-"""
+"""Marker styles."""
 
-from .catalogs import map_catalog_to_marker
-from .plotting import (
-    make_marker_dict,
-    get_fit_plot_kwargs,
-)
-from .io import (
-    read_marker_dict,
-    write_marker_dict,
-)
+from .registry import CatalogStyle, CatalogStyleRegistry, CATALOG_STYLE_REGISTRY
+from .defaults import DEFAULT_MARKERS
+from .resolver import extract_catalog_tag, resolve_marker
+from .marker_size import MARKERS_DEFAULT_DICT, resolve_marker_size
+from .plotting import build_point_kwargs, build_fp_kwargs
+
 
 __all__ = [
-    "map_catalog_to_marker",
-    "make_marker_dict",
-    "get_fit_plot_kwargs",
-    "read_marker_dict",
-    "write_marker_dict",
+    "CatalogStyle",
+    "CatalogStyleRegistry",
+    "CATALOG_STYLE_REGISTRY",
+    "DEFAULT_MARKERS",
+    "extract_catalog_tag",
+    "resolve_marker",
+    "MARKERS_DEFAULT_DICT",
+    "resolve_marker_size",
+    "build_point_kwargs",
+    "build_fp_kwargs",
 ]
-
-

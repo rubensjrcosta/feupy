@@ -11,11 +11,11 @@ import yaml
 from gammapy.utils.scripts import make_path, read_yaml
 from gammapy.analysis.config import (
     GammapyBaseConfig, GeneralConfig, EnergyRangeConfig, SpatialCircleConfig,
-    deep_update, FluxPointsConfig, FitConfig, SkyCoordConfig
+    deep_update, FluxPointsConfig, FitConfig
 )
 
 from feupy.utils.config import (
-    ObservationConfig, DatasetsConfig, OnOffConfig, SensitivityConfig, StatisticsConfig
+    ObservationConfig, DatasetsConfig, SensitivityConfig, StatisticsConfig
 )
 
 

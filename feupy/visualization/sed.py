@@ -8,32 +8,32 @@ legends, axis labels, units, and plot limits.
 """
 
 import itertools
-
 import matplotlib.pyplot as plt
 from astropy import units as u
 
-from feupy.visualization.styles.markers import make_marker_dict
-from feupy.visualization import LINESTYLES_DEFAULT
+from feupy.visualization.styles.markers import build_fp_kwargs
+from feupy.visualization.styles.linestyles import LINESTYLES_DEFAULT
 from feupy.utils.datasets import get_energy_bounds_from_datasets
-from feupy.visualization.utils.units import (
-    DEFAULT_UNIT,
+from feupy.visualization.utils.labels import (
     DEFAULT_XAXIS_LABEL,
     DEFAULT_YAXIS_LABEL,
 )
 
-__all__ = ["SEDPlotter"]
-
 
 class SEDPlotter:
+    """
+    Pipeline-safe SED plot renderer.
+    """
+
     def __init__(self, datasets, models=None, sed_type="e2dnde"):
         self.datasets = datasets
         self.models = models
         self.sed_type = sed_type
-        self.ax = None
 
-    # -------------------------------
-    # Helpers for Defaults
-    # -------------------------------
+    # -------------------------------------------------
+    # Defaults
+    # -------------------------------------------------
+
     def _default_axis(self):
         return dict(
             label=(DEFAULT_XAXIS_LABEL["TeV"], DEFAULT_YAXIS_LABEL[self.sed_type]),
@@ -52,53 +52,66 @@ class SEDPlotter:
             loc="lower left",
             markerscale=0.75,
             fontsize=5,
-            labelcolor="black",
             frameon=False,
         )
 
-    # -------------------------------
-    # Plot Components
-    # -------------------------------
-    def customize_legend(self, legend_kwargs):
-        self.ax.legend(**legend_kwargs)
+    # -------------------------------------------------
+    # Axis formatting
+    # -------------------------------------------------
 
-    def set_axis_labels(self, axis_kwargs):
+    def _save_plot(self, file_path):
+        """
+        Save the SED to a file.
+
+        Parameters
+        ----------
+        file_path : str or `~pathlib.Path`
+            File path or name where the plot will be saved.
+        """
+        if file_path:
+            plt.savefig(file_path, dpi=300, bbox_inches='tight')
+            
+    def _set_axis_labels(self, ax, axis_kwargs):
         xlabel, ylabel = axis_kwargs["label"]
-        self.ax.set_xlabel(xlabel)
-        self.ax.set_ylabel(ylabel)
+        ax.set_xlabel(xlabel)
+        ax.set_ylabel(ylabel)
 
-    def set_axis_units(self, axis_kwargs):
+    def _set_axis_units(self, ax, axis_kwargs):
         xunit, yunit = axis_kwargs["units"]
-        self.ax.xaxis.set_units(u.Unit(xunit))
-        self.ax.yaxis.set_units(u.Unit(yunit))
+        ax.xaxis.set_units(u.Unit(xunit))
+        ax.yaxis.set_units(u.Unit(yunit))
 
-    def set_plot_limits(self, limits_kwargs):
-        self.ax.set_xlim(limits_kwargs["energy_bounds"].value)
-        self.ax.set_ylim(limits_kwargs["ylim"])
+    def _set_plot_limits(self, ax, limits_kwargs):
+        ax.set_xlim(limits_kwargs["energy_bounds"].value)
+        ax.set_ylim(limits_kwargs["ylim"])
 
-    # -------------------------------
-    # Dataset Plotting
-    # -------------------------------
-    def plot_datasets(self, plot_kwargs, ref_markers):
+    # -------------------------------------------------
+    # Dataset rendering
+    # -------------------------------------------------
+
+    def _plot_datasets(self, ax, plot_kwargs, ref_markers):
         for dataset in self.datasets:
+
             kwargs_ds = {
                 **ref_markers.get(dataset.name, {}),
                 "ls": "None",
                 "lw": 0.5,
-                "markeredgecolor": "k",
+                "markeredgecolor": "black",
                 "mew": 0.4,
                 "elinewidth": 0.6,
                 "capsize": 1.5,
+                "zorder": 3,
             }
 
             dataset.data.plot(**plot_kwargs, **kwargs_ds)
 
-            # Model error band (dataset-level)
             color = kwargs_ds.get("color", "black")
+
             energy_bounds = get_energy_bounds_from_datasets(dataset)
 
             if dataset.models and dataset.name in dataset.models.names:
                 spec = dataset.models[dataset.name].spectral_model
+
                 spec.plot_error(
                     **plot_kwargs,
                     energy_bounds=energy_bounds,
@@ -107,22 +120,26 @@ class SEDPlotter:
                     alpha=0.2,
                 )
 
-    # -------------------------------
-    # Model Plotting
-    # -------------------------------
-    def plot_models(self, plot_kwargs, energy_bounds, show_error):
+    # -------------------------------------------------
+    # Model rendering
+    # -------------------------------------------------
+
+    def _plot_models(self, ax, plot_kwargs, energy_bounds, show_error, ref_markers):
         if not self.models:
             return
 
         linestyle_cycle = itertools.cycle(LINESTYLES_DEFAULT)
 
         for model in self.models:
+
             spec = model.spectral_model
 
+            color = ref_markers.get(model.name, {}).get("color", "black")
+            
             kwargs_model = dict(
                 label=model.name,
                 linestyle=next(linestyle_cycle),
-                color="black",
+                color=color,
                 marker=",",
                 energy_bounds=energy_bounds,
             )
@@ -132,13 +149,15 @@ class SEDPlotter:
             if show_error:
                 spec.plot_error(
                     energy_bounds=energy_bounds,
+                    facecolor=color,
+                    edgecolor=color,
                     alpha=0.05,
                     **plot_kwargs,
                 )
+    # -------------------------------------------------
+    # Public API
+    # -------------------------------------------------
 
-    # -------------------------------
-    # Main Plot Function
-    # -------------------------------
     def plot(
         self,
         ax=None,
@@ -148,57 +167,54 @@ class SEDPlotter:
         error_band=False,
         **kwargs,
     ):
-        # Axes
-        self.ax = ax or plt.gca()
+        ax = ax or plt.gca()
 
-        # Defaults (user-overridable)
-        axis_kwargs = kwargs.setdefault("axis", self._default_axis())
-        limits_kwargs = kwargs.setdefault("limits", self._default_limits())
-        legend_kwargs = kwargs.setdefault("kwargs_legend", self._default_legend())
+        axis_kwargs = kwargs.get("axis", self._default_axis())
+        limits_kwargs = kwargs.get("limits", self._default_limits())
+        legend_kwargs = kwargs.get("kwargs_legend", self._default_legend())
         model_kwargs = kwargs.get("kwargs_models", {})
 
-        # Units & labels
-        self.set_axis_units(axis_kwargs)
+        self._set_axis_units(ax, axis_kwargs)
 
-        # Common plot kwargs
-        plot_kwargs = dict(ax=self.ax, sed_type=self.sed_type)
+        plot_kwargs = dict(ax=ax, sed_type=self.sed_type)
 
-        # Marker dictionary
+        # Marker registry
         ref_names = list(self.datasets.names)
+
         if self.models:
             ref_names += list(self.models.names)
 
-        if ref_markers is None: ref_markers = make_marker_dict(
-        labels=ref_names,
-        marker="o",
-        marker_size=4,
-    )
-    
+        if ref_markers is None:
+            ref_markers = build_fp_kwargs(
+                labels=ref_names,
+                marker="o",
+                marker_size=4,
+            )
 
-        # Plot datasets
-        self.plot_datasets(plot_kwargs, ref_markers)
+        # Plot components
+        self._plot_datasets(ax, plot_kwargs, ref_markers)
 
-        # Energy bounds for models
         energy_bounds = model_kwargs.get(
-            "energy_bounds", limits_kwargs["energy_bounds"]
+            "energy_bounds",
+            limits_kwargs["energy_bounds"],
         )
 
-        # Plot models
-        self.plot_models(plot_kwargs, energy_bounds, error_band)
+        self._plot_models(ax, plot_kwargs, energy_bounds, error_band, ref_markers)
 
-        # Axes formatting
-        self.set_plot_limits(limits_kwargs)
-        self.set_axis_labels(axis_kwargs)
+        self._set_plot_limits(ax, limits_kwargs)
+        self._set_axis_labels(ax, axis_kwargs)
 
-        # Box label
         if box_name:
-            self.ax.text(0.1, 0.9, box_name, transform=self.ax.transAxes)
+            ax.text(
+                0.1,
+                0.9,
+                box_name,
+                transform=ax.transAxes,
+            )
 
-        # Legend
-        self.customize_legend(legend_kwargs)
-
-        # Save
-        if file_path:
-            plt.savefig(file_path, bbox_inches="tight")
-
-        return self.ax
+        ax.legend(**legend_kwargs)
+        
+        # Save plot if file_path is provided
+        self._save_plot(file_path)
+        
+        return ax

@@ -2,8 +2,6 @@
 """Counts class."""
 
 import matplotlib.pyplot as plt # A collection of command style functions
-from gammapy.utils.scripts import make_path
-from astropy import units as u
 
 
 __all__ = [
@@ -38,16 +36,16 @@ def show_hist_counts(table, file_path=None):
     fix, axes = plt.subplots(1, 4, figsize=(12, 4))
     axes[0].hist(table["counts"])
     axes[0].set_xlabel("Counts")
-    axes[0].set_ylabel("Frequency");
+    axes[0].set_ylabel("Frequency")
 
     axes[1].hist(table["counts_off"])
-    axes[1].set_xlabel("Counts Off");
+    axes[1].set_xlabel("Counts Off")
 
     axes[2].hist(table["excess"])
-    axes[2].set_xlabel("excess");
+    axes[2].set_xlabel("excess")
 
     axes[3].hist(table["sqrt_ts"])
-    axes[3].set_xlabel(r"significance ($\sigma$)");
+    axes[3].set_xlabel(r"significance ($\sigma$)")
 #     path_file =  utl.get_path_counts(region_of_interest)  
 #     file_name = utl.name_to_txt(file_name)
     if file_path:

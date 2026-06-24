@@ -1,0 +1,30 @@
+datasets:
+-   name: 3FGL J0007.0+7302 (3fgl)
+    type: FluxPointsDataset
+    filename: 3FGL_J0007.0+7302_(3fgl).fits
+-   name: 4FGL J0007.0+7303 (4fgl)
+    type: FluxPointsDataset
+    filename: 4FGL_J0007.0+7303_(4fgl).fits
+-   name: 3FHL J0007.0+7303 (3fhl)
+    type: FluxPointsDataset
+    filename: 3FHL_J0007.0+7303_(3fhl).fits
+-   name: J0007+7303 (3PC)
+    type: FluxPointsDataset
+    filename: J0007+7303_(3PC).fits
+-   name: PSR J0007+7303 (2PC)
+    type: FluxPointsDataset
+    filename: PSR_J0007+7303_(2PC).fits
+-   name: 1LHAASO J0007+7303u (1LHAASO) (KM2A)
+    type: FluxPointsDataset
+    filename: 1LHAASO_J0007+7303u_(1LHAASO)_(KM2A).fits
+-   name: 1LHAASO J0007+7303u (1LHAASO) (WCDA)
+    type: FluxPointsDataset
+    filename: 1LHAASO_J0007+7303u_(1LHAASO)_(WCDA).fits
+-   name: VER J0006+729 (2013ApJ)
+    type: FluxPointsDataset
+    filename: VER_J0006+729_(2013ApJ).fits
+metadata:
+    creator: Gammapy 2.0.1
+    date: '2026-03-09T01:06:18.652889'
+    origin: null
+checksum: d26a406675a9818278c58261b5b9112e

@@ -1,14 +1,11 @@
 # Licensed under a 3-clause BSD style license - see LICENSE.rst
 """ROI Map class."""
 
-import astropy.units as u
 import matplotlib.pyplot as plt
 
-from astropy.coordinates import SkyCoord
 from regions import CircleSkyRegion, PointSkyRegion
 from gammapy.maps import RegionGeom
-from feupy.visualization.styles.markers.catalogs import make_catalog_marker_dict
-from gammapy.utils.scripts import make_path
+from feupy.visualization.styles.markers.plotting import build_point_kwargs
 
 __all__ = ["ROIMapPlotter"]
 
@@ -74,7 +71,7 @@ class ROIMapPlotter:
         ref_markers : dict, optional
             Dictionary of reference markers for each source.
         """
-        ref_markers = ref_markers or make_catalog_marker_dict(sources
+        ref_markers = ref_markers or build_point_kwargs(sources
                                                       , marker_size=6, palette=None)
             
         # Plot each source with corresponding marker
@@ -124,7 +121,7 @@ class ROIMapPlotter:
             Path to save the plot.
         """
         if file_path:
-            plt.savefig(file_path, bbox_inches='tight')
+            plt.savefig(file_path, dpi=300, bbox_inches='tight')
 
     def plot(self, sources=None, file_path=None, **kwargs):
         """
@@ -182,4 +179,4 @@ class ROIMapPlotter:
 # def save_map(self, file_path):
 #     """Save the map to a file."""
 #     if self.ax:
-#         self.ax.figure.savefig(file_path, bbox_inches='tight')
+#         self.ax.figure.savefig(file_path, bbox_inches='tight')self.ax.grid(True)
