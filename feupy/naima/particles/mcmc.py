@@ -111,3 +111,48 @@ def make_broken_powerlaw_ep_from_mcmc(
     )
 
     return model_e, model_p
+
+
+def make_exponentialcutoffpowerlaw_e_powerlaw_p_from_mcmc(
+    table,
+    e_ref_e,
+    e_ref_p,
+    ap_by_ae=1.0,
+):
+    """
+    Build electron ExponentialCutoffPowerLaw and proton PowerLaw models
+    from MCMC results.
+
+    Parameters
+    ----------
+    table : astropy.table.Table
+        MCMC summary table.
+    e_ref_e, e_ref_p : astropy.units.Quantity
+        Reference energies for electrons and protons.
+    ap_by_ae : float
+        Proton-to-electron normalization ratio.
+
+    Returns
+    -------
+    model_e : naima.models.ExponentialCutoffPowerLaw
+        Electron particle distribution.
+    model_p : naima.models.PowerLaw
+        Proton particle distribution.
+    """
+
+    amp_e = _get_amplitude_from_mcmc(table)
+
+    model_e = naima.models.ExponentialCutoffPowerLaw(
+        amplitude=amp_e,
+        e_0=e_ref_e,
+        alpha=_get_mcmc_median(table, "index_e"),
+        e_cutoff=_get_energy_from_log10(table, "log10(e_cutoff_e)"),
+    )
+
+    model_p = naima.models.PowerLaw(
+        amplitude=amp_e * ap_by_ae,
+        e_0=e_ref_p,
+        alpha=_get_mcmc_median(table, "index_p"),
+    )
+
+    return model_e, model_p
