@@ -8,6 +8,7 @@ import logging
 from pathlib import Path
 from functools import lru_cache
 from typing import Dict, Tuple, Any
+from itertools import product
 
 from gammapy.irf import load_irf_dict_from_file
 from gammapy.data import observatory_locations
@@ -42,6 +43,18 @@ class CTAOIRFManager:
         "5h": "18000s",
         "50h": "180000s",
     }
+
+    _AZIMUTHS = [
+        "AverageAz",
+        "NorthAz",
+        "SouthAz",
+    ]
+
+    _ZENITHS = [
+        "20deg",
+        "40deg",
+        "60deg",
+    ]
 
     _BASE_PATH = Path(os.getenv("FEUPY_DATA", ".")) / "irfs/cta-prod5-zenodo-v0.1/fits"
 
@@ -155,3 +168,17 @@ class CTAOIRFManager:
     def _make_name(opt: IRFOption) -> str:
         array, az, zen, lt = opt
         return f"CTAO-{array}_{zen}_{lt}"
+
+
+    @classmethod
+    def get_irfs_options(cls):
+        """Return all available IRF combinations."""
+        return [
+            (array, azimuth, zenith, livetime)
+            for array, azimuth, zenith, livetime in product(
+                cls._SITE_ARRAY,
+                cls._AZIMUTHS,
+                cls._ZENITHS,
+                cls._OBS_TIME,
+            )
+        ]

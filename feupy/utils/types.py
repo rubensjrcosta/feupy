@@ -17,14 +17,14 @@ def validate_irf(v):
         raise TypeError("IRF must be a tuple")
 
     if len(v) != 4:
-        raise ValueError("IRF must have 4 elements")
+        raise ValueError("IRF must have exactly 4 elements")
 
-    manager = CTAOIRFManager()
+    options = CTAOIRFManager.get_irfs_options()
 
-    try:
-        manager._build_path(v)
-    except Exception as e:
-        raise ValueError(f"Invalid IRF: {v}") from e
+    if v not in options:
+        raise ValueError(
+            f"Invalid IRF option: {v!r}. Choose one from: {options!r}"
+        )
 
     return v
 
