@@ -295,9 +295,9 @@ axes.titlelocation: center
 #axes.facecolor      : white   ## axes background color
 axes.edgecolor      : black   ## axes edge color
 axes.linewidth: 0.25     ## edge linewidth
-#axes.grid           : False   ## display grid or not
-#axes.grid.axis      : both    ## which axis the grid should apply to
-#axes.grid.which     : major   ## gridlines at major, minor or both ticks
+axes.grid           : True   ## display grid or not
+axes.grid.axis      : both    ## which axis the grid should apply to
+axes.grid.which     : major   ## gridlines at major, minor or both ticks
 axes.titlesize: 12             ## fontsize of the axes title
 #axes.titleweight    : normal  ## font weight of title
 #axes.titlepad       : 6.0     ## pad between axes and title in points
@@ -407,10 +407,10 @@ ytick.labelsize      : small ## fontsize of the tick labels
 #ytick.alignment      : center_baseline ## alignment of yticks
 
 #### GRIDS
-#grid.color       :   b0b0b0    ## grid color
-#grid.linestyle   :   -         ## solid
-#grid.linewidth   :   0.8       ## in points
-#grid.alpha       :   1.0       ## transparency, between 0.0 and 1.0
+grid.color       :   b0b0b0    ## grid color
+grid.linestyle   :   -         ## solid
+grid.linewidth   :   0.8       ## in points
+grid.alpha       :   1.0       ## transparency, between 0.0 and 1.0
 
 ### LEGEND
 #legend.loc           : best
