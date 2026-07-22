@@ -610,10 +610,31 @@ class CTAOAnalysis:
 
         obs = self.observations[obs_id]
 
+        obs_cfg = self.config.observation
+        ds_cfg = self.config.datasets
+
         dataset = self._create_dataset_maker().run(
             self._create_reference_dataset(str(obs.obs_id)), obs
         )
 
+        if not ds_cfg.containment_correction:
+            
+            containment = ds_cfg.containment
+            offset = obs_cfg.offset
+            energy_axis = self._make_energy_axis(ds_cfg.geom.axes.energy)
+            on_region_radius = ds_cfg.on_region.radius
+            
+            dataset.exposure *= containment
+            log.info("\nCorrected exposure (containment: {}%):\n{}\n".format(containment, dataset)) 
+
+            on_radii = obs.psf.containment_radius(
+                energy_true=energy_axis.center, offset=offset, fraction=containment
+            )            
+            
+            factor = (1 - np.cos(on_radii)) / (1 - np.cos(on_region_radius))
+            dataset.background *= factor.value.reshape((-1, 1, 1))
+            log.info("\nCorrected background (containment: {}%):\n{}\n".format(containment, dataset)) 
+            
         bkg_maker = self._create_background_maker()
         if bkg_maker:
             dataset = bkg_maker.run(dataset, obs)
