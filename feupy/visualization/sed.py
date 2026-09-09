@@ -187,7 +187,7 @@ class SEDPlotter:
         if ref_markers is None:
             ref_markers = build_fp_kwargs(
                 labels=ref_names,
-                marker="o",
+                #marker="o",
                 marker_size=4,
             )
 
@@ -209,6 +209,7 @@ class SEDPlotter:
                 0.1,
                 0.9,
                 box_name,
+                fontsize = 8,
                 transform=ax.transAxes,
             )
 

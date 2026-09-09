@@ -32,9 +32,12 @@ feupy/core/sources/tests/__init__.py
 feupy/core/sources/tests/test_sources.py
 feupy/irf/__init__.py
 feupy/irf/manager.py
+feupy/irf/utils.py
 feupy/irf/visibility.py
 feupy/irf/tests/__init__.py
 feupy/irf/tests/test_irf_manager.py
+feupy/irf/tests/test_utils.py
+feupy/irf/tests/test_visibility.py
 feupy/naima/io.py
 feupy/naima/gammapy/__init__.py
 feupy/naima/gammapy/spectral.py

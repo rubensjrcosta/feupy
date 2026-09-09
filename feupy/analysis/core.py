@@ -874,14 +874,23 @@ class CTAOAnalysis:
     def _get_table_meta(self):
 
         obs = self.config.observation
-        irf_data = self.irf_manager.get_irf(obs.required_irfs)
+        irfs = obs.required_irfs
+        
+        irf_data = self.irf_manager.get_irf(irfs)
 
         return {
             "ONRADIUS": f"{self.config.datasets.on_region.radius.to('deg').value} deg",
             "OFFSET": obs.offset.to_string(),
             "LIVETIME": obs.livetime.to_string(),
             "IRF_NAME": irf_data["name"],
-            "IRFS": obs.required_irfs,
+            "IRF_LABEL": irf_data["label"],
+            "IRF_ARR": irfs[0] if len(irfs) > 0 else "", 
+            "IRF_AZ":  irfs[1] if len(irfs) > 1 else "", 
+            "IRF_ZEN": irfs[2] if len(irfs) > 2 else "", 
+            "IRF_LT":  irfs[3] if len(irfs) > 3 else "",
+        
+            #"IRFS": obs.required_irfs,
+            
         }
 
     def get_file_name(self):
