@@ -1,4 +1,5 @@
 name: feupy
+
 channels:
   - conda-forge
 
@@ -6,7 +7,7 @@ dependencies:
   - python=3.12
   - pip
 
-  # System libraries (C extensions support)
+  # System libraries
   - libxml2
   - lxml
   - gcc
@@ -19,7 +20,7 @@ dependencies:
   - pyyaml
   - tqdm
 
-  # Astronomy / Gamma-ray tools
+  # Astronomy / gamma-ray tools
   - astropy>=6.0
   - naima>=0.10
   - gammapy=2.0
@@ -33,10 +34,6 @@ dependencies:
   - pytest-cov
   - pytest-mock
 
-  # Editable project install (LAST)
+  # Editable project install
   - pip:
       - -e .
-
-variables:
-  GAMMAPY_DATA: /home/phoenix/Coding/GitHub/gammapy-data/gammapy-datasets/2.0
-  FEUPY_DATA: /home/phoenix/Coding/GitHub/feupy-data/feupy-datasets/1.0
