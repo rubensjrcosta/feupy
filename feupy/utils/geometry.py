@@ -1,11 +1,9 @@
-# Licensed under a 3-clause BSD style license - see LICENSE.rst
-"""Utilities for Geometry."""
+# Licensed under a 3-clause BSD style license - see LICENSE
+"""Geometry utilities."""
 
-# Imports
-from gammapy.data import FixedPointingInfo, PointingMode
+from gammapy.data import FixedPointingInfo
 from gammapy.maps import MapAxis, RegionGeom
 from regions import CircleSkyRegion
-
 
 __all__ = [
     "create_energy_axis",
@@ -13,99 +11,113 @@ __all__ = [
     "create_pointing_position",
     "define_on_region",
     "create_region_geometry",
-    # "GeometryParameters",
 ]
 
 
-# Function Definitions
+def create_energy_axis(
+    energy_min,
+    energy_max,
+    nbin=5,
+    per_decade=True,
+    name="energy",
+):
+    """Create an energy axis.
 
-def create_energy_axis(energy_min, energy_max, nbin=5, per_decade=True, name="energy"):    
-    """Create an energy axis for analysis."""
+    Parameters
+    ----------
+    energy_min : `~astropy.units.Quantity`
+        Minimum energy.
+    energy_max : `~astropy.units.Quantity`
+        Maximum energy.
+    nbin : int, optional
+        Number of bins. Default is 5.
+    per_decade : bool, optional
+        Whether ``nbin`` is interpreted as the number of bins per decade.
+        Default is True.
+    name : str, optional
+        Axis name. Default is ``"energy"``.
+
+    Returns
+    -------
+    axis : `~gammapy.maps.MapAxis`
+        Energy axis.
+    """
     return MapAxis.from_energy_bounds(
-        energy_min=energy_min, 
-        energy_max=energy_max, 
-        nbin=nbin, 
-        per_decade=per_decade, 
-        name=name
+        energy_min=energy_min,
+        energy_max=energy_max,
+        nbin=nbin,
+        per_decade=per_decade,
+        name=name,
     )
 
 
 def create_pointing_position(position, position_angle, separation):
-    """Calculate the pointing position based on a position, angle, and separation."""
+    """Create a pointing position offset from a sky position.
+
+    Parameters
+    ----------
+    position : `~astropy.coordinates.SkyCoord`
+        Reference sky position.
+    position_angle : `~astropy.units.Quantity`
+        Position angle of the offset.
+    separation : `~astropy.units.Quantity`
+        Angular separation from the reference position.
+
+    Returns
+    -------
+    pointing_position : `~astropy.coordinates.SkyCoord`
+        Offset pointing position.
+    """
     return position.directional_offset_by(position_angle, separation)
 
 
 def create_pointing(pointing_position):
-    """Create a pointing instance with a fixed position."""
-    return FixedPointingInfo(
-        mode=PointingMode.POINTING,
-        fixed_icrs=pointing_position.icrs,
-    )
+    """Create fixed pointing information.
+
+    Parameters
+    ----------
+    pointing_position : `~astropy.coordinates.SkyCoord`
+        Pointing sky position.
+
+    Returns
+    -------
+    pointing : `~gammapy.data.FixedPointingInfo`
+        Fixed pointing information.
+    """
+    return FixedPointingInfo(fixed_icrs=pointing_position.icrs)
 
 
 def define_on_region(center, radius):
-    """Define an on-region as a circular sky region."""
-    return CircleSkyRegion(
-        center=center, 
-        radius=radius
-    )
+    """Create a circular on-region.
+
+    Parameters
+    ----------
+    center : `~astropy.coordinates.SkyCoord`
+        Region center.
+    radius : `~astropy.units.Quantity`
+        Region radius.
+
+    Returns
+    -------
+    region : `~regions.CircleSkyRegion`
+        Circular sky region.
+    """
+    return CircleSkyRegion(center=center, radius=radius)
 
 
 def create_region_geometry(on_region, axes):
-    """Define the geometry for an analysis region."""
-    return RegionGeom.create(
-        region=on_region, 
-        axes=axes
-    )
+    """Create a region geometry.
 
+    Parameters
+    ----------
+    on_region : `~regions.SkyRegion`
+        Sky region used to define the geometry.
+    axes : list of `~gammapy.maps.MapAxis`
+        Non-spatial axes.
 
-# # Optional GeometryParameters Class
-# class GeometryParameters:
-#     """Container for geometry parameters.
-# 
-#     Parameters
-#     ----------
-#     e_reco_min : `~astropy.units.Quantity`
-#         Minimal energy for simulation.
-#     e_reco_max : `~astropy.units.Quantity`
-#         Maximal energy for simulation.
-#     nbin_reco : int
-#         Number of bins for reconstructed energy.
-#     e_true_min : `~astropy.units.Quantity`
-#         Minimal true energy for simulation.
-#     e_true_max : `~astropy.units.Quantity`
-#         Maximal true energy for simulation.
-#     nbin_true : int
-#         Number of bins for true energy.
-#     """
-#     @u.quantity_input(
-#         e_reco_min=u.eV, 
-#         e_reco_max=u.eV,
-#         e_true_min=u.eV, 
-#         e_true_max=u.eV
-#     )
-#     def __init__(self,
-#                  e_reco_min=None,
-#                  e_reco_max=None,
-#                  nbin_reco: int=None,
-#                  e_true_min=None,
-#                  e_true_max=None,
-#                  nbin_true: int=None,
-#                 ):
-#         self.e_reco_min = Quantity(e_reco_min, "TeV")
-#         self.e_reco_max = Quantity(e_reco_max, "TeV")
-#         self.nbin_reco = nbin_reco
-#         self.e_true_min = Quantity(e_true_min, "TeV")
-#         self.e_true_max = Quantity(e_true_max, "TeV")
-#         self.nbin_true = nbin_true
-# 
-#     def __str__(self):
-#         """Return a summary of geometry parameters."""
-#         ss = '*** Basic parameters ***\n\n'
-#         ss += 'e_reco_min = {:.2f}\n'.format(self.e_reco_min).replace(' ', '')
-#         ss += 'e_reco_max = {:.2f}\n'.format(self.e_reco_max).replace(' ', '')
-#         ss += 'nbin_reco = {}\n'.format(self.nbin_reco)
-#         ss += 'e_true_min = {:.2f}\n'.format(self.e_true_min).replace(' ', '')
-#         ss += 'e_true_max = {:.2f}\n'.format(self.e_true_max).replace(' ', '')
-#         ss += 'nbin_true = {}\n'.format(self.nbin_true)
-#         return ss
+    Returns
+    -------
+    geom : `~gammapy.maps.RegionGeom`
+        Region geometry.
+    """
+    return RegionGeom.create(region=on_region, axes=axes)

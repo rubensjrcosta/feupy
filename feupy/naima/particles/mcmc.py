@@ -1,10 +1,11 @@
 # Licensed under a 3-clause BSD style license - see LICENSE.rst
-import naima
 import astropy.units as u
+import naima
 
 # ============================================================
 # Internal helper functions (not part of public API)
 # ============================================================
+
 
 def _get_mcmc_median(table, label):
     """Return median value for a given MCMC parameter label."""
@@ -24,6 +25,7 @@ def _get_energy_from_log10(table, label, unit=u.TeV):
 # ============================================================
 # Public API – single-population models
 # ============================================================
+
 
 def make_powerlaw_from_mcmc(table, e_ref):
     """Build a Naima PowerLaw model from MCMC results."""
@@ -68,6 +70,7 @@ def make_exponentialcutoff_powerlaw_from_mcmc(table, e_ref):
 # ============================================================
 # Public API – electron / proton combined models
 # ============================================================
+
 
 def make_broken_powerlaw_ep_from_mcmc(
     table,

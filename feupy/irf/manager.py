@@ -3,19 +3,19 @@
 
 from __future__ import annotations
 
-import os
 import logging
-from pathlib import Path
+import os
 from functools import lru_cache
-from typing import Dict, Tuple, Any
 from itertools import product
+from pathlib import Path
+from typing import Any
 
-from gammapy.irf import load_irf_dict_from_file
 from gammapy.data import observatory_locations
+from gammapy.irf import load_irf_dict_from_file
 
 log = logging.getLogger(__name__)
 
-IRFOption = Tuple[str, str, str, str]  # (array, azimuth, zenith, livetime)
+IRFOption = tuple[str, str, str, str]  # (array, azimuth, zenith, livetime)
 
 __all__ = ["CTAOIRFManager"]
 
@@ -59,7 +59,7 @@ class CTAOIRFManager:
     _BASE_PATH = Path(os.getenv("FEUPY_DATA", ".")) / "irfs/cta-prod5-zenodo-v0.1/fits"
 
     def __init__(self):
-        self._cache: Dict[IRFOption, Dict[str, Any]] = {}
+        self._cache: dict[IRFOption, dict[str, Any]] = {}
 
     # ------------------------------------------------------------------
     # Helpers
@@ -106,7 +106,7 @@ class CTAOIRFManager:
     # PUBLIC API
     # ------------------------------------------------------------------
 
-    def get_irf(self, opt: IRFOption) -> Dict[str, Any]:
+    def get_irf(self, opt: IRFOption) -> dict[str, Any]:
         """
         Load IRF and return metadata dict.
         """
@@ -168,7 +168,6 @@ class CTAOIRFManager:
     def _make_name(opt: IRFOption) -> str:
         array, az, zen, lt = opt
         return f"CTAO-{array}_{zen}_{lt}"
-
 
     @classmethod
     def get_irfs_options(cls):

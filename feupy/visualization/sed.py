@@ -8,12 +8,13 @@ legends, axis labels, units, and plot limits.
 """
 
 import itertools
+
 import matplotlib.pyplot as plt
 from astropy import units as u
 
-from feupy.visualization.styles.markers import build_fp_kwargs
-from feupy.visualization.styles.linestyles import LINESTYLES_DEFAULT
 from feupy.utils.datasets import get_energy_bounds_from_datasets
+from feupy.visualization.styles.linestyles import LINESTYLES_DEFAULT
+from feupy.visualization.styles.markers import build_fp_kwargs
 from feupy.visualization.utils.labels import (
     DEFAULT_XAXIS_LABEL,
     DEFAULT_YAXIS_LABEL,
@@ -69,8 +70,8 @@ class SEDPlotter:
             File path or name where the plot will be saved.
         """
         if file_path:
-            plt.savefig(file_path, dpi=300, bbox_inches='tight')
-            
+            plt.savefig(file_path, dpi=300, bbox_inches="tight")
+
     def _set_axis_labels(self, ax, axis_kwargs):
         xlabel, ylabel = axis_kwargs["label"]
         ax.set_xlabel(xlabel)
@@ -91,7 +92,6 @@ class SEDPlotter:
 
     def _plot_datasets(self, ax, plot_kwargs, ref_markers):
         for dataset in self.datasets:
-
             kwargs_ds = {
                 **ref_markers.get(dataset.name, {}),
                 "ls": "None",
@@ -131,11 +131,10 @@ class SEDPlotter:
         linestyle_cycle = itertools.cycle(LINESTYLES_DEFAULT)
 
         for model in self.models:
-
             spec = model.spectral_model
 
             color = ref_markers.get(model.name, {}).get("color", "black")
-            
+
             kwargs_model = dict(
                 label=model.name,
                 linestyle=next(linestyle_cycle),
@@ -154,6 +153,7 @@ class SEDPlotter:
                     alpha=0.05,
                     **plot_kwargs,
                 )
+
     # -------------------------------------------------
     # Public API
     # -------------------------------------------------
@@ -187,7 +187,7 @@ class SEDPlotter:
         if ref_markers is None:
             ref_markers = build_fp_kwargs(
                 labels=ref_names,
-                #marker="o",
+                # marker="o",
                 marker_size=4,
             )
 
@@ -209,13 +209,13 @@ class SEDPlotter:
                 0.1,
                 0.9,
                 box_name,
-                fontsize = 8,
+                fontsize=8,
                 transform=ax.transAxes,
             )
 
         ax.legend(**legend_kwargs)
-        
+
         # Save plot if file_path is provided
         self._save_plot(file_path)
-        
+
         return ax

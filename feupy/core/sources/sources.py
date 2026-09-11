@@ -3,9 +3,11 @@
 
 import collections.abc
 import copy
-import yaml
 import logging
+
+import yaml
 from astropy.coordinates import SkyCoord
+
 from feupy.catalogs import FEUPY_CATALOG_REGISTRY
 from feupy.catalogs.utils import get_catalog_tag
 
@@ -31,7 +33,9 @@ class Sources(collections.abc.MutableSequence):
             sources = []
         elif isinstance(sources, Sources):
             sources = sources._sources
-        elif any(isinstance(sources, _.source_object_class) for _ in FEUPY_CATALOG_REGISTRY):
+        elif any(
+            isinstance(sources, _.source_object_class) for _ in FEUPY_CATALOG_REGISTRY
+        ):
             sources = [sources]
         elif not isinstance(sources, list):
             log.error(f"Failed Invalid type: {sources!r}")
@@ -41,8 +45,12 @@ class Sources(collections.abc.MutableSequence):
         for source in sources:
             label = self._set_source_label(source)
             if label in unique_labels:
-                log.error(f"Failed Source name '{source.name}' from {get_catalog_tag(source)} already exists!")
-                raise ValueError(f"Source name '{source.name}' from {get_catalog_tag(source)} already exists!")
+                log.error(
+                    f"Failed Source name '{source.name}' from {get_catalog_tag(source)} already exists!"
+                )
+                raise ValueError(
+                    f"Source name '{source.name}' from {get_catalog_tag(source)} already exists!"
+                )
             unique_labels.append(label)
 
         self._sources = sources
@@ -54,23 +62,34 @@ class Sources(collections.abc.MutableSequence):
         del self._sources[self.index(key)]
 
     def __setitem__(self, key, source):
-        if any(isinstance(source, _.source_object_class)
-           for _ in FEUPY_CATALOG_REGISTRY):            
+        if any(
+            isinstance(source, _.source_object_class) for _ in FEUPY_CATALOG_REGISTRY
+        ):
             label = self._set_source_label(source)
             if label in self.labels:
-                log.error(f"Failed Source name '{source.name}' from {get_catalog_tag(source)} already exists!")
-                raise ValueError(f"Source name '{source.name}' from {get_catalog_tag(source)} already exists!")
+                log.error(
+                    f"Failed Source name '{source.name}' from {get_catalog_tag(source)} already exists!"
+                )
+                raise ValueError(
+                    f"Source name '{source.name}' from {get_catalog_tag(source)} already exists!"
+                )
             self._sources[self.index(key)] = source
         else:
             log.error(f"Failed Invalid type: {type(source)!r}")
             raise TypeError(f"Invalid type: {type(source)!r}")
 
     def insert(self, idx, source):
-        if any(isinstance(source, _.source_object_class) for _ in FEUPY_CATALOG_REGISTRY):
+        if any(
+            isinstance(source, _.source_object_class) for _ in FEUPY_CATALOG_REGISTRY
+        ):
             label = self._set_source_label(source)
             if label in self.labels:
-                log.error(f"Failed Source name '{source.name}' from {get_catalog_tag(source)} already exists!")
-                raise ValueError(f"Source name '{source.name}' from {get_catalog_tag(source)} already exists!")
+                log.error(
+                    f"Failed Source name '{source.name}' from {get_catalog_tag(source)} already exists!"
+                )
+                raise ValueError(
+                    f"Source name '{source.name}' from {get_catalog_tag(source)} already exists!"
+                )
             self._sources.insert(idx, source)
         else:
             log.error(f"Failed Invalid type: {type(source)!r}")
@@ -78,8 +97,8 @@ class Sources(collections.abc.MutableSequence):
 
     def _set_source_label(cls, source):
         tag = get_catalog_tag(source)
-        return f'{source.name} ({tag})'
-    
+        return f"{source.name} ({tag})"
+
     def index(self, key):
         if isinstance(key, (int, slice)):
             return key
@@ -90,14 +109,14 @@ class Sources(collections.abc.MutableSequence):
         else:
             log.error(f"Failed Invalid type: {type(key)!r}")
             raise TypeError(f"Invalid type: {type(key)!r}")
-       
+
     def __len__(self):
         return len(self._sources)
-    
+
     def copy(self):
         """A deep copy."""
         return copy.deepcopy(self)
-    
+
     @property
     def names(self):
         return [_.name for _ in self._sources]
@@ -105,18 +124,18 @@ class Sources(collections.abc.MutableSequence):
     @property
     def labels(self):
         return [self._set_source_label(_) for _ in self._sources]
-                
+
     @property
     def positions(self):
         """Source positions as a `~astropy.coordinates.SkyCoord` object."""
         ra = [_.position.icrs.ra for _ in self._sources]
         dec = [_.position.icrs.dec for _ in self._sources]
-        return SkyCoord(ra, dec, frame='icrs')
+        return SkyCoord(ra, dec, frame="icrs")
 
     def select(self, names):
         names = set(names)
         return Sources([src for src in self if src.name in names])
-        
+
     def write(self, filename, overwrite=False):
         _dict = {}
         dict_sources = {}
@@ -127,21 +146,23 @@ class Sources(collections.abc.MutableSequence):
                 catalog=get_catalog_tag(source),
             )
 
-        dict_sources['Sources'] = _dict
+        dict_sources["Sources"] = _dict
 
         yaml_string = yaml.dump(dict_sources)
         sources = yaml.safe_load(yaml_string)
 
-        with open(filename, 'w') as file:
+        with open(filename, "w") as file:
             yaml.dump(sources, file)
-            
+
     def read(self, filename):
-        with open(filename, 'r') as stream:
+        with open(filename) as stream:
             try:
                 d = yaml.safe_load(stream)
                 self._sources = [
-                    FEUPY_CATALOG_REGISTRY.get_cls(d['Sources'][_]['catalog'])()[d['Sources'][_]['name']]  
-                    for _ in d['Sources'].keys()
+                    FEUPY_CATALOG_REGISTRY.get_cls(d["Sources"][_]["catalog"])()[
+                        d["Sources"][_]["name"]
+                    ]
+                    for _ in d["Sources"].keys()
                 ]
             except yaml.YAMLError as error:
                 print(error)

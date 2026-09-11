@@ -1,9 +1,8 @@
 # Licensed under a 3-clause BSD style license
 """Sensitivity plotting utilities."""
 
-import matplotlib.pyplot as plt
 import astropy.units as u
-
+import matplotlib.pyplot as plt
 from astropy.visualization import quantity_support
 from gammapy.maps.axes import UNIT_STRING_FORMAT
 
@@ -78,7 +77,6 @@ def plot_irfs(
     ax.set_prop_cycle(color=["blue", "red", "green"], linestyle=linestyle)
 
     for table in tables:
-
         # ✅ NOVO: usa direto meta (sem Irfs)
         label = table.meta.get("IRF_NAME", "IRF")
 
@@ -139,7 +137,6 @@ def plot_irfs_superpose(
     ax.set_prop_cycle(color=["blue", "blue", "blue"], linestyle=linestyle)
 
     for table in tables_south:
-
         label = table.meta.get("IRF_NAME", "IRF")
 
         if int_sens_label and "INT_SENS" in table.meta:
@@ -153,7 +150,6 @@ def plot_irfs_superpose(
     ax.set_prop_cycle(color=["green", "green", "green"], linestyle=linestyle)
 
     for table in tables_north:
-
         label = table.meta.get("IRF_NAME", "IRF")
 
         if int_sens_label and "INT_SENS" in table.meta:

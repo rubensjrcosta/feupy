@@ -1,19 +1,19 @@
 # Licensed under a 3-clause BSD style license - see LICENSE.rst
-import numpy as np
 import astropy.units as u
-from astropy.table import Table
 import naima
+import numpy as np
+from astropy.table import Table
 
 from feupy.naima.particles.mcmc import (
-    _get_mcmc_median,
     _get_amplitude_from_mcmc,
     _get_energy_from_log10,
-    make_powerlaw_from_mcmc,
-    make_logparabola_from_mcmc,
+    _get_mcmc_median,
+    make_broken_powerlaw_ep_from_mcmc,
     make_broken_powerlaw_from_mcmc,
     make_exponentialcutoff_powerlaw_from_mcmc,
-    make_broken_powerlaw_ep_from_mcmc,
     make_exponentialcutoffpowerlaw_e_powerlaw_p_from_mcmc,
+    make_logparabola_from_mcmc,
+    make_powerlaw_from_mcmc,
 )
 
 

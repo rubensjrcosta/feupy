@@ -1,16 +1,24 @@
 # Licensed under a 3-clause BSD style license - see LICENSE.rst
 
-import naima
-from gammapy.modeling.models import NaimaSpectralModel, CompoundSpectralModel, Models, SkyModel
 import operator
+
+import naima
+
 from feupy.naima.particles.analysis import evaluate_particle_spectrum
+from gammapy.modeling.models import (
+    CompoundSpectralModel,
+    Models,
+    NaimaSpectralModel,
+    SkyModel,
+)
 
 __all__ = [
     "make_inverse_compton_models",
     "make_pion_decay_models",
     "make_leptohadronic_model",
-    "compute_radiative_output"
+    "compute_radiative_output",
 ]
+
 
 def make_inverse_compton_models(radiative_model, distance):
     """Create SkyModels for inverse Compton emission.
@@ -31,9 +39,7 @@ def make_inverse_compton_models(radiative_model, distance):
 
     models.append(
         SkyModel(
-            spectral_model=NaimaSpectralModel(
-                radiative_model, distance=distance
-            ),
+            spectral_model=NaimaSpectralModel(radiative_model, distance=distance),
             name="IC (total)",
         )
     )
@@ -53,14 +59,14 @@ def make_inverse_compton_models(radiative_model, distance):
 
 def make_pion_decay_models(radiative_model, distance):
     """Create SkyModels for Pion Decay emission.
-    
+
     Parameters
     ----------
     radiative_model : naima.radiative.RadiativeModel
         Naima radiative model instance.
     distance : `~astropy.units.Quantity`
         Distance to the source.
-    
+
     Returns
     -------
     models : `~gammapy.modeling.models.Models`
@@ -70,13 +76,12 @@ def make_pion_decay_models(radiative_model, distance):
 
     models.append(
         SkyModel(
-            spectral_model=NaimaSpectralModel(
-                radiative_model, distance=distance
-            ),
+            spectral_model=NaimaSpectralModel(radiative_model, distance=distance),
             name="Pion Decay",
         )
     )
     return models
+
 
 def make_leptohadronic_model(
     ic_models,
@@ -102,7 +107,7 @@ def make_leptohadronic_model(
         Combined leptohadronic SkyModel.
     """
     Models()
-    
+
     if not ic_models:
         raise ValueError("ic_models list is empty.")
 
@@ -119,6 +124,7 @@ def make_leptohadronic_model(
     )
 
     return SkyModel(spectral_model=spectral_model, name=name)
+
 
 def compute_radiative_output(
     particle_distribution,
@@ -174,21 +180,16 @@ def compute_radiative_output(
             Epmax=Epmax,
         )
 
-        result["flux"] = (
-            IC.flux(data, distance=distance)
-            + PD.flux(data, distance=distance)
+        result["flux"] = IC.flux(data, distance=distance) + PD.flux(
+            data, distance=distance
         )
 
         result["We"] = IC.compute_We(Eemin=Eemin, Eemax=Eemax)
         result["Wp"] = PD.compute_Wp(Epmin=Epmin, Epmax=Epmax)
 
         result["particles"] = {
-            "electrons": evaluate_particle_spectrum(
-                IC, Eemin, Eemax
-            ),
-            "protons": evaluate_particle_spectrum(
-                PD, Epmin, Epmax
-            ),
+            "electrons": evaluate_particle_spectrum(IC, Eemin, Eemax),
+            "protons": evaluate_particle_spectrum(PD, Epmin, Epmax),
         }
 
         result["models"] = {
@@ -233,9 +234,7 @@ def compute_radiative_output(
     result["flux"] = model.flux(data, distance=distance)
     result["W"] = energy_content(Emin, Emax)
 
-    result["particles"] = evaluate_particle_spectrum(
-        model, Emin, Emax
-    )
+    result["particles"] = evaluate_particle_spectrum(model, Emin, Emax)
 
     result["models"] = models
 

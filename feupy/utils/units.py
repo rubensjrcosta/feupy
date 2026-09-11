@@ -1,30 +1,27 @@
-# Licensed under a 3-clause BSD style license - see LICENSE.rst
-"""
-Units helper utilities.
-"""
+# Licensed under a 3-clause BSD style license - see LICENSE
+"""Unit helper utilities."""
 
 from astropy import units as u
 
-__all__ = [
-    "is_energy_unit",
-]
+__all__ = ["is_energy_unit"]
 
 
 def is_energy_unit(unit):
-    """
-    Check if unit is an energy unit.
+    """Check whether a unit is equivalent to an energy unit.
 
     Parameters
     ----------
-    unit : `~astropy.units.Unit`
+    unit : `~astropy.units.Unit` or str
+        Unit to check.
 
     Returns
     -------
     bool
+        True if the unit is equivalent to energy, otherwise False.
     """
-
     try:
-        (1 * unit).to(u.eV)
-        return True
-    except Exception:
+        u.Unit(unit).to(u.eV)
+    except (TypeError, ValueError, u.UnitConversionError):
         return False
+
+    return True

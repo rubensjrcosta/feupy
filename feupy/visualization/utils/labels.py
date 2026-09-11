@@ -2,8 +2,8 @@
 """Visualization labels for FeuPy."""
 
 from astropy import units as u
-from gammapy.maps.axes import UNIT_STRING_FORMAT
 from gammapy.estimators.map.core import DEFAULT_UNIT
+from gammapy.maps.axes import UNIT_STRING_FORMAT
 
 __all__ = [
     "DEFAULT_YAXIS_LABEL",
@@ -15,12 +15,14 @@ __all__ = [
 # ---------------------------------------------------------------------
 DEFAULT_YAXIS_LABEL = {
     "e2dnde": (
-        f"[{DEFAULT_UNIT['e2dnde'].to_string(UNIT_STRING_FORMAT)}]"
-        .replace("[$\\mathrm{", "$\\rm {E^{2}\\,\\Phi(E)\\, [")
+        f"[{DEFAULT_UNIT['e2dnde'].to_string(UNIT_STRING_FORMAT)}]".replace(
+            "[$\\mathrm{", "$\\rm {E^{2}\\,\\Phi(E)\\, ["
+        )
     ),
     "dnde": (
-        f"[{DEFAULT_UNIT['dnde'].to_string(UNIT_STRING_FORMAT)}]"
-        .replace("[$\\mathrm{", "$\\rm {\\Phi(E)\\, [")
+        f"[{DEFAULT_UNIT['dnde'].to_string(UNIT_STRING_FORMAT)}]".replace(
+            "[$\\mathrm{", "$\\rm {\\Phi(E)\\, ["
+        )
     ),
 }
 

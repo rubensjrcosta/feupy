@@ -1,54 +1,39 @@
-# Licensed under a 3-clause BSD style license - see LICENSE.rst
+# Licensed under a 3-clause BSD style license - see LICENSE
 
 import astropy.units as u
+import pytest
 
 from feupy.utils.conversions import (
-    jy_to_erg_cm2_s,
     frequency_to_energy,
+    jy_to_erg_cm2_s,
 )
 
 
-def test_jy_to_erg_cm2_s():
-    freq = 1e14 * u.Hz
-    flux = 1 * u.Jy
-
-    result = jy_to_erg_cm2_s(freq, flux)
-
-    expected = (flux * freq).to("erg cm-2 s-1")
-
-    assert result.unit == u.Unit("erg cm-2 s-1")
-    assert result.value == expected.value
-
-
-def test_jy_to_erg_cm2_s_mjy():
-    freq = 1e14 * u.Hz
-    flux = 1 * u.mJy
-
-    result = jy_to_erg_cm2_s(freq, flux)
-
-    expected = (flux.to(u.Jy) * freq).to("erg cm-2 s-1")
+@pytest.mark.parametrize(
+    ("frequency", "flux_density"),
+    [
+        (1e14 * u.Hz, 1 * u.Jy),
+        (1e14 * u.Hz, 1 * u.mJy),
+    ],
+)
+def test_jy_to_erg_cm2_s(frequency, flux_density):
+    result = jy_to_erg_cm2_s(frequency, flux_density)
+    expected = (flux_density.to(u.Jy) * frequency.to(u.Hz)).to("erg cm-2 s-1")
 
     assert result.unit == u.Unit("erg cm-2 s-1")
-    assert result.value == expected.value
+    assert result.value == pytest.approx(expected.value)
 
 
-def test_frequency_to_energy():
-    freq = 1e14 * u.Hz
+@pytest.mark.parametrize(
+    "frequency",
+    [
+        1e14 * u.Hz,
+        100 * u.GHz,
+    ],
+)
+def test_frequency_to_energy(frequency):
+    result = frequency_to_energy(frequency)
+    expected = frequency.to(u.eV, equivalencies=u.spectral())
 
-    energy = frequency_to_energy(freq)
-
-    expected = freq.to(u.eV, equivalencies=u.spectral())
-
-    assert energy.unit == u.eV
-    assert energy.value == expected.value
-
-
-def test_frequency_to_energy_ghz():
-    freq = 100 * u.GHz
-
-    energy = frequency_to_energy(freq)
-
-    expected = freq.to(u.eV, equivalencies=u.spectral())
-
-    assert energy.unit == u.eV
-    assert energy.value == expected.value
+    assert result.unit == u.eV
+    assert result.value == pytest.approx(expected.value)

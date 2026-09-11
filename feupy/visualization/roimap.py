@@ -2,9 +2,9 @@
 """ROI Map class."""
 
 import matplotlib.pyplot as plt
-
-from regions import CircleSkyRegion, PointSkyRegion
 from gammapy.maps import RegionGeom
+from regions import CircleSkyRegion, PointSkyRegion
+
 from feupy.visualization.styles.markers.plotting import build_point_kwargs
 
 __all__ = ["ROIMapPlotter"]
@@ -23,13 +23,13 @@ class ROIMapPlotter:
     ax : `~matplotlib.axes.Axes`, optional
         Matplotlib axes object. Default is None.
     """
-    
-#     def __init__(self, center, radius, ax=None):
+
+    #     def __init__(self, center, radius, ax=None):
     def __init__(self, center, radius):
 
         self.center = center
         self.radius = radius
-#         self.ax = ax if ax is not None else plt.gca()
+        #         self.ax = ax if ax is not None else plt.gca()
         self.ax = None
 
     def customize_legend(self, kwargs_legend):
@@ -41,20 +41,20 @@ class ROIMapPlotter:
         kwargs_legend : dict, optional
             Dictionary defining the legend placement and style.
         """
-        
+
         if kwargs_legend is None:
             kwargs_legend = dict(
                 bbox_to_anchor=(0, -0.45),
                 ncol=3,
-                loc='lower left',
+                loc="lower left",
                 markerscale=0.75,
                 fontsize=5,
                 labelcolor="black",
             )
-        
+
         self.ax.legend(**kwargs_legend)
-        
-    def plot_roi(self, color='blue', linestyle='--'):
+
+    def plot_roi(self, color="blue", linestyle="--"):
         """Plot the Region of Interest (ROI) on the sky map."""
         region = RegionGeom(CircleSkyRegion(self.center, self.radius))
         self.ax = region.plot_region(color=color, linestyle=linestyle)
@@ -71,24 +71,22 @@ class ROIMapPlotter:
         ref_markers : dict, optional
             Dictionary of reference markers for each source.
         """
-        ref_markers = ref_markers or build_point_kwargs(sources
-                                                      , marker_size=6, palette=None)
-            
+        ref_markers = ref_markers or build_point_kwargs(
+            sources, marker_size=6, palette=None
+        )
+
         # Plot each source with corresponding marker
         for index, source in enumerate(sources):
-            
-            kwargs_point = ref_markers[sources.labels[index]]     
-            kwargs_point.update({'fillstyle': 'full', 'lw': 0})
+            kwargs_point = ref_markers[sources.labels[index]]
+            kwargs_point.update({"fillstyle": "full", "lw": 0})
 
             point = RegionGeom(PointSkyRegion(center=source.position))
             self.ax = point.plot_region(
                 ax=self.ax,
-                facecolor=kwargs_point['color'],
-                edgecolor='black',
+                facecolor=kwargs_point["color"],
+                edgecolor="black",
                 kwargs_point=kwargs_point,
             )
-            
-
 
     def set_axes(self, xlabel="R.A. (J2000)", ylabel="Dec. (J2000)", size=12):
         """
@@ -109,7 +107,7 @@ class ROIMapPlotter:
 
     def add_roi_text(self):
         """Add text annotation for the ROI on the plot."""
-        self.ax.text(0.1, 0.93, f'ROI ({self.radius})', transform=self.ax.transAxes)
+        self.ax.text(0.1, 0.93, f"ROI ({self.radius})", transform=self.ax.transAxes)
 
     def save_plot(self, file_path):
         """
@@ -121,7 +119,7 @@ class ROIMapPlotter:
             Path to save the plot.
         """
         if file_path:
-            plt.savefig(file_path, dpi=300, bbox_inches='tight')
+            plt.savefig(file_path, dpi=300, bbox_inches="tight")
 
     def plot(self, sources=None, file_path=None, **kwargs):
         """
@@ -136,20 +134,20 @@ class ROIMapPlotter:
         **kwargs : dict, optional
             Additional keyword arguments for customization.
         """
-        
+
         # Use the provided axes or get the current axes
-        self.ax = plt.gca() if  self.ax is None else  self.ax
-        
+        self.ax = plt.gca() if self.ax is None else self.ax
+
         # Plot ROI
         self.plot_roi()
 
         # Plot sources if provided
         if sources:
-            ref_markers = kwargs.get('ref_markers')
+            ref_markers = kwargs.get("ref_markers")
             self.plot_sources(sources, ref_markers)
 
         # Customize legend
-        kwargs_legend = kwargs.get('kwargs_legend', None)
+        kwargs_legend = kwargs.get("kwargs_legend", None)
         self.customize_legend(kwargs_legend)
 
         # Set axis labels
@@ -162,8 +160,8 @@ class ROIMapPlotter:
         self.save_plot(file_path)
 
         return self.ax
-    
-    
+
+
 # def add_annotations(self, annotations, **kwargs):
 #     """Add annotations to the ROI map."""
 #     # Function implementation...

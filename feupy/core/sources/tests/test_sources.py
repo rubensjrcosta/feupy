@@ -1,8 +1,8 @@
 # Licensed under a 3-clause BSD style license - see LICENSE.rst
 
+import astropy.units as u
 import pytest
 from astropy.coordinates import SkyCoord
-import astropy.units as u
 
 from feupy.core.sources import Sources
 
@@ -13,7 +13,7 @@ from feupy.core.sources import Sources
 class FakeSource:
     def __init__(self, name, ra=0, dec=0):
         self.name = name
-        self.position = SkyCoord(ra*u.deg, dec*u.deg, frame="icrs")
+        self.position = SkyCoord(ra * u.deg, dec * u.deg, frame="icrs")
 
 
 # -------------------------------------------------------------------------
@@ -44,17 +44,9 @@ def patch_registry(monkeypatch):
 
     import feupy.core.sources.sources as sources_module
 
-    monkeypatch.setattr(
-        sources_module,
-        "FEUPY_CATALOG_REGISTRY",
-        [FakeCatalog]
-    )
+    monkeypatch.setattr(sources_module, "FEUPY_CATALOG_REGISTRY", [FakeCatalog])
 
-    monkeypatch.setattr(
-        sources_module,
-        "get_catalog_tag",
-        lambda source: "fakecat"
-    )
+    monkeypatch.setattr(sources_module, "get_catalog_tag", lambda source: "fakecat")
 
 
 # -------------------------------------------------------------------------

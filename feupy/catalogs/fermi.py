@@ -1,7 +1,9 @@
 # Licensed under a 3-clause BSD style license - see LICENSE.rst
 """2PC/3PC catalog and source classes."""
-from gammapy.estimators import FluxPoints
+
 import logging
+
+from gammapy.estimators import FluxPoints
 
 # Set up logging
 log = logging.getLogger(__name__)
@@ -10,6 +12,7 @@ __all__ = [
     "get_flux_points_2PC",
     "get_flux_points_3PC",
 ]
+
 
 def get_flux_points_2PC(source):
     """
@@ -30,6 +33,7 @@ def get_flux_points_2PC(source):
         table=table,
         reference_model=source.spectral_model(),
     )
+
 
 def get_flux_points_3PC(source, fit="auto"):
     """

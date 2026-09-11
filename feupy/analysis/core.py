@@ -8,8 +8,6 @@ import astropy.units as u
 import numpy as np
 from astropy.coordinates import SkyCoord
 from astropy.table import Table
-from regions import CircleSkyRegion
-
 from gammapy.data import FixedPointingInfo, Observation, Observations
 from gammapy.datasets import (
     Datasets,
@@ -29,6 +27,7 @@ from gammapy.maps import MapAxis, RegionGeom
 from gammapy.modeling import Fit
 from gammapy.modeling.models import DatasetModels, FoVBackgroundModel, Models, SkyModel
 from gammapy.utils.scripts import make_path
+from regions import CircleSkyRegion
 
 from feupy.analysis.config import CTAOAnalysisConfig, ROIAnalysisConfig
 from feupy.catalogs.fermi import get_flux_points_2PC, get_flux_points_3PC
@@ -47,6 +46,7 @@ from feupy.utils.tables.io import read_table, write_table
 __all__ = ["ROIAnalysis", "CTAOAnalysis"]
 
 log = logging.getLogger(__name__)
+
 
 class ROIAnalysis:
     """Config-driven high level simulation interface.
@@ -167,17 +167,16 @@ class ROIAnalysis:
 
         # Add meta (columns descriptions)
         result_table.meta["description"] = {
-            'index': "Unique identifier for each source.",
-            'source_name': "Name of the source as listed in the catalog.",
-            'source_label': "User-defined label for the source, often used for plotting.",
-            'has_fp': "Boolean flag indicating if flux points are available (True/False).",
-            'catalog': "Catalog from which the source originates.",
-            'ra': "Right Ascension (RA) of the source in degrees, formatted to 3 decimal places.",
-            'dec': "Declination (Dec) of the source in degrees, formatted to 3 decimal places.",
-            'separation': "Angular separation from a reference position in degrees, formatted to 3 decimal places."
+            "index": "Unique identifier for each source.",
+            "source_name": "Name of the source as listed in the catalog.",
+            "source_label": "User-defined label for the source, often used for plotting.",
+            "has_fp": "Boolean flag indicating if flux points are available (True/False).",
+            "catalog": "Catalog from which the source originates.",
+            "ra": "Right Ascension (RA) of the source in degrees, formatted to 3 decimal places.",
+            "dec": "Declination (Dec) of the source in degrees, formatted to 3 decimal places.",
+            "separation": "Angular separation from a reference position in degrees, formatted to 3 decimal places.",
         }
         self.catalog = result_table
-
 
     def run(self):
         """Run the ROI analysis, initializing datasets."""
@@ -208,52 +207,75 @@ class ROIAnalysis:
                     spectral_model = self._create_spectral_model(source, which)
                     flux_points = get_flux_points_2PC(source)
                     dict_fp[source.name] = True
-                    self._create_flux_points_dataset(f"PSR {label}", models, datasets, spectral_model, flux_points)
+                    self._create_flux_points_dataset(
+                        f"PSR {label}", models, datasets, spectral_model, flux_points
+                    )
 
                 elif tag == "3PC":
                     spectral_model = self._create_spectral_model(source, which)
                     flux_points = get_flux_points_3PC(source)
                     dict_fp[source.name] = True
-                    self._create_flux_points_dataset(f"{label}", models, datasets, spectral_model, flux_points)
+                    self._create_flux_points_dataset(
+                        f"{label}", models, datasets, spectral_model, flux_points
+                    )
 
                 elif tag == "3hwc":
                     spectral_model = self._create_spectral_model(source, which)
                     flux_points = get_flux_points_3hwc(source)
                     dict_fp[source.name] = True
-                    self._create_flux_points_dataset(f"{label}", models, datasets, spectral_model, flux_points)
+                    self._create_flux_points_dataset(
+                        f"{label}", models, datasets, spectral_model, flux_points
+                    )
 
                 elif tag == "2hwc":
                     for model_type in ["point", "extended"]:
                         spectral_model = self._create_spectral_model(source, model_type)
                         flux_points = get_flux_points_2hwc(source, model_type)
                         dict_fp[source.name] = True
-                        self._create_flux_points_dataset(f"{label} ({model_type})", models, datasets, spectral_model, flux_points)
+                        self._create_flux_points_dataset(
+                            f"{label} ({model_type})",
+                            models,
+                            datasets,
+                            spectral_model,
+                            flux_points,
+                        )
 
                 elif tag == "1LHAASO":
                     for model_type in ["KM2A", "WCDA"]:
                         spectral_model = self._create_spectral_model(source, model_type)
                         flux_points = get_flux_points_1lhaaso(source, model_type)
                         dict_fp[source.name] = True
-                        self._create_flux_points_dataset(f"{label} ({model_type})", models, datasets, spectral_model, flux_points)
+                        self._create_flux_points_dataset(
+                            f"{label} ({model_type})",
+                            models,
+                            datasets,
+                            spectral_model,
+                            flux_points,
+                        )
 
                 elif tag == "vtscat":
                     unique_names = [source.name]
                     for flux_points in source.flux_points():
-                        reference_id = flux_points.meta['reference_id']
-                        model_name = generate_unique_name(source.name, reference_id, unique_names)
+                        reference_id = flux_points.meta["reference_id"]
+                        model_name = generate_unique_name(
+                            source.name, reference_id, unique_names
+                        )
                         unique_names.append(model_name)
                         model = flux_points.reference_model
                         dict_fp[source.name] = True
                         spectral_model = model.spectral_model
                         label = model_name
-                        self._create_flux_points_dataset(label, models, datasets, spectral_model, flux_points)
+                        self._create_flux_points_dataset(
+                            label, models, datasets, spectral_model, flux_points
+                        )
 
                 else:
                     spectral_model = source.spectral_model()
                     flux_points = source.flux_points
                     dict_fp[source.name] = True
-                    self._create_flux_points_dataset(label, models, datasets, spectral_model, flux_points)
-
+                    self._create_flux_points_dataset(
+                        label, models, datasets, spectral_model, flux_points
+                    )
 
             except Exception as error:
                 dict_fp[source.name] = False
@@ -268,30 +290,20 @@ class ROIAnalysis:
         """Helper function to create a FluxPointsDataset for a source."""
         return source.spectral_model(which=which) if which else source.spectral_model()
 
-    def _create_flux_points_dataset(self,  name, models, datasets, spectral_model, flux_points):
+    def _create_flux_points_dataset(
+        self, name, models, datasets, spectral_model, flux_points
+    ):
         """Helper function to create a FluxPointsDataset for a source."""
 
         e_ref_min = self.config.energy_range.min
         e_ref_max = self.config.energy_range.max
         log.info("Getting FluxPointsDataset.")
 
-        model = SkyModel(
-        name=name,
-        spectral_model=spectral_model,
-        datasets_names=name
-        )
-        dataset = FluxPointsDataset(
-        models=model,
-        data=flux_points,
-        name=name
-        )
+        model = SkyModel(name=name, spectral_model=spectral_model, datasets_names=name)
+        dataset = FluxPointsDataset(models=model, data=flux_points, name=name)
 
         if any([e_ref_min is not None, e_ref_max is not None]):
-            dataset = cut_energy_flux_points_datasets(
-            dataset,
-            e_ref_min,
-            e_ref_max
-            )
+            dataset = cut_energy_flux_points_datasets(dataset, e_ref_min, e_ref_max)
 
         models.append(model)
         datasets.append(dataset)
@@ -368,8 +380,7 @@ class ROIAnalysis:
         """
         filename_sources = self.config.general.sources_file
         if filename_sources is not None:
-            self.sources.write(
-                filename_sources, overwrite=overwrite)
+            self.sources.write(filename_sources, overwrite=overwrite)
             log.info(f"sources loaded from {filename_sources}.")
         else:
             raise RuntimeError("Missing sources_file in config.general")
@@ -615,14 +626,15 @@ class CTAOAnalysis:
         )
 
         if not ds_cfg.containment_correction:
-
             containment = ds_cfg.containment
             offset = obs_cfg.offset
             energy_axis = self._make_energy_axis(ds_cfg.geom.axes.energy)
             on_region_radius = ds_cfg.on_region.radius
 
             dataset.exposure *= containment
-            log.info("\nCorrected exposure (containment: {}%):\n{}\n".format(containment, dataset))
+            log.info(
+                f"\nCorrected exposure (containment: {containment}%):\n{dataset}\n"
+            )
 
             on_radii = obs.psf.containment_radius(
                 energy_true=energy_axis.center, offset=offset, fraction=containment
@@ -630,7 +642,9 @@ class CTAOAnalysis:
 
             factor = (1 - np.cos(on_radii)) / (1 - np.cos(on_region_radius))
             dataset.background *= factor.value.reshape((-1, 1, 1))
-            log.info("\nCorrected background (containment: {}%):\n{}\n".format(containment, dataset))
+            log.info(
+                f"\nCorrected background (containment: {containment}%):\n{dataset}\n"
+            )
 
         bkg_maker = self._create_background_maker()
         if bkg_maker:
@@ -882,10 +896,9 @@ class CTAOAnalysis:
             "IRF_NAME": irf_data["name"],
             "IRF_LABEL": irf_data["label"],
             "IRF_ARR": irfs[0] if len(irfs) > 0 else "",
-            "IRF_AZ":  irfs[1] if len(irfs) > 1 else "",
+            "IRF_AZ": irfs[1] if len(irfs) > 1 else "",
             "IRF_ZEN": irfs[2] if len(irfs) > 2 else "",
-            "IRF_LT":  irfs[3] if len(irfs) > 3 else "",
-
+            "IRF_LT": irfs[3] if len(irfs) > 3 else "",
         }
 
     def get_file_name(self):

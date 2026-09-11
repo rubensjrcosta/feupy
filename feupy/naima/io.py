@@ -26,26 +26,22 @@ __all__ = [
 # ---------------------------------------------------------
 
 REQUIRED_NAIMA_COLUMNS_NAMES = {
-
     # Energy
     "e_ref": "energy",
     "e_min": "energy_error_lo",
     "e_max": "energy_error_hi",
-
     # Differential flux
     "dnde": "flux",
     "dnde_err": "flux_error",
     "dnde_errp": "flux_error_hi",
     "dnde_errn": "flux_error_lo",
     "dnde_ul": "flux_ul",
-
     # SED flux (E² dN/dE)
     "e2dnde": "flux",
     "e2dnde_err": "flux_error",
     "e2dnde_errp": "flux_error_hi",
     "e2dnde_errn": "flux_error_lo",
     "e2dnde_ul": "flux_ul",
-
     # Upper limit flag
     "is_ul": "ul",
 }
@@ -56,7 +52,6 @@ REQUIRED_NAIMA_COLUMNS_NAMES = {
 # ---------------------------------------------------------
 
 REQUIRED_NAIMA_COLUMNS = {
-
     "dnde": [
         "e_ref",
         "dnde",
@@ -66,7 +61,6 @@ REQUIRED_NAIMA_COLUMNS = {
         "dnde_ul",
         "is_ul",
     ],
-
     "e2dnde": [
         "e_ref",
         "e2dnde",
@@ -82,6 +76,7 @@ REQUIRED_NAIMA_COLUMNS = {
 # ---------------------------------------------------------
 # Main export function
 # ---------------------------------------------------------
+
 
 def make_naima_tables(datasets, sed_type: str = "dnde"):
     """
@@ -105,7 +100,6 @@ def make_naima_tables(datasets, sed_type: str = "dnde"):
     tables = []
 
     for dataset in datasets:
-
         data = dataset.data.to_table(sed_type=sed_type)
 
         table = Table()
@@ -114,8 +108,7 @@ def make_naima_tables(datasets, sed_type: str = "dnde"):
         # Select columns present in dataset
         available_columns = data.colnames
         columns = [
-            col for col in REQUIRED_NAIMA_COLUMNS[sed_type]
-            if col in available_columns
+            col for col in REQUIRED_NAIMA_COLUMNS[sed_type] if col in available_columns
         ]
 
         # Rename columns for Naima

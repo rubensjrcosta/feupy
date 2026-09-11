@@ -1,12 +1,15 @@
 # Licensed under a 3-clause BSD style license - see LICENSE.rst
 """HESS Source Catalog."""
-from astropy.table import Table
-from gammapy.utils.scripts import make_path
-from gammapy.estimators import FluxPoints
-from gammapy.modeling.models import SkyModel, Models
-from gammapy.catalog.core import SourceCatalog, SourceCatalogObject
-from feupy.utils.formatting import string_to_filename
+
 import logging
+
+from astropy.table import Table
+from gammapy.catalog.core import SourceCatalog, SourceCatalogObject
+from gammapy.estimators import FluxPoints
+from gammapy.modeling.models import Models, SkyModel
+from gammapy.utils.scripts import make_path
+
+from feupy.utils.formatting import string_to_filename
 
 # Set up logging
 log = logging.getLogger(__name__)
@@ -15,6 +18,7 @@ __all__ = [
     "SourceCatalogObjectExtraHESS",
     "SourceCatalogExtraHESS",
 ]
+
 
 class SourceCatalogObjectExtraHESS(SourceCatalogObject):
     """Represents a single source in the ExtraHESS catalog.
@@ -29,9 +33,10 @@ class SourceCatalogObjectExtraHESS(SourceCatalogObject):
     _MODELS : Models
         Pre-loaded models from the ExtraHESS data file.
     """
+
     _MODELS = None
     _source_name_key = "source_name"
-    
+
     def __str__(self):
         return self.info()
 
@@ -66,23 +71,28 @@ class SourceCatalogObjectExtraHESS(SourceCatalogObject):
             return "No spectral information available."
 
         model = self.spectral_model()
-        return "\n".join([
-            "\n*** Spectral info ***\n",
-            f"Spectrum type: {model.tag[0]}",
-            *(f"{par.name}: {par.value:.3f} ± {par.error} {par.unit if par.unit else ''}" for par in model.parameters)
-        ])
+        return "\n".join(
+            [
+                "\n*** Spectral info ***\n",
+                f"Spectrum type: {model.tag[0]}",
+                *(
+                    f"{par.name}: {par.value:.3f} ± {par.error} {par.unit if par.unit else ''}"
+                    for par in model.parameters
+                ),
+            ]
+        )
 
     def spectral_model(self):
         """Get the spectral model associated with this source."""
         if self._MODELS is None:
             filename = "$FEUPY_DATA/dedicated_publications/hess/2019Apercent26A...621A.116H/models.yaml"
             self.__class__._MODELS = Models.read(make_path(filename))
-    
+
         models = self._MODELS
-    
+
         if self.name in models.names:
             return models[self.name].spectral_model
-    
+
         return None
 
     def sky_model(self):
@@ -94,23 +104,24 @@ class SourceCatalogObjectExtraHESS(SourceCatalogObject):
     @property
     def flux_points(self):
         """Flux points as a `~gammapy.estimators.FluxPoints` object."""
-    
+
         filename = (
             "$FEUPY_DATA/dedicated_publications/hess/2019Apercent26A...621A.116H/"
             f"{string_to_filename(self.name)}.fits"
         )
-    
+
         filename = make_path(filename)
-    
+
         if not filename.exists():
             return None
-    
+
         return FluxPoints.read(
             filename,
             reference_model=self.sky_model(),
             sed_type="e2dnde",
         )
-    
+
+
 class SourceCatalogExtraHESS(SourceCatalog):
     """HESS Extra Source Catalog with extended data.
 
@@ -118,8 +129,9 @@ class SourceCatalogExtraHESS(SourceCatalog):
 
     Each source is represented by `SourceCatalogObjectExtraHESS`.
     """
-    tag = 'hess-2019A&A'
-    bibcode = '2019A&A...621A.116H'
+
+    tag = "hess-2019A&A"
+    bibcode = "2019A&A...621A.116H"
     description = "Particle transport within the pulsar wind nebula HESS J1825–137★"
 
     source_object_class = SourceCatalogObjectExtraHESS
@@ -130,4 +142,3 @@ class SourceCatalogExtraHESS(SourceCatalog):
     ):
         table = Table.read(make_path(filename), format="ascii.ecsv")
         super().__init__(table=table, source_name_key="source_name")
-            

@@ -1,5 +1,5 @@
 # Licensed under a 3-clause BSD style license - see LICENSE.rst
-""" Utility functions and constants for unit conversions in Feupy.
+"""Utility functions and constants for unit conversions in Feupy.
 
 You have to import sub-modules of `feupy.utils` directly,
 the `feupy.utils` namespace is empty.

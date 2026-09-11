@@ -1,24 +1,20 @@
-# Licensed under a 3-clause BSD style license - see LICENSE.rst
-"""Utilities for analysis configuration."""
-
-from typing import List, Optional
+# Licensed under a 3-clause BSD style license - see LICENSE
+"""Configuration classes used by FeuPy analysis utilities."""
 
 from gammapy.analysis.config import (
-    GammapyBaseConfig,
-    SpatialCircleConfig,
-    GeomConfig,
     BackgroundConfig,
-    SafeMaskConfig,
+    GammapyBaseConfig,
+    GeomConfig,
     MapSelectionEnum,
     ReductionTypeEnum,
+    SafeMaskConfig,
+    SpatialCircleConfig,
 )
-
 from gammapy.makers import MapDatasetMaker
-from gammapy.utils.types import QuantityType, AngleType, PathType
+from gammapy.utils.types import AngleType, PathType, QuantityType
 
-from feupy.utils.types import IrfType
 from feupy.utils.enum import TableEnum
-
+from feupy.utils.types import IrfType
 
 __all__ = [
     "ObservationConfig",
@@ -29,80 +25,50 @@ __all__ = [
 ]
 
 
-# =========================================================
-# ON / OFF configuration
-# =========================================================
-
 class OnOffConfig(GammapyBaseConfig):
-    """Configuration for On-Off analysis."""
-    
+    """Configuration for ON/OFF spectral analysis."""
+
     acceptance: int = 1
     acceptance_off: int = 5
 
 
-# =========================================================
-# Dataset configuration
-# =========================================================
-
 class DatasetsConfig(GammapyBaseConfig):
-    """Dataset reduction configuration."""
+    """Configuration for dataset reduction."""
 
     type: ReductionTypeEnum = ReductionTypeEnum.spectrum
     stack: bool = True
-
     geom: GeomConfig = GeomConfig()
-
-    map_selection: List[MapSelectionEnum] = MapDatasetMaker.available_selection
-
+    map_selection: list[MapSelectionEnum] = MapDatasetMaker.available_selection
     background: BackgroundConfig = BackgroundConfig()
     safe_mask: SafeMaskConfig = SafeMaskConfig()
-
     on_region: SpatialCircleConfig = SpatialCircleConfig()
-
     containment_correction: bool = True
     containment: float = 0.68
     use_region_center: bool = False
-
     on_off: OnOffConfig = OnOffConfig()
 
 
-# =========================================================
-# Statistics configuration
-# =========================================================
-
 class StatisticsConfig(GammapyBaseConfig):
-    """Statistical configuration for sensitivity calculations."""
-    
+    """Configuration for statistical calculations."""
+
     n_obs: int = 1
 
 
-# =========================================================
-# Sensitivity configuration
-# =========================================================
-
 class SensitivityConfig(GammapyBaseConfig):
-    """Sensitivity calculation configuration."""
+    """Configuration for sensitivity calculations."""
 
     gamma_min: int = 10
     n_sigma: int = 5
-
     bkg_syst_fraction: float = 0.05
-
-    data_path: Optional[PathType] = None
+    data_path: PathType | None = None
     table_format: TableEnum = "fits"
 
 
-# =========================================================
-# Observation configuration
-# =========================================================
-
 class ObservationConfig(GammapyBaseConfig):
-    """Observation setup configuration."""
+    """Configuration for CTAO observations."""
 
     obs_cone: SpatialCircleConfig = SpatialCircleConfig()
-
-    livetime: Optional[QuantityType] = None
-    offset: Optional[QuantityType] = None
-    position_angle: Optional[AngleType] = None
-
+    livetime: QuantityType | None = None
+    offset: QuantityType | None = None
+    position_angle: AngleType | None = None
     required_irfs: IrfType = ("South", "AverageAz", "20deg", "50h")

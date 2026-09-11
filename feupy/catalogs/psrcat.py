@@ -1,9 +1,11 @@
 # Licensed under a 3-clause BSD style license - see LICENSE.rst
 """ATNF Pulsar Catalogue and source classes."""
-from astropy.table import Table
-from gammapy.utils.scripts import make_path
-from gammapy.catalog.core import SourceCatalog, SourceCatalogObject
+
 import logging
+
+from astropy.table import Table
+from gammapy.catalog.core import SourceCatalog, SourceCatalogObject
+from gammapy.utils.scripts import make_path
 
 # Set up logging
 log = logging.getLogger(__name__)
@@ -13,19 +15,21 @@ __all__ = [
     "SourceCatalogObjectPSRCAT",
 ]
 
+
 class SourceCatalogObjectPSRCAT(SourceCatalogObject):
     """One source from the ATNF Pulsar Catalogue.
 
     See: Manchester, R. N., Hobbs, G. B., Teoh, A. & Hobbs, M., Astron. J., 129, 1993-2006 (2005) (astro-ph/0412641)
 
     The data are available through the web page (http://www.atnf.csiro.au/research/pulsar/psrcat)
-    in the section ‘Public Data’. 
-    """    
+    in the section ‘Public Data’.
+    """
+
     _source_name_key = "NAME"
-    
+
     def __str__(self):
         return self.info()
-    
+
     def info(self, info="all"):
         """Summary information string.
 
@@ -51,7 +55,7 @@ class SourceCatalogObjectPSRCAT(SourceCatalogObject):
             ss += self._info_associations_survey()
         if "derived" in ops:
             ss += self._info_derived()
-            
+
         return ss
 
     def _info_basic(self):
@@ -61,7 +65,7 @@ class SourceCatalogObjectPSRCAT(SourceCatalogObject):
             f"Catalog row index (zero-based): {self.row_index}\n"
             f"Source name: {self.name}\n"
         )
-    
+
     def _info_position(self):
         """Print position information."""
         return (
@@ -69,7 +73,7 @@ class SourceCatalogObjectPSRCAT(SourceCatalogObject):
             f"RA: {self.data.RAJ2000:.3f} ± {self.data.RAJ2000_ERR:.3f}\n"
             f"DEC: {self.data.DEJ2000:.3f} ± {self.data.DEJ2000_ERR:.3f}\n"
         )
-    
+
     def _info_timing_profile(self):
         """Print timing solution and profile parameters info."""
         return (
@@ -84,7 +88,7 @@ class SourceCatalogObjectPSRCAT(SourceCatalogObject):
             f"Dist: {self.data.DIST:.2e}\n"
             f"Dist_DM: {self.data.DIST_DM:.2e}\n"
         )
-    
+
     def _info_associations_survey(self):
         """Print associations and survey parameters info."""
         return (
@@ -92,7 +96,7 @@ class SourceCatalogObjectPSRCAT(SourceCatalogObject):
             f"Assoc: {self.data.ASSOC}\n"
             f"Type: {self.data.TYPE}\n"
         )
-    
+
     def _info_derived(self):
         """Print derived parameters info."""
         return (
@@ -102,35 +106,41 @@ class SourceCatalogObjectPSRCAT(SourceCatalogObject):
             f"E_dot: {self.data.EDOT:.2e}\n"
         )
 
+
 class SourceCatalogPSRCAT(SourceCatalog):
     """ATNF Pulsar Catalogue.
 
     See: https://www.atnf.csiro.au/research/pulsar/psrcat/
 
     One source is represented by `SourceCatalogObjectPSRCAT`.
-    """  
-    
+    """
+
     tag = "psrcat"
-    bibcode = '2005AJ....129.1993M'    
-    description = "ATNF Pulsar Catalogue, a comprehensive database of all published pulsars"
-        
+    bibcode = "2005AJ....129.1993M"
+    description = (
+        "ATNF Pulsar Catalogue, a comprehensive database of all published pulsars"
+    )
+
     source_object_class = SourceCatalogObjectPSRCAT
+
     def __init__(
         self,
         filename="$FEUPY_DATA/catalogs/psrcat/psrcat_catalog.fits",
     ):
         table = Table.read(make_path(filename), format="fits")
         super().__init__(table=table, source_name_key="NAME")
-             
+
     @property
     def PSR_PARAMS(self):
         return self.table.colnames
-    
+
     @property
     def PSR_PARAMS_DESCRIPTION(self):
         """Returns the description of pulsar parameters."""
-        ss = "\n*** The Pulsar Parameters ***\n\n" 
+        ss = "\n*** The Pulsar Parameters ***\n\n"
         for par in self.PSR_PARAMS:
-            unit = f" ({self.table[par].unit})" if self.table[par].unit is not None else ""
+            unit = (
+                f" ({self.table[par].unit})" if self.table[par].unit is not None else ""
+            )
             ss += f"{self.table[par].name}: {self.table[par].description}{unit}\n"
         return ss

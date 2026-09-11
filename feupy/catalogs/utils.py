@@ -2,45 +2,47 @@
 """Catalog utilities classes."""
 
 import logging
-from typing import List, Optional
+
 from feupy.catalogs import FEUPY_CATALOG_REGISTRY
+
 from .registry import HAS_FEUPY_DATASETS
 
 log = logging.getLogger(__name__)
 
 if HAS_FEUPY_DATASETS:
-    catalog_2fhl = FEUPY_CATALOG_REGISTRY.get_cls('2fhl')()
-    catalog_3fhl = FEUPY_CATALOG_REGISTRY.get_cls('3fhl')()
-    catalog_3fgl = FEUPY_CATALOG_REGISTRY.get_cls('3fgl')()
-    catalog_4fgl = FEUPY_CATALOG_REGISTRY.get_cls('4fgl')()
+    catalog_2fhl = FEUPY_CATALOG_REGISTRY.get_cls("2fhl")()
+    catalog_3fhl = FEUPY_CATALOG_REGISTRY.get_cls("3fhl")()
+    catalog_3fgl = FEUPY_CATALOG_REGISTRY.get_cls("3fgl")()
+    catalog_4fgl = FEUPY_CATALOG_REGISTRY.get_cls("4fgl")()
 
-    catalog_2hwc = FEUPY_CATALOG_REGISTRY.get_cls('2hwc')()
-    catalog_3hwc = FEUPY_CATALOG_REGISTRY.get_cls('3hwc')()
-    catalog_ehwc = FEUPY_CATALOG_REGISTRY.get_cls('ehwc')()
-    catalog_extra_hawc = FEUPY_CATALOG_REGISTRY.get_cls('hwc-2021ApJ')()
+    catalog_2hwc = FEUPY_CATALOG_REGISTRY.get_cls("2hwc")()
+    catalog_3hwc = FEUPY_CATALOG_REGISTRY.get_cls("3hwc")()
+    catalog_ehwc = FEUPY_CATALOG_REGISTRY.get_cls("ehwc")()
+    catalog_extra_hawc = FEUPY_CATALOG_REGISTRY.get_cls("hwc-2021ApJ")()
 
-    catalog_hgps = FEUPY_CATALOG_REGISTRY.get_cls('hgps')()
-    catalog_extra_hess = FEUPY_CATALOG_REGISTRY.get_cls('hess-2019A&A')()
+    catalog_hgps = FEUPY_CATALOG_REGISTRY.get_cls("hgps")()
+    catalog_extra_hess = FEUPY_CATALOG_REGISTRY.get_cls("hess-2019A&A")()
 
-    catalog_gamma_cat = FEUPY_CATALOG_REGISTRY.get_cls('gamma-cat')()
+    catalog_gamma_cat = FEUPY_CATALOG_REGISTRY.get_cls("gamma-cat")()
 
-    catalog_vtscat = FEUPY_CATALOG_REGISTRY.get_cls('vtscat')()
+    catalog_vtscat = FEUPY_CATALOG_REGISTRY.get_cls("vtscat")()
 
-    catalog_veritas = FEUPY_CATALOG_REGISTRY.get_cls('veritas-2018ApJ')()
+    catalog_veritas = FEUPY_CATALOG_REGISTRY.get_cls("veritas-2018ApJ")()
 
-    catalog_lhaaso = FEUPY_CATALOG_REGISTRY.get_cls('LHAASO')()
-    catalog_1lhaaso = FEUPY_CATALOG_REGISTRY.get_cls('1LHAASO')()
-    catalog_extra_lhaaso = FEUPY_CATALOG_REGISTRY.get_cls('LHAASO-2024icrc')()
+    catalog_lhaaso = FEUPY_CATALOG_REGISTRY.get_cls("LHAASO")()
+    catalog_1lhaaso = FEUPY_CATALOG_REGISTRY.get_cls("1LHAASO")()
+    catalog_extra_lhaaso = FEUPY_CATALOG_REGISTRY.get_cls("LHAASO-2024icrc")()
 
-    catalog_psrcat = FEUPY_CATALOG_REGISTRY.get_cls('psrcat')()
+    catalog_psrcat = FEUPY_CATALOG_REGISTRY.get_cls("psrcat")()
 
-def load_catalogs(catalogs: Optional[List] = FEUPY_CATALOG_REGISTRY) -> List:
+
+def load_catalogs(catalogs: list | None = FEUPY_CATALOG_REGISTRY) -> list:
     """Load a list of catalogs from the provided registry.
 
     Parameters:
     -----------
     catalogs : list, optional
-        A list of catalog definitions from the registry. 
+        A list of catalog definitions from the registry.
         Defaults to FEUPY_CATALOG_REGISTRY if not provided.
 
     Returns:
@@ -53,7 +55,7 @@ def load_catalogs(catalogs: Optional[List] = FEUPY_CATALOG_REGISTRY) -> List:
     ValueError: If the catalog class cannot be loaded properly.
     """
     source_catalogs = []
-    
+
     for index, catalog in enumerate(catalogs):
         try:
             catalog_cls = catalogs.get_cls(catalog.tag)()
@@ -61,23 +63,26 @@ def load_catalogs(catalogs: Optional[List] = FEUPY_CATALOG_REGISTRY) -> List:
             # log.info(f"Successfully loaded catalog '{catalog.tag}' at index {index}.")
         except Exception as e:
             log.error(f"Failed to load catalog '{catalog.tag}' at index {index}: {e}")
-            raise ValueError(f"Error loading catalog '{catalog.tag}' at index {index}: {e}")
-    
+            raise ValueError(
+                f"Error loading catalog '{catalog.tag}' at index {index}: {e}"
+            )
+
     log.info(f"Loaded {len(source_catalogs)} catalogs.")
     return source_catalogs
+
 
 def get_catalog_tag(source):
     """
     Retrieve the catalog tag for a given source.
 
-    This function checks if the input source is an instance of any class 
+    This function checks if the input source is an instance of any class
     in the `CATALOG_REGISTRY` and returns the corresponding catalog tag.
 
     Parameters
     ----------
     source : object
         The source object for which the catalog tag is to be retrieved.
-        The source should be an instance of one of the classes in 
+        The source should be an instance of one of the classes in
         `CATALOG_REGISTRY`.
 
     Returns
@@ -88,7 +93,7 @@ def get_catalog_tag(source):
     Raises
     ------
     ValueError
-        If the input `source` does not match any class in `FEUPY_CATALOG_REGISTRY`, 
+        If the input `source` does not match any class in `FEUPY_CATALOG_REGISTRY`,
         a `ValueError` is raised indicating no matching catalog was found.
 
     Examples
@@ -102,15 +107,19 @@ def get_catalog_tag(source):
 
     Notes
     -----
-    This function assumes that `CATALOG_REGISTRY` is a list of catalog 
-    classes and that each class in the registry has a `tag` attribute. 
-    The function returns the tag of the first catalog that matches 
+    This function assumes that `CATALOG_REGISTRY` is a list of catalog
+    classes and that each class in the registry has a `tag` attribute.
+    The function returns the tag of the first catalog that matches
     the type of the given source.
     """
     # Find the first matching catalog
     matching_catalog = next(
-        (catalog for catalog in FEUPY_CATALOG_REGISTRY if isinstance(source, catalog.source_object_class)), 
-        None
+        (
+            catalog
+            for catalog in FEUPY_CATALOG_REGISTRY
+            if isinstance(source, catalog.source_object_class)
+        ),
+        None,
     )
 
     if matching_catalog is None:

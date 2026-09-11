@@ -1,9 +1,9 @@
-# Licensed under a 3-clause BSD style license - see LICENSE.rst
-"""Utilities to create scripts and command-line tools."""
+# Licensed under a 3-clause BSD style license - see LICENSE
+"""Utilities for scripts and command-line tools."""
 
-from gammapy.utils.scripts import make_path
 import pickle
 
+from gammapy.utils.scripts import make_path
 
 __all__ = [
     "is_documented_by",
@@ -13,61 +13,67 @@ __all__ = [
 
 
 def is_documented_by(original):
-    """
-    Copy the docstring from the `original` function or class to a target.
-    
+    """Copy docstrings from one or more objects to a target.
+
     Parameters
     ----------
-    original : function or class
-        The function or class whose docstring is copied.
+    original : object or list of objects
+        Function, class, or list of objects whose docstrings are copied.
 
     Returns
     -------
-    wrapper : function
-        A decorator function that applies the original docstring to the target.
+    decorator : callable
+        Decorator that assigns the combined docstring to the target.
     """
+
     def wrapper(target):
-        doc = '*** Docstring of internal function/class ***\n'
+        doc = "*** Docstring of internal function/class ***\n"
+
         if isinstance(original, list):
             for item in original:
                 doc += f"{item.__qualname__}:\n{item.__doc__}\n"
         else:
             doc += f"{original.__doc__}\n"
-        
+
         if target.__doc__:
-            doc += f'\n*** Docstring of {target.__qualname__} ***\n{target.__doc__}'
+            doc += f"\n*** Docstring of {target.__qualname__} ***\n{target.__doc__}"
+
         target.__doc__ = doc
         return target
-    
+
     return wrapper
 
-def pickling(object_instance, file_name):        
-    """
-    Serialize an object to a pickle file.
-    
+
+def pickling(object_instance, file_name):
+    """Serialize an object to a pickle file.
+
     Parameters
     ----------
     object_instance : object
-        The object to serialize.
-    file_name : str
-        The name of the file (without extension) to store the pickle.
+        Object to serialize.
+    file_name : str or `~pathlib.Path`
+        Output filename without the ``.pkl`` extension.
     """
-    with open(make_path(f"{file_name}.pkl"), "wb") as fp:  
-        pickle.dump(object_instance, fp)
+    filename = make_path(f"{file_name}.pkl")
 
-def unpickling(file_name):        
-    """
-    Load an object from a pickle file.
-    
+    with filename.open("wb") as file:
+        pickle.dump(object_instance, file)
+
+
+def unpickling(file_name):
+    """Load an object from a pickle file.
+
     Parameters
     ----------
-    file_name : str
-        The name of the pickle file (without extension) to load.
-    
+    file_name : str or `~pathlib.Path`
+        Input filename without the ``.pkl`` extension.
+
     Returns
     -------
     object
-        The deserialized object.
+        Deserialized object.
     """
-    with open(make_path(f"{file_name}.pkl"), "rb") as fp:  
-        return pickle.load(fp)
+    filename = make_path(f"{file_name}.pkl")
+
+    with filename.open("rb") as file:
+        return pickle.load(file)

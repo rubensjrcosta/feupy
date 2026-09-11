@@ -7,7 +7,6 @@ from collections import defaultdict
 from pathlib import Path
 
 import yaml
-
 from gammapy.analysis.config import (
     EnergyRangeConfig,
     FitConfig,

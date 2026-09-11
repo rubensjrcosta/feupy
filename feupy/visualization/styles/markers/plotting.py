@@ -2,13 +2,12 @@
 """Marker plotting utilities."""
 
 from ..palettes import PALETTE_DEFAULT
-from .resolver import resolve_marker
 from .marker_size import resolve_marker_size
-
+from .resolver import resolve_marker
 
 __all__ = [
     "build_point_kwargs",
-     "build_fp_kwargs",
+    "build_fp_kwargs",
 ]
 
 
@@ -43,7 +42,6 @@ def build_point_kwargs(
     result = {}
 
     for i, source in enumerate(sources):
-
         label = str(source)
 
         marker = resolve_marker(label)
@@ -57,8 +55,8 @@ def build_point_kwargs(
             marker=marker,
             markersize=size,
             color=color,
-            #markeredgecolor="black",
-            #mew=0.4,
+            # markeredgecolor="black",
+            # mew=0.4,
         )
 
     return result
@@ -101,7 +99,6 @@ def build_fp_kwargs(
     kwargs_dict = {}
 
     for i, label in enumerate(labels):
-
         source_label = str(sources[i]) if sources else label
 
         marker = resolve_marker(source_label)

@@ -8,15 +8,18 @@ This module provides functions to:
 - Group flux points tables by reference.
 - Convert grouped tables into Gammapy datasets.
 """
-import yaml
+
+import logging
+
 import numpy as np
+import yaml
+from astropy.table import Column, Table
 from astropy.units import Quantity
-from astropy.table import Table, Column
-from gammapy.utils.scripts import make_path
 from gammapy.datasets import Datasets, FluxPointsDataset
 from gammapy.estimators import FluxPoints
+from gammapy.utils.scripts import make_path
+
 from feupy.utils.conversions import frequency_to_energy, jy_to_erg_cm2_s
-import logging
 
 # Set up logging
 log = logging.getLogger(__name__)
@@ -29,6 +32,7 @@ __all__ = [
     "get_pulsar_flux_points_table",
     "get_pulsar_flux_points_datasets",
 ]
+
 
 def read_pulsar_spectra_catalog(filename=None):
     """
@@ -48,7 +52,7 @@ def read_pulsar_spectra_catalog(filename=None):
         filename = "$FEUPY_DATA/catalogs/pulsar_spectra/pulsar_spectra.yaml"
 
     try:
-        with open(make_path(filename), "r") as yaml_file:
+        with open(make_path(filename)) as yaml_file:
             return yaml.safe_load(yaml_file)
 
     except yaml.YAMLError as error:
@@ -96,8 +100,15 @@ def create_pulsar_flux_points_table(pulsar_jname):
 
         # Create Astropy table with metadata
         table = Table(meta=metadata)
-        table["ref"] = Column(data=np.array(refs, dtype="U20"), description="Reference label")
-        table["e_ref"] = Column(data=frequency_to_energy(freqs_mhz), unit="eV", description="Reference energy", format=".3e")
+        table["ref"] = Column(
+            data=np.array(refs, dtype="U20"), description="Reference label"
+        )
+        table["e_ref"] = Column(
+            data=frequency_to_energy(freqs_mhz),
+            unit="eV",
+            description="Reference energy",
+            format=".3e",
+        )
         table["e2dnde"] = Column(
             data=jy_to_erg_cm2_s(freqs_mhz, fluxs_mjy),
             unit="erg cm^-2 s^-1",
@@ -186,6 +197,8 @@ def get_pulsar_flux_points_datasets(pulsar_jname):
     datasets = Datasets()
     for group_table in grouped_tables:
         label = group_table.meta["ref"]
-        flux_points = FluxPoints.from_table(table=group_table, sed_type=group_table.meta["sed_type"])
+        flux_points = FluxPoints.from_table(
+            table=group_table, sed_type=group_table.meta["sed_type"]
+        )
         datasets.append(FluxPointsDataset(data=flux_points, name=label))
     return datasets

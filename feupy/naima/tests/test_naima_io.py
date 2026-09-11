@@ -1,12 +1,12 @@
 # Licensed under a 3-clause BSD style license - see LICENSE.rst
-from astropy.table import Table
-from gammapy.estimators import FluxPoints
-from gammapy.datasets import FluxPointsDataset
 import astropy.units as u
+from astropy.table import Table
+from gammapy.datasets import FluxPointsDataset
+from gammapy.estimators import FluxPoints
 
 from feupy.naima.io import (
-    REQUIRED_NAIMA_COLUMNS_NAMES,
     REQUIRED_NAIMA_COLUMNS,
+    REQUIRED_NAIMA_COLUMNS_NAMES,
     make_naima_tables,
 )
 
@@ -18,7 +18,6 @@ def test_required_columns_structure():
     assert isinstance(REQUIRED_NAIMA_COLUMNS, dict)
 
     for sed_type, columns in REQUIRED_NAIMA_COLUMNS.items():
-
         assert isinstance(columns, list)
 
         for column in columns:
@@ -34,10 +33,7 @@ def make_test_dataset(name="test-dataset"):
     table["dnde"] = [1e-12] * u.Unit("1 / (cm2 s TeV)")
     table["dnde_err"] = [1e-13] * u.Unit("1 / (cm2 s TeV)")
 
-    flux_points = FluxPoints.from_table(
-        table,
-        sed_type="dnde"
-    )
+    flux_points = FluxPoints.from_table(table, sed_type="dnde")
 
     return FluxPointsDataset(
         data=flux_points,

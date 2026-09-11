@@ -1,12 +1,14 @@
 # Licensed under a 3-clause BSD style license - see LICENSE.rst"
 
 import logging
+
 import astropy.units as u
 import numpy as np
 
 __all__ = ["evaluate_particle_spectrum"]
 
 log = logging.getLogger(__name__)
+
 
 def evaluate_particle_spectrum(
     radiative_model,
@@ -39,11 +41,14 @@ def evaluate_particle_spectrum(
         Energy-weighted particle distribution E^2 dN/dE.
     """
     if energy is None:
-        energy = np.logspace(
-            np.log10(E_min.to_value("TeV")),
-            np.log10(E_max.to_value("TeV")),
-            n_points,
-        ) * u.TeV
+        energy = (
+            np.logspace(
+                np.log10(E_min.to_value("TeV")),
+                np.log10(E_max.to_value("TeV")),
+                n_points,
+            )
+            * u.TeV
+        )
 
     dnde = radiative_model.particle_distribution(energy)
 

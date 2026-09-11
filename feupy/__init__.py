@@ -40,8 +40,9 @@ Example
 >>> from feupy.analysis.config import CTAOAnalysisConfig
 >>> from feupy.analysis.core import CTAOAnalysis
 """
+
 import importlib
-from importlib.metadata import version, PackageNotFoundError
+from importlib.metadata import PackageNotFoundError, version
 
 # Package version
 try:

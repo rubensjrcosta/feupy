@@ -3,16 +3,16 @@ import pytest
 from astropy.table import Table
 
 from feupy.catalogs.pulsar_spectra import (
-    read_pulsar_spectra_catalog,
     create_pulsar_flux_points_table,
-    get_pulsar_flux_points_tables,
     get_pulsar_flux_points_datasets,
+    get_pulsar_flux_points_tables,
+    read_pulsar_spectra_catalog,
 )
-
 
 # =====================================================
 # Fixtures
 # =====================================================
+
 
 @pytest.fixture
 def sample_catalog(tmp_path, monkeypatch):
@@ -25,11 +25,11 @@ def sample_catalog(tmp_path, monkeypatch):
 
     sample_data = {
         "J0000+0000": [
-            [100, 200],      # freqs
-            None,            # bands
-            [1.0, 2.0],      # fluxs
-            [0.1, 0.2],      # flux_errs
-            ["ref1", "ref2"] # refs
+            [100, 200],  # freqs
+            None,  # bands
+            [1.0, 2.0],  # fluxs
+            [0.1, 0.2],  # flux_errs
+            ["ref1", "ref2"],  # refs
         ]
     }
 
@@ -44,6 +44,7 @@ def sample_catalog(tmp_path, monkeypatch):
 # =====================================================
 # Tests
 # =====================================================
+
 
 def test_read_pulsar_catalog(sample_catalog):
     catalog = read_pulsar_spectra_catalog()
@@ -84,6 +85,7 @@ def test_get_pulsar_flux_points_datasets(sample_catalog):
 # =====================================================
 # Edge cases
 # =====================================================
+
 
 def test_catalog_file_not_found(monkeypatch):
     monkeypatch.setenv("FEUPY_DATA", "/non/existent/path")

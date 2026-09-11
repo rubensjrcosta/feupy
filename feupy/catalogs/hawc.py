@@ -1,15 +1,18 @@
 # Licensed under a 3-clause BSD style license - see LICENSE.rst
 """HAWC Source Catalog."""
+
+import logging
+
 import numpy as np
 from astropy import units as u
-from astropy.table import Table, Column
-from gammapy.utils.scripts import make_path
-from gammapy.estimators import FluxPoints
-from gammapy.modeling.models import SkyModel, Models
+from astropy.table import Column, Table
 from gammapy.catalog.core import SourceCatalog, SourceCatalogObject
-from gammapy.catalog.hawc import SourceCatalog3HWC, SourceCatalog2HWC
+from gammapy.catalog.hawc import SourceCatalog2HWC, SourceCatalog3HWC
+from gammapy.estimators import FluxPoints
+from gammapy.modeling.models import Models, SkyModel
+from gammapy.utils.scripts import make_path
+
 from feupy.utils.formatting import string_to_filename
-import logging
 
 # Set up logging
 log = logging.getLogger(__name__)
@@ -23,9 +26,9 @@ __all__ = [
     "SourceCatalogEHWC",
     "SourceCatalogObjectExtraHAWC",
     "SourceCatalogExtraHAWC",
-    
 ]
-        
+
+
 def create_flux_points_table_3hwc(source):
     """
     Generate a flux points table for a 3HWC catalog source.
@@ -33,18 +36,18 @@ def create_flux_points_table_3hwc(source):
     This function creates a flux points table containing differential flux
     data (`dnde`), reference energy (`e_ref`), flux uncertainties (`dnde_errn`, `dnde_errp`),
     and upper limit information for a specified source in the 3HWC catalog.
-    
+
     Parameters
     ----------
     source : `~gammapy.catalog.SourceCatalogObject3HWC`
         Source object from the 3HWC catalog for which the flux points table
         is to be created.
-        
+
     Returns
     -------
     table : `~astropy.table.Table`
         Table containing flux points for the source, with metadata and columns:
-        
+
         - `e_ref` : Reference energy for the differential flux data (TeV).
         - `dnde` : Differential flux (`dnde`) at `e_ref`.
         - `dnde_errn` : Negative error on `dnde`.
@@ -69,62 +72,62 @@ def create_flux_points_table_3hwc(source):
     catalog = SourceCatalog3HWC()
     data = source.data
     sed_type = "dnde"
-    
+
     # Create a table and add metadata
     table = Table()
-    table.meta['source_name'] = source.name
-    table.meta['catalog_name'] = catalog.table.meta['catalog_name']
+    table.meta["source_name"] = source.name
+    table.meta["catalog_name"] = catalog.table.meta["catalog_name"]
     table.meta["SED_TYPE"] = sed_type
-    table.meta['search_radius'] = data['search_radius']
-    table.meta['spec0_radius'] = data['spec0_radius']
-    table.meta['reference'] = catalog.table.meta['reference']
-    
+    table.meta["search_radius"] = data["search_radius"]
+    table.meta["spec0_radius"] = data["spec0_radius"]
+    table.meta["reference"] = catalog.table.meta["reference"]
+
     # Define and add columns
     col_1 = Column(
-        name='e_ref',
-        data=u.Quantity([7*u.TeV]),
-        description='Reference Energy',
-        format='.3g'
+        name="e_ref",
+        data=u.Quantity([7 * u.TeV]),
+        description="Reference Energy",
+        format=".3g",
     )
-    
+
     col_2 = Column(
-        name='dnde',
-        data=u.Quantity([data['spec0_dnde']]),
-        description=catalog.table['spec0_dnde'].description,
-        format=catalog.table['spec0_dnde'].format
+        name="dnde",
+        data=u.Quantity([data["spec0_dnde"]]),
+        description=catalog.table["spec0_dnde"].description,
+        format=catalog.table["spec0_dnde"].format,
     )
-    
+
     col_3 = Column(
-        name='dnde_errn',
-        data=u.Quantity([data['spec0_dnde_errn'] * -1]),
-        description=catalog.table['spec0_dnde_errn'].description,
-        format=catalog.table['spec0_dnde_errn'].format
+        name="dnde_errn",
+        data=u.Quantity([data["spec0_dnde_errn"] * -1]),
+        description=catalog.table["spec0_dnde_errn"].description,
+        format=catalog.table["spec0_dnde_errn"].format,
     )
-    
+
     col_4 = Column(
-        name='dnde_errp',
-        data=u.Quantity([data['spec0_dnde_errp']]),
-        description=catalog.table['spec0_dnde_errp'].description,
-        format=catalog.table['spec0_dnde_errp'].format
+        name="dnde_errp",
+        data=u.Quantity([data["spec0_dnde_errp"]]),
+        description=catalog.table["spec0_dnde_errp"].description,
+        format=catalog.table["spec0_dnde_errp"].format,
     )
-    
+
     col_5 = Column(
-        name='dnde_ul',
+        name="dnde_ul",
         data=[np.nan],
-        description='Differential flux (dnde) SED upper limit',
-        unit=data['spec0_dnde'].unit
+        description="Differential flux (dnde) SED upper limit",
+        unit=data["spec0_dnde"].unit,
     )
-    
+
     col_6 = Column(
-        name='is_ul',
+        name="is_ul",
         data=[False],
-        description='Whether data is an upper limit.',
-        dtype=bool
+        description="Whether data is an upper limit.",
+        dtype=bool,
     )
-    
+
     # Add columns to the table
     table.add_columns([col_1, col_2, col_3, col_4, col_5, col_6])
-    
+
     return table
 
 
@@ -144,7 +147,7 @@ def get_flux_points_3hwc(source):
     -------
     flux_points : `~gammapy.estimators.FluxPoints`
         Flux points object containing the flux data for the source.
-    
+
     Examples
     --------
     >>> from gammapy.catalog import SourceCatalog3HWC
@@ -156,13 +159,11 @@ def get_flux_points_3hwc(source):
     table = create_flux_points_table_3hwc(source)
     spec_model = source.spectral_model()
     return FluxPoints.from_table(
-        table, 
-        sed_type=table.meta["SED_TYPE"],
-        reference_model=spec_model
+        table, sed_type=table.meta["SED_TYPE"], reference_model=spec_model
     )
 
 
-def create_flux_points_table_2hwc(source, which='point'):
+def create_flux_points_table_2hwc(source, which="point"):
     """
     Generate a flux points table for a 2HWC catalog source.
 
@@ -185,7 +186,7 @@ def create_flux_points_table_2hwc(source, which='point'):
     -------
     table : `~astropy.table.Table`
         Table containing the flux points for the given source with columns:
-        
+
         - `e_ref` : Reference energy (TeV).
         - `dnde` : Differential flux at `e_ref`.
         - `dnde_err` : Error on the differential flux.
@@ -208,17 +209,17 @@ def create_flux_points_table_2hwc(source, which='point'):
     # Initialize catalog and source data
     catalog = SourceCatalog2HWC()
     sed_type = "dnde"
-    
+
     # Check for extended model if specified
-    if which == 'extended' and source.n_models != 2:
+    if which == "extended" and source.n_models != 2:
         raise ValueError("No extended model available for this source.")
-    
+
     # Define reference energy and model evaluation
     e_ref = u.Quantity([7 * u.TeV])
     spec_model = source.spectral_model(which=which)
     dnde = spec_model(e_ref)
     dnde_err = spec_model.evaluate_error(e_ref)[1]
-    
+
     # Determine upper limit
     is_ul = False
     dnde_ul = np.nan
@@ -229,21 +230,21 @@ def create_flux_points_table_2hwc(source, which='point'):
     # Create the flux points table and add data
     table = Table()
     table["e_ref"] = e_ref
-    table["e_ref"].description = 'Reference energy'
+    table["e_ref"].description = "Reference energy"
     table["dnde"] = dnde
-    table["dnde"].description = 'Differential flux (dnde) SED values'
+    table["dnde"].description = "Differential flux (dnde) SED values"
     table["dnde_err"] = dnde_err
-    table["dnde_err"].description = 'Differential flux (dnde) SED errors'
+    table["dnde_err"].description = "Differential flux (dnde) SED errors"
     table["dnde_ul"] = dnde_ul
-    table["dnde_ul"].description = 'Differential flux (dnde) SED upper limit'
+    table["dnde_ul"].description = "Differential flux (dnde) SED upper limit"
     table["is_ul"] = is_ul
-    table["is_ul"].description = 'Indicates if data is an upper limit.'
+    table["is_ul"].description = "Indicates if data is an upper limit."
 
     # Add metadata to the table
-    table.meta['source_name'] = source.name
-    table.meta['catalog_name'] = catalog.table.meta['catalog_name']
+    table.meta["source_name"] = source.name
+    table.meta["catalog_name"] = catalog.table.meta["catalog_name"]
     table.meta["SED_TYPE"] = sed_type
-    table.meta['reference'] = catalog.table.meta['reference']
+    table.meta["reference"] = catalog.table.meta["reference"]
 
     # Format columns for readability
     for column in table.colnames:
@@ -254,12 +255,13 @@ def create_flux_points_table_2hwc(source, which='point'):
 
     return table
 
-def get_flux_points_2hwc(source, which='point'):
+
+def get_flux_points_2hwc(source, which="point"):
     """
     Generate `FluxPoints` for a 2HWC catalog source.
 
-    This function creates a `FluxPoints` object for a source in the 2HWC catalog, 
-    using the flux points table and associated spectral model. The function can handle 
+    This function creates a `FluxPoints` object for a source in the 2HWC catalog,
+    using the flux points table and associated spectral model. The function can handle
     both 'point' and 'extended' models.
 
     Parameters
@@ -274,7 +276,7 @@ def get_flux_points_2hwc(source, which='point'):
     Returns
     -------
     flux_points : `~gammapy.estimators.FluxPoints`
-        Flux points object containing the flux data for the source, including 
+        Flux points object containing the flux data for the source, including
         differential flux values and associated uncertainties.
 
     Raises
@@ -292,24 +294,23 @@ def get_flux_points_2hwc(source, which='point'):
     """
     # Generate flux points table for the specified source and model type
     table = create_flux_points_table_2hwc(source, which=which)
-    
+
     # Retrieve the spectral model for the source
     spec_model = source.spectral_model(which=which)
-    
+
     # Create and return the FluxPoints object
     return FluxPoints.from_table(
-        table, 
-        sed_type=table.meta["SED_TYPE"],
-        reference_model=spec_model
+        table, sed_type=table.meta["SED_TYPE"], reference_model=spec_model
     )
+
 
 class SourceCatalogObjectEHWC(SourceCatalogObject):
     """
     Represents a single source in the HAWC catalog.
-    
+
     Provides detailed information about a source, including position, spectrum,
     and flux points.
-    
+
     Attributes
     ----------
     _source_name_key : str
@@ -317,9 +318,10 @@ class SourceCatalogObjectEHWC(SourceCatalogObject):
     _MODELS : Models
         Pre-loaded models from the extra HAWC data file.
     """
+
     _MODELS = None
     _source_name_key = "source_name"
-    
+
     def __str__(self):
         return self.info()
 
@@ -338,7 +340,7 @@ class SourceCatalogObjectEHWC(SourceCatalogObject):
         details = {
             "basic": self._info_basic,
             "position": self._info_position,
-            "spectrum": self._info_spectrum
+            "spectrum": self._info_spectrum,
         }
         selected_info = info.split(",") if info != "all" else details.keys()
         return "\n".join(details[opt]() for opt in selected_info if opt in details)
@@ -354,25 +356,30 @@ class SourceCatalogObjectEHWC(SourceCatalogObject):
             return "No spectral information available."
 
         model = self.spectral_model()
-        return "\n".join([
-            "\n*** Spectral info ***\n",
-            f"Spectrum type: {model.tag[0]}",
-            *(f"{par.name}: {par.value:.3f} ± {par.error} {par.unit if par.unit else ''}" for par in model.parameters)
-        ])
+        return "\n".join(
+            [
+                "\n*** Spectral info ***\n",
+                f"Spectrum type: {model.tag[0]}",
+                *(
+                    f"{par.name}: {par.value:.3f} ± {par.error} {par.unit if par.unit else ''}"
+                    for par in model.parameters
+                ),
+            ]
+        )
 
     def spectral_model(self):
         """Get the spectral model associated with this source."""
         if self._MODELS is None:
             filename = "$FEUPY_DATA/catalogs/ehwc/models.yaml"
             self.__class__._MODELS = Models.read(make_path(filename))
-    
+
         models = self._MODELS
-    
+
         if self.name in models.names:
             return models[self.name].spectral_model
-    
+
         return None
-     
+
     def sky_model(self):
         """Create a SkyModel representation of the source."""
         if self.spectral_model():
@@ -385,48 +392,52 @@ class SourceCatalogObjectEHWC(SourceCatalogObject):
         if self.flux_points_table:
             return FluxPoints.from_table(
                 table=self.flux_points_table,
-    #             reference_model=self.sky_model(),
-                sed_type='e2dnde',
+                #             reference_model=self.sky_model(),
+                sed_type="e2dnde",
             )
         return
-    
+
     def _add_source_meta(self, table):
         """Copy over some information to `table.meta`."""
         m = table.meta
         catalog = SourceCatalogEHWC()
         m["source_name"] = self.name
-        m["catalog_name"] = catalog.table.meta['catalog_name']
+        m["catalog_name"] = catalog.table.meta["catalog_name"]
         m["SED_TYPE"] = "e2dnde"
-        m["comments"] = catalog.table.meta['comments']        
-        
+        m["comments"] = catalog.table.meta["comments"]
+
     @property
     def flux_points_table(self):
         """Differential flux points (`~gammapy.estimators.FluxPoints`)."""
-        
+
         d = self.data
-        
+
         table = Table()
-        
+
         # Set metadata for the table
         self._add_source_meta(table)
-        
+
         valid = np.isfinite(d["sed_e_ref"].value)
 
         if valid.sum() == 0:
             return None
 
         table["e_ref"] = d["sed_e_ref"]
-        table["e_ref"].description = 'Reference energy'
+        table["e_ref"].description = "Reference energy"
         table["e2dnde"] = d["sed_e2dnde"]
-        table["e2dnde"].description = 'Differential flux (e2dnde) SED values'
+        table["e2dnde"].description = "Differential flux (e2dnde) SED values"
         table["e2dnde_errn"] = d["sed_e2dnde_errn"]
-        table["e2dnde_errn"].description = 'Differential flux (e2dnde) SED negative errors'
+        table[
+            "e2dnde_errn"
+        ].description = "Differential flux (e2dnde) SED negative errors"
         table["e2dnde_errp"] = d["sed_e2dnde_errp"]
-        table["e2dnde_errp"].description = 'Differential flux (e2dnde) SED positive errors'
+        table[
+            "e2dnde_errp"
+        ].description = "Differential flux (e2dnde) SED positive errors"
         table["e2dnde_ul"] = d["sed_e2dnde_ul"]
-        table["e2dnde_ul"].description = 'Differential flux (e2dnde) SED upper limit'
-        table["is_ul"] = d["sed_is_ul"]        
-        table["is_ul"].description = 'Upper limit indicator'
+        table["e2dnde_ul"].description = "Differential flux (e2dnde) SED upper limit"
+        table["is_ul"] = d["sed_is_ul"]
+        table["is_ul"].description = "Upper limit indicator"
 
         # Format numeric columns
         for col in table.colnames:
@@ -434,7 +445,7 @@ class SourceCatalogObjectEHWC(SourceCatalogObject):
                 table[col].format = ".3e"
             elif col.startswith("e_"):
                 table[col].format = ".3f"
-                
+
         # Only keep rows that actually contain information
         table = table[valid]
 
@@ -451,8 +462,9 @@ class SourceCatalogEHWC(SourceCatalog):
 
     Each source is represented by `SourceCatalogObjectHAWC`.
     """
+
     tag = "ehwc"
-    bibcode = '2020PhRvL.124b1102A' 
+    bibcode = "2020PhRvL.124b1102A"
     description = "Extra HAWC catalog data"
 
     source_object_class = SourceCatalogObjectEHWC
@@ -463,7 +475,8 @@ class SourceCatalogEHWC(SourceCatalog):
     ):
         table = Table.read(make_path(filename), format="ascii.ecsv")
         super().__init__(table=table, source_name_key="source_name")
-        
+
+
 class SourceCatalogObjectExtraHAWC(SourceCatalogObject):
     """Represents a single source in the ExtraHAWC catalog.
 
@@ -477,9 +490,10 @@ class SourceCatalogObjectExtraHAWC(SourceCatalogObject):
     _MODELS : Models
         Pre-loaded models from the extra ExtraHAWC data file.
     """
+
     _MODELS = None
     _source_name_key = "source_name"
-    
+
     def __str__(self):
         return self.info()
 
@@ -498,7 +512,7 @@ class SourceCatalogObjectExtraHAWC(SourceCatalogObject):
         details = {
             "basic": self._info_basic,
             "position": self._info_position,
-            "spectrum": self._info_spectrum
+            "spectrum": self._info_spectrum,
         }
         selected_info = info.split(",") if info != "all" else details.keys()
         return "\n".join(details[opt]() for opt in selected_info if opt in details)
@@ -514,23 +528,28 @@ class SourceCatalogObjectExtraHAWC(SourceCatalogObject):
             return "No spectral information available."
 
         model = self.spectral_model()
-        return "\n".join([
-            "\n*** Spectral info ***\n",
-            f"Spectrum type: {model.tag[0]}",
-            *(f"{par.name}: {par.value:.3f} ± {par.error} {par.unit if par.unit else ''}" for par in model.parameters)
-        ])
+        return "\n".join(
+            [
+                "\n*** Spectral info ***\n",
+                f"Spectrum type: {model.tag[0]}",
+                *(
+                    f"{par.name}: {par.value:.3f} ± {par.error} {par.unit if par.unit else ''}"
+                    for par in model.parameters
+                ),
+            ]
+        )
 
     def spectral_model(self):
         """Get the spectral model associated with this source."""
         if self._MODELS is None:
             filename = "$FEUPY_DATA/dedicated_publications/hawc/2021ApJ...907L..30A/models.yaml"
             self.__class__._MODELS = Models.read(make_path(filename))
-    
+
         models = self._MODELS
-    
+
         if self.name in models.names:
             return models[self.name].spectral_model
-    
+
         return None
 
     def sky_model(self):
@@ -542,28 +561,29 @@ class SourceCatalogObjectExtraHAWC(SourceCatalogObject):
     @property
     def flux_points(self):
         """Flux points as a `~gammapy.estimators.FluxPoints` object."""
-    
+
         filename = (
             "$FEUPY_DATA/dedicated_publications/hawc/2021ApJ...907L..30A/"
             f"{string_to_filename(self.name)}.fits"
         )
-    
+
         filename = make_path(filename)
-    
+
         if not filename.exists():
             return None
-    
+
         return FluxPoints.read(
             filename,
             reference_model=self.sky_model(),
             sed_type="e2dnde",
         )
-    
+
+
 class SourceCatalogExtraHAWC(SourceCatalog):
     """HAWC Extra Source Catalog with extended data.
 
     See: https://iopscience.iop.org/article/10.3847/2041-8213/abd77b
-    
+
     Each source is represented by `SourceCatalogObjectExtraHAWC`.
     """
 
