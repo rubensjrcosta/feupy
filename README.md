@@ -49,7 +49,7 @@ This allows the interpretation of gamma-ray observations in terms of leptonic an
 
 ## Installation
 
-### 1. Install FeuPy
+### 1. Clone FeuPy
 
 Clone the repository:
 
@@ -58,65 +58,80 @@ git clone https://github.com/rubensjrcosta/feupy.git
 cd feupy
 ```
 
-Install FeuPy and its dependencies:
+### 2. Create the Conda environment
+
+FeuPy provides an `environment.yml` file with the recommended development environment. The current release uses Python 3.12 and Gammapy 2.0.
+
+Create and activate the environment:
 
 ```bash
-pip install -e .
+conda env create -f environment.yml
+conda activate feupy
 ```
 
-### 2. Download the data repositories
+The FeuPy package is installed in editable mode automatically when the environment is created.
 
-FeuPy relies on external datasets that are maintained separately from the source code. Clone the FeuPy and Gammapy data repositories:
+### 3. Configure the Gammapy datasets
+
+FeuPy uses the standard datasets distributed with Gammapy 2.0.
+
+If you already have the Gammapy datasets installed and `GAMMAPY_DATA` configured, no additional setup is required.
+
+Otherwise, download the official datasets:
+
+```bash
+gammapy download datasets --release 2.0
+```
+
+and set the `GAMMAPY_DATA` environment variable:
+
+```bash
+export GAMMAPY_DATA=/path/to/gammapy-datasets/2.0
+```
+
+### 4. Download the FeuPy datasets
+
+Some FeuPy functionalities require additional datasets maintained in the [FeuPy data repository](https://github.com/rubensjrcosta/feupy-data):
 
 ```bash
 git clone https://github.com/rubensjrcosta/feupy-data.git
-git clone https://github.com/rubensjrcosta/gammapy-data.git
 ```
 
-The datasets required by the current FeuPy release are located at:
+FeuPy `v0.1.0` uses **FeuPy datasets version 1.0**, located at:
 
 ```text
 feupy-data/
 └── feupy-datasets/
     └── 1.0/
-
-gammapy-data/
-└── gammapy-datasets/
-    └── 2.0/
 ```
 
-FeuPy `v0.1.0` uses **FeuPy datasets version 1.0** and **Gammapy datasets version 2.0**.
-
-### 3. Configure the environment variables
-
-Set `FEUPY_DATA` and `GAMMAPY_DATA` to the corresponding dataset directories.
-
-For example:
+Set the `FEUPY_DATA` environment variable:
 
 ```bash
 export FEUPY_DATA=/path/to/feupy-data/feupy-datasets/1.0
-export GAMMAPY_DATA=/path/to/gammapy-data/gammapy-datasets/2.0
 ```
 
-You can verify the configuration with:
+### 5. Conda environment variables
+
+If you use the FeuPy Conda environment, the data paths can instead be stored directly in the environment:
 
 ```bash
-echo $FEUPY_DATA
-echo $GAMMAPY_DATA
-```
-
-If you use a Conda environment, the variables can be stored directly in the environment:
-
-```bash
+conda env config vars set GAMMAPY_DATA=/path/to/gammapy-datasets/2.0
 conda env config vars set FEUPY_DATA=/path/to/feupy-data/feupy-datasets/1.0
-conda env config vars set GAMMAPY_DATA=/path/to/gammapy-data/gammapy-datasets/2.0
 ```
 
 Reactivate the environment after setting the variables:
 
 ```bash
 conda deactivate
-conda activate <your-environment>
+conda activate feupy
+```
+
+Verify the configuration:
+
+```bash
+echo $GAMMAPY_DATA
+echo $FEUPY_DATA
 ```
 
 ## Quick start
@@ -127,14 +142,8 @@ After installation and data configuration, FeuPy can be imported in Python:
 import feupy
 ```
 
-The configured data directories can be checked from the shell with:
-
-```bash
-echo $FEUPY_DATA
-echo $GAMMAPY_DATA
-```
-
 Examples demonstrating the main analysis workflows are available in the [`examples`](examples/) directory.
+
 
 ## Scientific scope
 
