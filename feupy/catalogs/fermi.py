@@ -1,12 +1,7 @@
 # Licensed under a 3-clause BSD style license - see LICENSE.rst
-"""2PC/3PC catalog and source classes."""
-
-import logging
+"""Utilities for Fermi-LAT 2PC and 3PC catalog sources."""
 
 from gammapy.estimators import FluxPoints
-
-# Set up logging
-log = logging.getLogger(__name__)
 
 __all__ = [
     "get_flux_points_2PC",
@@ -15,54 +10,45 @@ __all__ = [
 
 
 def get_flux_points_2PC(source):
-    """
-    Generate flux points as `~gammapy.estimators.FluxPoints` for a 2PC source.
+    """Create flux points for a 2PC catalog source.
 
     Parameters
     ----------
     source : `~gammapy.catalog.SourceCatalogObject2PC`
-        Source object from the 2PC catalog.
+        Source from the Fermi-LAT Second Pulsar Catalog (2PC).
 
     Returns
     -------
     flux_points : `~gammapy.estimators.FluxPoints`
-        Flux points extracted from the source.
+        Flux points built from the source flux-points table and spectral model.
     """
-    table = source.flux_points_table
     return FluxPoints.from_table(
-        table=table,
+        table=source.flux_points_table,
         reference_model=source.spectral_model(),
     )
 
 
 def get_flux_points_3PC(source, fit="auto"):
-    """
-    Generate flux points as `~gammapy.estimators.FluxPoints` for a 3PC source.
+    """Create flux points for a 3PC catalog source.
 
-    In the 3PC, the Fermi-LAT collaboration attempted to fit a
-    `~gammapy.modeling.models.SuperExpCutoffPowerLaw4FGLDR3SpectralModel` with the
-    exponential index `index_2` either free or fixed to 2/3. These two models are referred
-    to as "b free" and "b 23". For most pulsars, both models are available. However,
-    in some cases, the "b free" model did not fit correctly.
+    The 3PC provides spectral fits in which the exponential index is either
+    free (``"b free"``) or fixed to 2/3 (``"b 23"``). The ``"auto"`` option
+    lets the source select the appropriate fit.
 
     Parameters
     ----------
     source : `~gammapy.catalog.SourceCatalogObject3PC`
-        Source object from the 3PC catalog.
-    fit : str, optional
-        Specifies which fitted model to return. Options are:
-        - **"auto"** (default): Attempts to return the "b free" model first,
-          falling back to "b 23" if "b free" is not available.
-        - **"b free"**: Uses the "b free" model.
-        - **"b 23"**: Uses the "b 23" model.
+        Source from the Fermi-LAT Third Pulsar Catalog (3PC).
+    fit : {"auto", "b free", "b 23"}, optional
+        Spectral fit used as the reference model.
 
     Returns
     -------
     flux_points : `~gammapy.estimators.FluxPoints`
-        Flux points extracted from the source.
+        Flux points built from the source flux-points table and selected
+        spectral model.
     """
-    table = source.flux_points_table
     return FluxPoints.from_table(
-        table=table,
+        table=source.flux_points_table,
         reference_model=source.spectral_model(fit),
     )

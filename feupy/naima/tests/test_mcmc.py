@@ -1,4 +1,5 @@
 # Licensed under a 3-clause BSD style license - see LICENSE.rst
+
 import astropy.units as u
 import naima
 import numpy as np
@@ -18,6 +19,7 @@ from feupy.naima.particles.mcmc import (
 
 
 def make_mcmc_table():
+    """Create a representative MCMC summary table for testing."""
     return Table(
         rows=[
             ("log10(norm)", 36.0),
@@ -93,7 +95,10 @@ def test_make_logparabola_from_mcmc():
 def test_make_broken_powerlaw_from_mcmc():
     table = make_mcmc_table()
 
-    model = make_broken_powerlaw_from_mcmc(table, e_ref=1 * u.TeV)
+    model = make_broken_powerlaw_from_mcmc(
+        table,
+        e_ref=1 * u.TeV,
+    )
 
     assert isinstance(model, naima.models.BrokenPowerLaw)
     assert np.isclose(model.amplitude.value, 1e36)
@@ -111,7 +116,10 @@ def test_make_exponentialcutoff_powerlaw_from_mcmc():
         e_ref=1 * u.TeV,
     )
 
-    assert isinstance(model, naima.models.ExponentialCutoffPowerLaw)
+    assert isinstance(
+        model,
+        naima.models.ExponentialCutoffPowerLaw,
+    )
     assert np.isclose(model.amplitude.value, 1e36)
     assert model.e_0 == 1 * u.TeV
     assert model.alpha == 2.1
@@ -149,14 +157,20 @@ def test_make_broken_powerlaw_ep_from_mcmc():
 def test_make_exponentialcutoffpowerlaw_e_powerlaw_p_from_mcmc():
     table = make_mcmc_table()
 
-    model_e, model_p = make_exponentialcutoffpowerlaw_e_powerlaw_p_from_mcmc(
+    (
+        model_e,
+        model_p,
+    ) = make_exponentialcutoffpowerlaw_e_powerlaw_p_from_mcmc(
         table,
         e_ref_e=1 * u.TeV,
         e_ref_p=10 * u.TeV,
         ap_by_ae=10.0,
     )
 
-    assert isinstance(model_e, naima.models.ExponentialCutoffPowerLaw)
+    assert isinstance(
+        model_e,
+        naima.models.ExponentialCutoffPowerLaw,
+    )
     assert isinstance(model_p, naima.models.PowerLaw)
 
     assert np.isclose(model_e.amplitude.value, 1e36)
@@ -167,5 +181,4 @@ def test_make_exponentialcutoffpowerlaw_e_powerlaw_p_from_mcmc():
 
     assert model_e.alpha == 1.9
     assert model_e.e_cutoff == 100 * u.TeV
-
     assert model_p.alpha == 2.2

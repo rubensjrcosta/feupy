@@ -49,12 +49,13 @@ log = logging.getLogger(__name__)
 
 
 class ROIAnalysis:
-    """Config-driven high level simulation interface.
+    """Config-driven high-level simulation interface.
 
-    It is initialized by default with a set of configuration parameters and values declared in
-    an internal high level interface model, though the user can also provide configuration
-    parameters passed as a nested dictionary at the moment of instantiation. In that case these
-    parameters will overwrite the default values of those present in the configuration file.
+    It is initialized by default with a set of configuration parameters
+    and values declared in an internal high-level interface model.
+    The user can also provide configuration parameters as a nested
+    dictionary at instantiation time. In that case, these parameters
+    overwrite the default values defined in the configuration file.
 
     Parameters
     ----------
@@ -124,13 +125,13 @@ class ROIAnalysis:
         self.sources = Sources(sources)
 
     def _get_catalog_roi(self):
-        """
-        Compute separations of sources from the target position and return an Astropy Table.
+        """Compute source separations from the target position.
 
         Returns
         -------
         result_table : `~astropy.table.Table`
-            Table with columns for source name, catalog, RA, Dec, and separation from target.
+            Table containing source name, catalog, coordinates, and
+            angular separation from the target.
         """
         names, ras, decs, separations, catalogs, has_fp = [], [], [], [], [], []
         sources = self.sources
@@ -168,13 +169,24 @@ class ROIAnalysis:
         # Add meta (columns descriptions)
         result_table.meta["description"] = {
             "index": "Unique identifier for each source.",
-            "source_name": "Name of the source as listed in the catalog.",
-            "source_label": "User-defined label for the source, often used for plotting.",
-            "has_fp": "Boolean flag indicating if flux points are available (True/False).",
+            "source_name": ("Name of the source as listed in the catalog."),
+            "source_label": (
+                "User-defined label for the source, often used for plotting."
+            ),
+            "has_fp": ("Boolean flag indicating whether flux points are available."),
             "catalog": "Catalog from which the source originates.",
-            "ra": "Right Ascension (RA) of the source in degrees, formatted to 3 decimal places.",
-            "dec": "Declination (Dec) of the source in degrees, formatted to 3 decimal places.",
-            "separation": "Angular separation from a reference position in degrees, formatted to 3 decimal places.",
+            "ra": (
+                "Right Ascension (RA) of the source in degrees, "
+                "formatted to 3 decimal places."
+            ),
+            "dec": (
+                "Declination (Dec) of the source in degrees, "
+                "formatted to 3 decimal places."
+            ),
+            "separation": (
+                "Angular separation from a reference position in degrees, "
+                "formatted to 3 decimal places."
+            ),
         }
         self.catalog = result_table
 

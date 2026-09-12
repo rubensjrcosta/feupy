@@ -7,8 +7,6 @@ __all__ = [
 ]
 
 
-# Scaling factors to visually normalize marker sizes
-# Format: marker -> (scale_factor,)
 MARKERS_DEFAULT_DICT = {
     "o": (1.0,),
     "s": (1.0,),
@@ -24,8 +22,7 @@ MARKERS_DEFAULT_DICT = {
 
 
 def resolve_marker_size(marker, base_size, uniform_size=True):
-    """
-    Resolve marker size.
+    """Resolve the marker size used for plotting.
 
     Parameters
     ----------
@@ -33,15 +30,15 @@ def resolve_marker_size(marker, base_size, uniform_size=True):
         Matplotlib marker symbol.
     base_size : float
         Base marker size.
-    uniform_size : bool
-        If True, apply normalization scaling.
+    uniform_size : bool, optional
+        Whether to apply the marker-specific normalization factor.
+        Default is True.
 
     Returns
     -------
     float
         Marker size to use for plotting.
     """
-
     if not uniform_size:
         return base_size
 

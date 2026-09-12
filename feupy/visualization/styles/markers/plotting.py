@@ -6,8 +6,8 @@ from .marker_size import resolve_marker_size
 from .resolver import resolve_marker
 
 __all__ = [
-    "build_point_kwargs",
     "build_fp_kwargs",
+    "build_point_kwargs",
 ]
 
 
@@ -17,47 +17,41 @@ def build_point_kwargs(
     palette=None,
     uniform_size=True,
 ):
-    """
-    Build matplotlib marker kwargs for a collection of sources.
+    """Build Matplotlib marker keyword arguments for sources.
 
     Parameters
     ----------
-    sources : list
-        Iterable of sources or labels.
-    marker_size : float
-        Base marker size.
+    sources : iterable
+        Sources or source labels.
+    marker_size : float, optional
+        Base marker size. Default is 6.
     palette : list, optional
-        Color palette.
-    uniform_size : bool
-        Normalize marker sizes.
+        Color palette. If None, ``PALETTE_DEFAULT`` is used.
+    uniform_size : bool, optional
+        Whether to normalize marker sizes according to marker shape.
+        Default is True.
 
     Returns
     -------
     dict
-        Mapping {label -> kwargs}.
+        Mapping from source label to Matplotlib keyword arguments.
     """
-
     palette = palette or PALETTE_DEFAULT
 
     result = {}
 
-    for i, source in enumerate(sources):
+    for index, source in enumerate(sources):
         label = str(source)
-
         marker = resolve_marker(label)
-
         size = resolve_marker_size(marker, marker_size, uniform_size)
+        color = palette[index % len(palette)][0]
 
-        color = palette[i % len(palette)][0]
-
-        result[label] = dict(
-            label=label,
-            marker=marker,
-            markersize=size,
-            color=color,
-            # markeredgecolor="black",
-            # mew=0.4,
-        )
+        result[label] = {
+            "label": label,
+            "marker": marker,
+            "markersize": size,
+            "color": color,
+        }
 
     return result
 
@@ -69,50 +63,46 @@ def build_fp_kwargs(
     palette=None,
     uniform_size=True,
 ):
-    """
-    Build plotting kwargs for spectral datasets.
+    """Build plotting keyword arguments for spectral datasets.
 
-    Marker is source-level.
-    Color is dataset-level.
+    Marker styles are resolved at source level, while colors are assigned
+    at dataset level.
 
     Parameters
     ----------
-    labels : list of str
+    labels : iterable of str
         Dataset labels.
-    sources : list, optional
+    sources : iterable, optional
         Source labels corresponding to each dataset.
-    marker_size : float
-        Base marker size.
+    marker_size : float, optional
+        Base marker size. Default is 6.
     palette : list, optional
-        Color palette.
-    uniform_size : bool
-        Normalize marker sizes.
+        Color palette. If None, ``PALETTE_DEFAULT`` is used.
+    uniform_size : bool, optional
+        Whether to normalize marker sizes according to marker shape.
+        Default is True.
 
     Returns
     -------
     dict
-        Mapping {source_label -> kwargs}.
+        Mapping from source label to plotting keyword arguments.
     """
-
     palette = palette or PALETTE_DEFAULT
 
     kwargs_dict = {}
 
-    for i, label in enumerate(labels):
-        source_label = str(sources[i]) if sources else label
-
+    for index, label in enumerate(labels):
+        source_label = str(sources[index]) if sources else label
         marker = resolve_marker(source_label)
-
         size = resolve_marker_size(marker, marker_size, uniform_size)
+        color = palette[index % len(palette)][0]
 
-        color = palette[i % len(palette)][0]
-
-        kwargs_dict[source_label] = dict(
-            label=label,
-            marker=marker,
-            markersize=size,
-            color=color,
-            ls="solid",
-        )
+        kwargs_dict[source_label] = {
+            "label": label,
+            "marker": marker,
+            "markersize": size,
+            "color": color,
+            "ls": "solid",
+        }
 
     return kwargs_dict

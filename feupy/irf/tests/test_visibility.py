@@ -119,5 +119,5 @@ def test_invalid_observatory(estimator):
 
 
 def test_zero_time_step(target):
-    with pytest.raises(Exception):
+    with pytest.raises(ValueError):
         CTAOVisibilityEstimator(target, time_step_min=0)

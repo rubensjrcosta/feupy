@@ -1,13 +1,5 @@
 # Licensed under a 3-clause BSD style license - see LICENSE.rst
-"""
-Utilities to fetch flux points tables and datasets for pulsar_spectra: A pulsar flux density catalogue and spectrum fitting repository (https://all-pulsar-spectra.readthedocs.io/en/latest/).
-
-This module provides functions to:
-- Read a pulsar spectra catalog.
-- Generate flux points tables for individual pulsars.
-- Group flux points tables by reference.
-- Convert grouped tables into Gammapy datasets.
-"""
+"""Utilities for the pulsar_spectra catalog."""
 
 import logging
 
@@ -21,9 +13,7 @@ from gammapy.utils.scripts import make_path
 
 from feupy.utils.conversions import frequency_to_energy, jy_to_erg_cm2_s
 
-# Set up logging
 log = logging.getLogger(__name__)
-
 
 __all__ = [
     "read_pulsar_spectra_catalog",
@@ -35,49 +25,45 @@ __all__ = [
 
 
 def read_pulsar_spectra_catalog(filename=None):
-    """
-    Read the pulsar spectra catalog from a YAML file.
+    """Read the pulsar_spectra catalog from a YAML file.
 
     Parameters
     ----------
-    filename : str, optional
-        Path to the pulsar spectra YAML file.
+    filename : str or `~pathlib.Path`, optional
+        Path to the pulsar_spectra YAML file.
 
     Returns
     -------
-    dict
-        Dictionary containing the pulsar spectra catalog.
+    catalog : dict
+        Pulsar spectra catalog. An empty dictionary is returned if the file
+        cannot be found or parsed.
     """
     if filename is None:
         filename = "$FEUPY_DATA/catalogs/pulsar_spectra/pulsar_spectra.yaml"
 
     try:
-        with open(make_path(filename)) as yaml_file:
-            return yaml.safe_load(yaml_file)
-
+        with make_path(filename).open(encoding="utf-8") as yaml_file:
+            return yaml.safe_load(yaml_file) or {}
     except yaml.YAMLError as error:
-        log.error(f"YAML loading error: {error}")
-
+        log.error("YAML loading error: %s", error)
     except FileNotFoundError:
-        log.error(f"Pulsar catalog file not found: {filename}")
+        log.error("Pulsar catalog file not found: %s", filename)
 
     return {}
 
 
 def create_pulsar_flux_points_table(pulsar_jname):
-    """
-    Create a flux points table for a pulsar from the catalog.
+    """Create a flux-points table for a pulsar.
 
     Parameters
     ----------
     pulsar_jname : str
-        The pulsar J-name.
+        Pulsar J-name.
 
     Returns
     -------
     table : `~astropy.table.Table` or None
-        Astropy table containing flux points data for the pulsar,
-        or None if the pulsar is not found in the catalog.
+        Flux-points table, or None if the pulsar is not available.
     """
     catalog = read_pulsar_spectra_catalog()
     metadata = {
@@ -90,18 +76,16 @@ def create_pulsar_flux_points_table(pulsar_jname):
     }
 
     try:
-        # Extract pulsar data from the catalog
-        freqs, bands, fluxs, flux_errs, refs = catalog[pulsar_jname]
+        freqs, _bands, fluxes, flux_errors, references = catalog[pulsar_jname]
 
-        # Convert quantities to appropriate units
         freqs_mhz = Quantity(freqs, "MHz")
-        fluxs_mjy = Quantity(fluxs, "mJy")
-        flux_errs_mjy = Quantity(flux_errs, "mJy")
+        fluxes_mjy = Quantity(fluxes, "mJy")
+        flux_errors_mjy = Quantity(flux_errors, "mJy")
 
-        # Create Astropy table with metadata
         table = Table(meta=metadata)
         table["ref"] = Column(
-            data=np.array(refs, dtype="U20"), description="Reference label"
+            data=np.asarray(references, dtype="U20"),
+            description="Reference label",
         )
         table["e_ref"] = Column(
             data=frequency_to_energy(freqs_mhz),
@@ -110,95 +94,92 @@ def create_pulsar_flux_points_table(pulsar_jname):
             format=".3e",
         )
         table["e2dnde"] = Column(
-            data=jy_to_erg_cm2_s(freqs_mhz, fluxs_mjy),
+            data=jy_to_erg_cm2_s(freqs_mhz, fluxes_mjy),
             unit="erg cm^-2 s^-1",
             description="Differential flux",
             format=".3e",
         )
         table["e2dnde_err"] = Column(
-            data=jy_to_erg_cm2_s(freqs_mhz, flux_errs_mjy),
+            data=jy_to_erg_cm2_s(freqs_mhz, flux_errors_mjy),
             unit="erg cm^-2 s^-1",
             description="Differential flux uncertainty",
             format=".3e",
         )
         return table
     except KeyError:
-        log.error(f"Error: Pulsar J-name '{pulsar_jname}' not found in the catalog.")
+        log.error("Pulsar J-name '%s' not found in the catalog.", pulsar_jname)
     except Exception as error:
-        log.error(f"Error processing pulsar '{pulsar_jname}': {error}")
+        log.error("Error processing pulsar '%s': %s", pulsar_jname, error)
+
     return None
 
 
 def get_pulsar_flux_points_table(pulsar_jname):
-    """
-    Retrieve a flux points table for a specific pulsar J-name.
+    """Return the flux-points table for a pulsar.
 
     Parameters
     ----------
     pulsar_jname : str
-        The pulsar J-name.
+        Pulsar J-name.
 
     Returns
     -------
     table : `~astropy.table.Table` or None
-        Flux points table for the pulsar, or None if the pulsar is not found.
+        Flux-points table, or None if the pulsar is not available.
     """
     return create_pulsar_flux_points_table(pulsar_jname)
 
 
 def get_pulsar_flux_points_tables(pulsar_jname):
-    """
-    Retrieve grouped flux points tables for a specific pulsar J-name.
+    """Return flux-points tables grouped by reference.
 
     Parameters
     ----------
     pulsar_jname : str
-        The pulsar J-name.
+        Pulsar J-name.
 
     Returns
     -------
-    list of `~astropy.table.Table`
-        List of grouped flux points tables for the pulsar,
-        or an empty list if the pulsar is not found.
+    tables : list of `~astropy.table.Table`
+        Flux-points tables grouped by publication reference.
     """
     table = get_pulsar_flux_points_table(pulsar_jname)
     if table is None:
         return []
 
-    # Group table by reference
     grouped_tables = []
-    grouped_data = table.group_by("ref")
-    for group in grouped_data.groups:
+    for group in table.group_by("ref").groups:
         group_table = group[["e_ref", "e2dnde", "e2dnde_err"]]
         group_table.meta.update({"ref": group["ref"][0], **table.meta})
         grouped_tables.append(group_table)
+
     return grouped_tables
 
 
 def get_pulsar_flux_points_datasets(pulsar_jname):
-    """
-    Retrieve datasets for a specific pulsar J-name.
+    """Return flux-points datasets grouped by reference.
 
     Parameters
     ----------
     pulsar_jname : str
-        The pulsar J-name.
+        Pulsar J-name.
 
     Returns
     -------
     datasets : `~gammapy.datasets.Datasets`
-        Collection of flux points datasets for the pulsar.
+        Flux-points datasets grouped by publication reference.
     """
     grouped_tables = get_pulsar_flux_points_tables(pulsar_jname)
     if not grouped_tables:
         return Datasets()
 
-    # Create datasets from grouped tables
     datasets = Datasets()
-    for group_table in grouped_tables:
-        label = group_table.meta["ref"]
+    for table in grouped_tables:
+        label = table.meta["ref"]
         flux_points = FluxPoints.from_table(
-            table=group_table, sed_type=group_table.meta["sed_type"]
+            table=table,
+            sed_type=table.meta["sed_type"],
         )
         datasets.append(FluxPointsDataset(data=flux_points, name=label))
+
     return datasets

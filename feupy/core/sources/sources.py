@@ -1,9 +1,10 @@
 # Licensed under a 3-clause BSD style license - see LICENSE.rst
-"""Sources class."""
+"""Container class for catalog source objects."""
 
 import collections.abc
 import copy
 import logging
+from pathlib import Path
 
 import yaml
 from astropy.coordinates import SkyCoord
@@ -11,21 +12,18 @@ from astropy.coordinates import SkyCoord
 from feupy.catalogs import FEUPY_CATALOG_REGISTRY
 from feupy.catalogs.utils import get_catalog_tag
 
+__all__ = ["Sources"]
+
 log = logging.getLogger(__name__)
 
 
-__all__ = [
-    "Sources",
-]
-
-
 class Sources(collections.abc.MutableSequence):
-    """Source collection.
+    """Collection of catalog sources.
 
     Parameters
     ----------
-    datasets : `Source` or list of `Source`
-        Sources
+    sources : source object, list of source objects, or `Sources`, optional
+        Sources used to initialize the collection.
     """
 
     def __init__(self, sources=None):
@@ -33,27 +31,39 @@ class Sources(collections.abc.MutableSequence):
             sources = []
         elif isinstance(sources, Sources):
             sources = sources._sources
-        elif any(
-            isinstance(sources, _.source_object_class) for _ in FEUPY_CATALOG_REGISTRY
-        ):
+        elif self._is_source(sources):
             sources = [sources]
         elif not isinstance(sources, list):
-            log.error(f"Failed Invalid type: {sources!r}")
+            log.error("Failed Invalid type: %r", sources)
             raise TypeError(f"Invalid type: {sources!r}")
 
-        unique_labels = []
+        labels = []
         for source in sources:
-            label = self._set_source_label(source)
-            if label in unique_labels:
-                log.error(
-                    f"Failed Source name '{source.name}' from {get_catalog_tag(source)} already exists!"
+            label = self._get_source_label(source)
+            if label in labels:
+                message = (
+                    f"Source name '{source.name}' from "
+                    f"{get_catalog_tag(source)} already exists!"
                 )
-                raise ValueError(
-                    f"Source name '{source.name}' from {get_catalog_tag(source)} already exists!"
-                )
-            unique_labels.append(label)
+                log.error("Failed %s", message)
+                raise ValueError(message)
+            labels.append(label)
 
         self._sources = sources
+
+    @staticmethod
+    def _is_source(source):
+        """Check whether an object is a supported catalog source."""
+        return any(
+            isinstance(source, catalog.source_object_class)
+            for catalog in FEUPY_CATALOG_REGISTRY
+        )
+
+    @staticmethod
+    def _get_source_label(source):
+        """Return the unique label associated with a source."""
+        tag = get_catalog_tag(source)
+        return f"{source.name} ({tag})"
 
     def __getitem__(self, key):
         return self._sources[self.index(key)]
@@ -62,107 +72,162 @@ class Sources(collections.abc.MutableSequence):
         del self._sources[self.index(key)]
 
     def __setitem__(self, key, source):
-        if any(
-            isinstance(source, _.source_object_class) for _ in FEUPY_CATALOG_REGISTRY
-        ):
-            label = self._set_source_label(source)
-            if label in self.labels:
-                log.error(
-                    f"Failed Source name '{source.name}' from {get_catalog_tag(source)} already exists!"
-                )
-                raise ValueError(
-                    f"Source name '{source.name}' from {get_catalog_tag(source)} already exists!"
-                )
-            self._sources[self.index(key)] = source
-        else:
-            log.error(f"Failed Invalid type: {type(source)!r}")
+        if not self._is_source(source):
+            log.error("Failed Invalid type: %r", type(source))
             raise TypeError(f"Invalid type: {type(source)!r}")
 
-    def insert(self, idx, source):
-        if any(
-            isinstance(source, _.source_object_class) for _ in FEUPY_CATALOG_REGISTRY
-        ):
-            label = self._set_source_label(source)
-            if label in self.labels:
-                log.error(
-                    f"Failed Source name '{source.name}' from {get_catalog_tag(source)} already exists!"
-                )
-                raise ValueError(
-                    f"Source name '{source.name}' from {get_catalog_tag(source)} already exists!"
-                )
-            self._sources.insert(idx, source)
-        else:
-            log.error(f"Failed Invalid type: {type(source)!r}")
-            raise TypeError(f"Invalid type: {type(source)!r}")
+        label = self._get_source_label(source)
+        current_index = self.index(key)
 
-    def _set_source_label(cls, source):
-        tag = get_catalog_tag(source)
-        return f"{source.name} ({tag})"
+        if label in self.labels and self.labels[current_index] != label:
+            message = (
+                f"Source name '{source.name}' from "
+                f"{get_catalog_tag(source)} already exists!"
+            )
+            log.error("Failed %s", message)
+            raise ValueError(message)
 
-    def index(self, key):
-        if isinstance(key, (int, slice)):
-            return key
-        elif isinstance(key, str):
-            return self.names.index(key)
-        elif any(isinstance(key, _) for _ in self._sources):
-            return self._sources.index(key)
-        else:
-            log.error(f"Failed Invalid type: {type(key)!r}")
-            raise TypeError(f"Invalid type: {type(key)!r}")
+        self._sources[current_index] = source
 
     def __len__(self):
         return len(self._sources)
 
+    def insert(self, index, source):
+        """Insert a source into the collection.
+
+        Parameters
+        ----------
+        index : int
+            Position at which the source is inserted.
+        source : source object
+            Source to insert.
+
+        Raises
+        ------
+        TypeError
+            If ``source`` is not a supported catalog source.
+        ValueError
+            If the source label already exists in the collection.
+        """
+        if not self._is_source(source):
+            log.error("Failed Invalid type: %r", type(source))
+            raise TypeError(f"Invalid type: {type(source)!r}")
+
+        label = self._get_source_label(source)
+        if label in self.labels:
+            message = (
+                f"Source name '{source.name}' from "
+                f"{get_catalog_tag(source)} already exists!"
+            )
+            log.error("Failed %s", message)
+            raise ValueError(message)
+
+        self._sources.insert(index, source)
+
+    def index(self, key):
+        """Return the index associated with a key.
+
+        Parameters
+        ----------
+        key : int, slice, str, or source object
+            Index, source name, or source object.
+
+        Returns
+        -------
+        index : int or slice
+            Corresponding collection index.
+        """
+        if isinstance(key, (int, slice)):
+            return key
+        if isinstance(key, str):
+            return self.names.index(key)
+        if key in self._sources:
+            return self._sources.index(key)
+
+        log.error("Failed Invalid type: %r", type(key))
+        raise TypeError(f"Invalid type: {type(key)!r}")
+
     def copy(self):
-        """A deep copy."""
+        """Return a deep copy of the source collection."""
         return copy.deepcopy(self)
 
     @property
     def names(self):
-        return [_.name for _ in self._sources]
+        """Source names."""
+        return [source.name for source in self._sources]
 
     @property
     def labels(self):
-        return [self._set_source_label(_) for _ in self._sources]
+        """Source labels including their catalog tags."""
+        return [self._get_source_label(source) for source in self._sources]
 
     @property
     def positions(self):
         """Source positions as a `~astropy.coordinates.SkyCoord` object."""
-        ra = [_.position.icrs.ra for _ in self._sources]
-        dec = [_.position.icrs.dec for _ in self._sources]
+        ra = [source.position.icrs.ra for source in self._sources]
+        dec = [source.position.icrs.dec for source in self._sources]
         return SkyCoord(ra, dec, frame="icrs")
 
     def select(self, names):
+        """Select sources by name.
+
+        Parameters
+        ----------
+        names : iterable of str
+            Source names to select.
+
+        Returns
+        -------
+        sources : `Sources`
+            Selected sources.
+        """
         names = set(names)
-        return Sources([src for src in self if src.name in names])
+        return Sources([source for source in self if source.name in names])
 
     def write(self, filename, overwrite=False):
-        _dict = {}
-        dict_sources = {}
+        """Write the source collection to a YAML file.
 
-        for index, source in enumerate(self._sources):
-            _dict[index] = dict(
-                name=source.name,
-                catalog=get_catalog_tag(source),
-            )
+        Parameters
+        ----------
+        filename : path-like
+            Output filename.
+        overwrite : bool, optional
+            Whether to overwrite an existing file.
 
-        dict_sources["Sources"] = _dict
+        Raises
+        ------
+        OSError
+            If the file exists and ``overwrite`` is False.
+        """
+        path = Path(filename)
+        if path.exists() and not overwrite:
+            raise OSError(f"File exists: {filename}")
 
-        yaml_string = yaml.dump(dict_sources)
-        sources = yaml.safe_load(yaml_string)
+        data = {
+            "Sources": {
+                index: {
+                    "name": source.name,
+                    "catalog": get_catalog_tag(source),
+                }
+                for index, source in enumerate(self._sources)
+            }
+        }
 
-        with open(filename, "w") as file:
-            yaml.dump(sources, file)
+        with path.open("w") as stream:
+            yaml.safe_dump(data, stream)
 
     def read(self, filename):
+        """Read sources from a YAML file.
+
+        Parameters
+        ----------
+        filename : path-like
+            Input YAML filename.
+        """
         with open(filename) as stream:
-            try:
-                d = yaml.safe_load(stream)
-                self._sources = [
-                    FEUPY_CATALOG_REGISTRY.get_cls(d["Sources"][_]["catalog"])()[
-                        d["Sources"][_]["name"]
-                    ]
-                    for _ in d["Sources"].keys()
-                ]
-            except yaml.YAMLError as error:
-                print(error)
+            data = yaml.safe_load(stream)
+
+        self._sources = [
+            FEUPY_CATALOG_REGISTRY.get_cls(entry["catalog"])()[entry["name"]]
+            for entry in data["Sources"].values()
+        ]

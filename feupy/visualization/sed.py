@@ -1,11 +1,5 @@
 # Licensed under a 3-clause BSD style license - see LICENSE.rst
-"""
-SEDPlotter class.
-
-This module provides the SEDPlotter class, which is used to plot Spectral Energy Distributions (SEDs)
-from a collection of datasets and models. It offers flexible options for customizing plot appearance,
-legends, axis labels, units, and plot limits.
-"""
+"""Spectral energy distribution plotting utilities."""
 
 import itertools
 
@@ -20,10 +14,22 @@ from feupy.visualization.utils.labels import (
     DEFAULT_YAXIS_LABEL,
 )
 
+__all__ = ["SEDPlotter"]
+
 
 class SEDPlotter:
-    """
-    Pipeline-safe SED plot renderer.
+    """Plot spectral energy distributions from datasets and models.
+
+    Parameters
+    ----------
+    datasets : object
+        Collection of datasets to plot. The object is expected to expose
+        ``names`` and to be iterable.
+    models : object, optional
+        Collection of spectral models to plot.
+    sed_type : str, optional
+        SED representation passed to the plotting methods.
+        Default is ``"e2dnde"``.
     """
 
     def __init__(self, datasets, models=None, sed_type="e2dnde"):
@@ -31,43 +37,37 @@ class SEDPlotter:
         self.models = models
         self.sed_type = sed_type
 
-    # -------------------------------------------------
-    # Defaults
-    # -------------------------------------------------
-
     def _default_axis(self):
-        return dict(
-            label=(DEFAULT_XAXIS_LABEL["TeV"], DEFAULT_YAXIS_LABEL[self.sed_type]),
-            units=("TeV", "TeV cm-2 s-1"),
-        )
+        return {
+            "label": (
+                DEFAULT_XAXIS_LABEL["TeV"],
+                DEFAULT_YAXIS_LABEL[self.sed_type],
+            ),
+            "units": ("TeV", "TeV cm-2 s-1"),
+        }
 
     def _default_limits(self):
-        return dict(
-            energy_bounds=[1e-5, 2e3] * u.TeV,
-            ylim=[1e-23, 1e-7],
-        )
+        return {
+            "energy_bounds": [1e-5, 2e3] * u.TeV,
+            "ylim": [1e-23, 1e-7],
+        }
 
     def _default_legend(self):
-        return dict(
-            ncol=3,
-            loc="lower left",
-            markerscale=0.75,
-            fontsize=5,
-            frameon=False,
-        )
-
-    # -------------------------------------------------
-    # Axis formatting
-    # -------------------------------------------------
+        return {
+            "ncol": 3,
+            "loc": "lower left",
+            "markerscale": 0.75,
+            "fontsize": 5,
+            "frameon": False,
+        }
 
     def _save_plot(self, file_path):
-        """
-        Save the SED to a file.
+        """Save the current figure.
 
         Parameters
         ----------
         file_path : str or `~pathlib.Path`
-            File path or name where the plot will be saved.
+            Destination path. If None, the figure is not saved.
         """
         if file_path:
             plt.savefig(file_path, dpi=300, bbox_inches="tight")
@@ -86,10 +86,6 @@ class SEDPlotter:
         ax.set_xlim(limits_kwargs["energy_bounds"].value)
         ax.set_ylim(limits_kwargs["ylim"])
 
-    # -------------------------------------------------
-    # Dataset rendering
-    # -------------------------------------------------
-
     def _plot_datasets(self, ax, plot_kwargs, ref_markers):
         for dataset in self.datasets:
             kwargs_ds = {
@@ -106,13 +102,11 @@ class SEDPlotter:
             dataset.data.plot(**plot_kwargs, **kwargs_ds)
 
             color = kwargs_ds.get("color", "black")
-
             energy_bounds = get_energy_bounds_from_datasets(dataset)
 
             if dataset.models and dataset.name in dataset.models.names:
-                spec = dataset.models[dataset.name].spectral_model
-
-                spec.plot_error(
+                spectral_model = dataset.models[dataset.name].spectral_model
+                spectral_model.plot_error(
                     **plot_kwargs,
                     energy_bounds=energy_bounds,
                     edgecolor=color,
@@ -120,43 +114,41 @@ class SEDPlotter:
                     alpha=0.2,
                 )
 
-    # -------------------------------------------------
-    # Model rendering
-    # -------------------------------------------------
-
-    def _plot_models(self, ax, plot_kwargs, energy_bounds, show_error, ref_markers):
+    def _plot_models(
+        self,
+        ax,
+        plot_kwargs,
+        energy_bounds,
+        show_error,
+        ref_markers,
+    ):
         if not self.models:
             return
 
         linestyle_cycle = itertools.cycle(LINESTYLES_DEFAULT)
 
         for model in self.models:
-            spec = model.spectral_model
-
+            spectral_model = model.spectral_model
             color = ref_markers.get(model.name, {}).get("color", "black")
 
-            kwargs_model = dict(
-                label=model.name,
-                linestyle=next(linestyle_cycle),
-                color=color,
-                marker=",",
-                energy_bounds=energy_bounds,
-            )
+            kwargs_model = {
+                "label": model.name,
+                "linestyle": next(linestyle_cycle),
+                "color": color,
+                "marker": ",",
+                "energy_bounds": energy_bounds,
+            }
 
-            spec.plot(**plot_kwargs, **kwargs_model)
+            spectral_model.plot(**plot_kwargs, **kwargs_model)
 
             if show_error:
-                spec.plot_error(
+                spectral_model.plot_error(
                     energy_bounds=energy_bounds,
                     facecolor=color,
                     edgecolor=color,
                     alpha=0.05,
                     **plot_kwargs,
                 )
-
-    # -------------------------------------------------
-    # Public API
-    # -------------------------------------------------
 
     def plot(
         self,
@@ -167,6 +159,29 @@ class SEDPlotter:
         error_band=False,
         **kwargs,
     ):
+        """Plot datasets and spectral models.
+
+        Parameters
+        ----------
+        ax : `matplotlib.axes.Axes`, optional
+            Axes used for plotting. If None, the current axes are used.
+        file_path : str or `~pathlib.Path`, optional
+            Destination path used to save the figure.
+        ref_markers : dict, optional
+            Plotting keyword arguments indexed by dataset or model name.
+        box_name : str, optional
+            Text displayed inside the axes.
+        error_band : bool, optional
+            Whether to draw model uncertainty bands. Default is False.
+        **kwargs : dict
+            Optional ``axis``, ``limits``, ``kwargs_legend``, and
+            ``kwargs_models`` dictionaries.
+
+        Returns
+        -------
+        `matplotlib.axes.Axes`
+            Axes containing the SED plot.
+        """
         ax = ax or plt.gca()
 
         axis_kwargs = kwargs.get("axis", self._default_axis())
@@ -176,9 +191,11 @@ class SEDPlotter:
 
         self._set_axis_units(ax, axis_kwargs)
 
-        plot_kwargs = dict(ax=ax, sed_type=self.sed_type)
+        plot_kwargs = {
+            "ax": ax,
+            "sed_type": self.sed_type,
+        }
 
-        # Marker registry
         ref_names = list(self.datasets.names)
 
         if self.models:
@@ -187,11 +204,9 @@ class SEDPlotter:
         if ref_markers is None:
             ref_markers = build_fp_kwargs(
                 labels=ref_names,
-                # marker="o",
                 marker_size=4,
             )
 
-        # Plot components
         self._plot_datasets(ax, plot_kwargs, ref_markers)
 
         energy_bounds = model_kwargs.get(
@@ -199,7 +214,13 @@ class SEDPlotter:
             limits_kwargs["energy_bounds"],
         )
 
-        self._plot_models(ax, plot_kwargs, energy_bounds, error_band, ref_markers)
+        self._plot_models(
+            ax,
+            plot_kwargs,
+            energy_bounds,
+            error_band,
+            ref_markers,
+        )
 
         self._set_plot_limits(ax, limits_kwargs)
         self._set_axis_labels(ax, axis_kwargs)
@@ -214,8 +235,6 @@ class SEDPlotter:
             )
 
         ax.legend(**legend_kwargs)
-
-        # Save plot if file_path is provided
         self._save_plot(file_path)
 
         return ax

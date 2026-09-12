@@ -1,5 +1,5 @@
 # Licensed under a 3-clause BSD style license - see LICENSE.rst
-"""LHAASO catalog and source classes."""
+"""LHAASO catalog utilities and source classes."""
 
 import logging
 
@@ -20,7 +20,6 @@ from feupy.utils.fitting import fit_spectral_model_to_flux_points
 from feupy.utils.formatting import string_to_filename
 from feupy.utils.tables.utils import remove_nan_rows
 
-# Set up logging
 log = logging.getLogger(__name__)
 
 __all__ = [
@@ -34,73 +33,51 @@ __all__ = [
 
 
 def create_flux_points_table_1lhaaso(source, which):
-    """
-    Generate a flux points table for a 1LHAASO catalog source.
-
-    This function extracts differential flux data (`dnde`), reference energy (`e_ref`),
-    flux uncertainties (`dnde_err`), and upper limit information from a given source
-    in the 1LHAASO catalog. It supports both 'point' and 'extended' source models.
+    """Create a flux-points table for a 1LHAASO catalog source.
 
     Parameters
     ----------
     source : `~gammapy.catalog.SourceCatalogObject1LHAASO`
-        Source object from the 1LHAASO catalog.
-    which : str
-        Type of source model to use ('point' or 'extended').
-        If 'extended' is specified but the source lacks an extended model, an error is raised.
+        Source from the 1LHAASO catalog.
+    which : {"point", "extended"}
+        Source model component to use.
 
     Returns
     -------
     table : `~astropy.table.Table`
-        Table containing the flux points for the source with the following columns:
-
-        - `e_ref` : Reference energy (TeV).
-        - `dnde` : Differential flux at `e_ref`.
-        - `dnde_err` : Error on the differential flux.
-        - `dnde_ul` : Upper limit for `dnde` (if applicable).
-        - `is_ul` : Boolean flag indicating if the data point is an upper limit.
+        Flux-points table for the selected model component.
 
     Raises
     ------
     ValueError
-        If 'extended' is specified but the source lacks an extended model.
-
-    Examples
-    --------
-    >>> from gammapy.catalog import SourceCatalog1LHAASO
-    >>> catalog = SourceCatalog1LHAASO()
-    >>> source = catalog["1LHAASO J1825-134"]
-    >>> table = create_flux_points_table_1lhaaso(source, "point")
-    >>> print(table)
+        If the requested model component is not available.
     """
 
-    def _parse(source, name, which):
+    def get_model_tag(source, which):
+        if which in source.data["Model_a"]:
+            return ""
+        if which in source.data["Model_b"]:
+            return "_b"
+        raise ValueError("Invalid model component name")
+
+    def parse_value(source, name, which):
         tag = get_model_tag(source, which)
-        is_ul = False
         value = u.Quantity(source.data[f"{name}{tag}"])
+        is_ul = False
+
         if (
             np.isnan(value) or value == 0 * value.unit
         ) and f"{name}_ul{tag}" in source.data:
             value = source.data[f"{name}_ul{tag}"]
             is_ul = True
+
         return value, is_ul
 
-    def get_model_tag(source, which):
-        if which in source.data["Model_a"]:
-            tag = ""
-        elif which in source.data["Model_b"]:
-            tag = "_b"
-        else:
-            raise ValueError("Invalid model component name")
-        return tag
-
-    def _get(source, name, which):
-        value, _ = _parse(source, name, which)
+    def get_value(source, name, which):
+        value, _ = parse_value(source, name, which)
         return value
 
-    sed_type = "dnde"
-    e_ref = u.Quantity([_get(source, "E0", which)])
-
+    e_ref = u.Quantity([get_value(source, "E0", which)])
     spec_model = source.spectral_model(which=which)
     dnde = spec_model(e_ref)
     dnde_err = spec_model.evaluate_error(e_ref)[1]
@@ -113,19 +90,23 @@ def create_flux_points_table_1lhaaso(source, which):
 
     table = Table()
     table["e_ref"] = e_ref
-    table["e_ref"].description = "Reference energy (TeV)"
+    table["e_ref"].description = "Reference energy"
+
     table["dnde"] = dnde
     table["dnde"].description = "Differential flux at reference energy"
+
     table["dnde_err"] = dnde_err
     table["dnde_err"].description = "Error on the differential flux"
+
     table["dnde_ul"] = dnde_ul
     table["dnde_ul"].unit = dnde.unit
     table["dnde_ul"].description = "Upper limit for differential flux"
+
     table["is_ul"] = is_ul
-    table["is_ul"].description = "Boolean flag indicating if data is an upper limit"
+    table["is_ul"].description = "Whether the data point is an upper limit"
 
     table.meta["source_name"] = source.name
-    table.meta["SED_TYPE"] = sed_type
+    table.meta["SED_TYPE"] = "dnde"
     table.meta["model"] = which
     table.meta["comments"] = [
         "Reference: https://iopscience.iop.org/article/10.3847/1538-4365/acfd29"
@@ -141,20 +122,19 @@ def create_flux_points_table_1lhaaso(source, which):
 
 
 def get_flux_points_1lhaaso(source, which):
-    """
-    Generate flux points as `~gammapy.estimators.FluxPoints` for a 1LHAASO source.
+    """Create flux points for a 1LHAASO catalog source.
 
     Parameters
     ----------
     source : `~gammapy.catalog.SourceCatalogObject1LHAASO`
-        Source object from the 1LHAASO catalog.
-    which : str
-        Type of source model ('point' or 'extended').
+        Source from the 1LHAASO catalog.
+    which : {"point", "extended"}
+        Source model component to use.
 
     Returns
     -------
     flux_points : `~gammapy.estimators.FluxPoints`
-        Flux points extracted from the source.
+        Flux points for the selected model component.
     """
     table = create_flux_points_table_1lhaaso(source, which)
     return FluxPoints.from_table(
@@ -165,18 +145,7 @@ def get_flux_points_1lhaaso(source, which):
 
 
 class SourceCatalogObjectExtraLHAASO(SourceCatalogObject):
-    """Represents a single source in the ExtraLHAASO catalog.
-
-    Provides detailed information about a source, including position, spectrum,
-    and flux points.
-
-    Attributes
-    ----------
-    _source_name_key : str
-        Name of the key for source names.
-    _MODELS : Models
-        Pre-loaded models from the extra ExtraLHAASO data file.
-    """
+    """One source from the dedicated LHAASO catalog."""
 
     _MODELS = None
     _source_name_key = "source_name"
@@ -185,75 +154,86 @@ class SourceCatalogObjectExtraLHAASO(SourceCatalogObject):
         return self.info()
 
     def info(self, info="all"):
-        """Summary information string for the source.
+        """Return summary information for the source.
 
         Parameters
         ----------
-        info : {'all', 'basic', 'position', 'spectrum'}
-            Type of information to display. Options are:
-            - 'all': Shows basic, position, and spectrum information.
-            - 'basic': Shows basic source information.
-            - 'position': Shows position information.
-            - 'spectrum': Shows spectral information.
+        info : {"all", "basic", "position", "spectrum"}, optional
+            Information sections to include.
+
+        Returns
+        -------
+        info : str
+            Formatted source information.
         """
         details = {
             "basic": self._info_basic,
             "position": self._info_position,
             "spectrum": self._info_spectrum,
         }
-        selected_info = info.split(",") if info != "all" else details.keys()
-        return "\n".join(details[opt]() for opt in selected_info if opt in details)
+        selected = info.split(",") if info != "all" else details.keys()
+        return "\n".join(details[item]() for item in selected if item in details)
 
     def _info_basic(self):
-        return f"\n*** Basic info ***\n\nCatalog row index: {self.row_index}\nSource name: {self.name}\n"
-
-    def _info_position(self):
-        return f"\n*** Position info ***\n\nRA: {self.data.ra:.3f}\nDEC: {self.data.dec:.3f}\n"
-
-    def _info_spectrum(self):
-        if self.spectral_model() is None:
-            return "No spectral information available."
-
-        model = self.spectral_model()
-        return "\n".join(
-            [
-                "\n*** Spectral info ***\n",
-                f"Spectrum type: {model.tag[0]}",
-                *(
-                    f"{par.name}: {par.value:.3f} ± {par.error} {par.unit if par.unit else ''}"
-                    for par in model.parameters
-                ),
-            ]
+        """Return basic source information."""
+        return (
+            "\n*** Basic info ***\n\n"
+            f"Catalog row index: {self.row_index}\n"
+            f"Source name: {self.name}\n"
         )
 
+    def _info_position(self):
+        """Return source position information."""
+        return (
+            "\n*** Position info ***\n\n"
+            f"RA: {self.data.ra:.3f}\n"
+            f"DEC: {self.data.dec:.3f}\n"
+        )
+
+    def _info_spectrum(self):
+        """Return spectral information."""
+        model = self.spectral_model()
+        if model is None:
+            return "No spectral information available."
+
+        lines = [
+            "\n*** Spectral info ***\n",
+            f"Spectrum type: {model.tag[0]}",
+        ]
+        lines.extend(
+            f"{par.name}: {par.value:.3f} ± {par.error} {par.unit if par.unit else ''}"
+            for par in model.parameters
+        )
+        return "\n".join(lines)
+
     def spectral_model(self):
-        """Get the spectral model associated with this source."""
+        """Return the spectral model associated with the source."""
         if self._MODELS is None:
-            filename = "$FEUPY_DATA/dedicated_publications/lhaaso/2024icrc.confE.643Y/models.yaml"
+            filename = (
+                "$FEUPY_DATA/dedicated_publications/lhaaso/"
+                "2024icrc.confE.643Y/models.yaml"
+            )
             self.__class__._MODELS = Models.read(make_path(filename))
 
-        models = self._MODELS
-
-        if self.name in models.names:
-            return models[self.name].spectral_model
+        if self.name in self._MODELS.names:
+            return self._MODELS[self.name].spectral_model
 
         return None
 
     def sky_model(self):
-        """Create a SkyModel representation of the source."""
-        if self.spectral_model():
-            return SkyModel(spectral_model=self.spectral_model(), name=self.name)
-        return None
+        """Return the source sky model."""
+        spectral_model = self.spectral_model()
+        if spectral_model is None:
+            return None
+        return SkyModel(spectral_model=spectral_model, name=self.name)
 
     @property
     def flux_points(self):
-        """Flux points as a `~gammapy.estimators.FluxPoints` object."""
-
+        """Return source flux points."""
         filename = (
             "$FEUPY_DATA/dedicated_publications/lhaaso/2024icrc.confE.643Y/"
             f"{string_to_filename(self.name)}.fits"
         )
-
         filename = make_path(filename)
 
         if not filename.exists():
@@ -267,37 +247,32 @@ class SourceCatalogObjectExtraLHAASO(SourceCatalogObject):
 
 
 class SourceCatalogExtraLHAASO(SourceCatalog):
-    """LHAASO Extra Source Catalog with extended data.
-
-    See: https://doi.org/10.1038/s41586-021-03498-z
-
-    Each source is represented by `SourceCatalogObjectExtraLHAASO`.
-    """
+    """Catalog for the dedicated LHAASO publication."""
 
     tag = "LHAASO-2024icrc"
     bibcode = "2024icrc.confE.643Y"
     description = "LHAASO first 12 PeVatrons Catalogue"
-
     source_object_class = SourceCatalogObjectExtraLHAASO
 
     def __init__(
         self,
-        filename="$FEUPY_DATA/dedicated_publications/lhaaso/2024icrc.confE.643Y/catalog.ecsv",
+        filename=(
+            "$FEUPY_DATA/dedicated_publications/lhaaso/2024icrc.confE.643Y/catalog.ecsv"
+        ),
     ):
+        """Initialize the dedicated LHAASO catalog.
+
+        Parameters
+        ----------
+        filename : str or `~pathlib.Path`, optional
+            Path to the catalog ECSV file.
+        """
         table = Table.read(make_path(filename), format="ascii.ecsv")
         super().__init__(table=table, source_name_key="source_name")
 
 
 class SourceCatalogObjectLHAASO(SourceCatalogObject):
-    """One source from the LHAASO first 12 PeVatrons Catalogue.
-
-    See: https://doi.org/10.1038/s41586-021-03498-z
-
-    The data are available through the web page (http://english.ihep.cas.cn/lhaaso/index.html)
-    in the section ‘Public Data’.
-
-    One source is represented by `~feupy.catalogs.SourceCatalogLHAASO`.
-    """
+    """One source from the LHAASO first 12 PeVatrons catalog."""
 
     _source_name_key = "source_name"
     _sed_type = "e2dnde"
@@ -306,98 +281,102 @@ class SourceCatalogObjectLHAASO(SourceCatalogObject):
         return self.info()
 
     def info(self, info="all"):
-        """Summary information string.
+        """Return summary information for the source.
 
         Parameters
         ----------
-        info : {'all', 'basic', 'position', 'spectrum'}
-            Comma-separated list of options.
+        info : {"all", "basic", "position", "spectrum"}, optional
+            Comma-separated information sections.
+
+        Returns
+        -------
+        info : str
+            Formatted source information.
         """
         if info == "all":
             info = "basic,position,spectrum"
 
-        ss = ""
-        ops = info.split(",")
-        if "basic" in ops:
-            ss += self._info_basic()
-        if "position" in ops:
-            ss += self._info_position()
-        if "spectrum" in ops:
-            ss += self._info_spectrum()
+        text = ""
+        options = info.split(",")
 
-        return ss
+        if "basic" in options:
+            text += self._info_basic()
+        if "position" in options:
+            text += self._info_position()
+        if "spectrum" in options:
+            text += self._info_spectrum()
+
+        return text
 
     def _info_basic(self):
-        """Return basic information about the source."""
+        """Return basic source information."""
         return (
-            f"\n*** Basic info ***\n\n"
+            "\n*** Basic info ***\n\n"
             f"Catalog row index (zero-based): {self.row_index}\n"
             f"Source name: {self.name}\n"
         )
 
     def _info_position(self):
-        """Return position information about the source."""
+        """Return source position information."""
         return (
-            f"\n*** Position info ***\n\n"
+            "\n*** Position info ***\n\n"
             f"RA: {self.data.ra:.3f}\n"
             f"DEC: {self.data.dec:.3f}\n"
-            # Uncomment and use if available
-            # f"GLON: {self.data.glon:.3f}\n"
-            # f"GLAT: {self.data.glat:.3f}\n"
-            # f"Position error: {self.data.pos_err:.3f}\n"
         )
 
     def _info_spectrum(self):
-        """Return spectral information about the source."""
-        ss = "\n*** Spectral info ***\n\n"
-        if self.spectral_model is not None:
-            model = self.spectral_model()
-            parameters = model.parameters
-            ss += f"Spectrum type: {model.tag[0]}\n"
-            for par in parameters:
-                name = par.name
-                val = par.value
-                err = par.error
+        """Return spectral information."""
+        model = self.spectral_model()
+        if model is None:
+            return "\n*** Spectral info ***\n\nNo spectrum available"
 
-                try:
-                    unit = f"{par.unit:unicode}"
-                except AttributeError:
-                    unit = ""
+        text = "\n*** Spectral info ***\n\n"
+        text += f"Spectrum type: {model.tag[0]}\n"
 
-                ss += f"{name}: {val:.3f} ± {err} {unit}\n"
-        else:
-            ss += "No spectrum available"
+        for parameter in model.parameters:
+            try:
+                unit = f"{parameter.unit:unicode}"
+            except AttributeError:
+                unit = ""
 
-        return ss
+            text += (
+                f"{parameter.name}: {parameter.value:.3f} ± {parameter.error} {unit}\n"
+            )
+
+        return text
 
     def spectral_model(self):
-        """Create and fit a spectral model as a `~gammapy.modeling.models.SpectralModel` object."""
+        """Create and fit the source spectral model."""
         flux_points_table = self.flux_points_table
-        d = self.data
-        reference = d["spec_reference"]
-        spec_type = d["spec_type"]
+        reference = self.data["spec_reference"]
+        spec_type = self.data["spec_type"]
 
-        # Initialize the spectral model based on the type
         if spec_type == "lp":
             spec_model = LogParabolaSpectralModel(reference=reference)
         elif spec_type == "pl":
             spec_model = PowerLawSpectralModel(reference=reference)
         else:
-            log.warning(f"Unknown spectral model type: {spec_type}")
+            log.warning("Unknown spectral model type: %s", spec_type)
             return None
 
-        return fit_spectral_model_to_flux_points(flux_points_table, spec_model)
+        return fit_spectral_model_to_flux_points(
+            flux_points_table,
+            spec_model,
+        )
 
     def sky_model(self):
-        """Return the source sky model (`~gammapy.modeling.models.SkyModel`)."""
+        """Return the source sky model."""
+        spectral_model = self.spectral_model()
+        if spectral_model is None:
+            return None
         return SkyModel(
-            spectral_model=self.spectral_model(),
+            spectral_model=spectral_model,
             name=self.name,
         )
 
     @property
     def flux_points(self):
-        """Return flux points (`~gammapy.estimators.FluxPoints`)."""
+        """Return source flux points."""
         return FluxPoints.from_table(
             table=self.flux_points_table,
             reference_model=self.sky_model(),
@@ -406,9 +385,10 @@ class SourceCatalogObjectLHAASO(SourceCatalogObject):
 
     @property
     def flux_points_table(self):
-        """Return differential flux points (`~gammapy.estimators.FluxPoints`)."""
-        d = self.data
-        spec_type = d["spec_type"]
+        """Return the source differential flux-points table."""
+        data = self.data
+        spec_type = data["spec_type"]
+
         table = Table()
         table.meta["SED_TYPE"] = self._sed_type
 
@@ -417,44 +397,40 @@ class SourceCatalogObjectLHAASO(SourceCatalogObject):
                 "Table with a single row generated from the spectral model parameters."
             )
 
-        # Identify valid SED columns that do not contain all NaNs
         valid_sed = [
             key
-            for key in d.keys()
-            if "sed" in key and not np.all(np.isnan(d.get(key).value))
+            for key in data.keys()
+            if "sed" in key and not np.all(np.isnan(data.get(key).value))
         ]
-        valid = [key.replace("sed_", "") for key in valid_sed]
 
-        for index, sed_col in enumerate(valid_sed):
-            col_name = valid[index]
-            if col_name not in table.colnames:
-                table[col_name] = d[sed_col]
+        for sed_column in valid_sed:
+            column_name = sed_column.replace("sed_", "")
+            if column_name not in table.colnames:
+                table[column_name] = data[sed_column]
             else:
-                log.warning(f"Column {col_name} already exists in the table.")
+                log.warning("Column %s already exists in the table.", column_name)
 
         return remove_nan_rows(table)
 
 
 class SourceCatalogLHAASO(SourceCatalog):
-    """LHAASO first 12 PeVatrons Catalogue.
-
-    See: https://doi.org/10.1038/s41586-021-03498-z
-
-    The data are available through the web page (http://english.ihep.cas.cn/lhaaso/index.html)
-    in the section ‘Public Data’.
-
-    One source is represented by `~feupy.catalogs.SourceCatalogLHAASO`.
-    """
+    """LHAASO first 12 PeVatrons catalog."""
 
     tag = "LHAASO"
     bibcode = "2021Natur.594...33C"
     description = "LHAASO first 12 PeVatrons Catalogue"
-
     source_object_class = SourceCatalogObjectLHAASO
 
     def __init__(
         self,
         filename="$FEUPY_DATA/catalogs/lhaaso/lhaaso_catalog.ecsv",
     ):
+        """Initialize the LHAASO catalog.
+
+        Parameters
+        ----------
+        filename : str or `~pathlib.Path`, optional
+            Path to the LHAASO ECSV catalog.
+        """
         table = Table.read(make_path(filename), format="ascii.ecsv")
         super().__init__(table=table, source_name_key="source_name")

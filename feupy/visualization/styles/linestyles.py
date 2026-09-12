@@ -1,5 +1,8 @@
 # Licensed under a 3-clause BSD style license - see LICENSE.rst
-"""Default line styles for feupy visualizations."""
+"""Default line styles used by FeuPy visualization utilities."""
+
+__all__ = ["LINESTYLES_DEFAULT"]
+
 
 LINESTYLES_DEFAULT = [
     "solid",

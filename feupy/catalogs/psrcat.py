@@ -1,14 +1,9 @@
 # Licensed under a 3-clause BSD style license - see LICENSE.rst
 """ATNF Pulsar Catalogue and source classes."""
 
-import logging
-
 from astropy.table import Table
 from gammapy.catalog.core import SourceCatalog, SourceCatalogObject
 from gammapy.utils.scripts import make_path
-
-# Set up logging
-log = logging.getLogger(__name__)
 
 __all__ = [
     "SourceCatalogPSRCAT",
@@ -19,10 +14,11 @@ __all__ = [
 class SourceCatalogObjectPSRCAT(SourceCatalogObject):
     """One source from the ATNF Pulsar Catalogue.
 
-    See: Manchester, R. N., Hobbs, G. B., Teoh, A. & Hobbs, M., Astron. J., 129, 1993-2006 (2005) (astro-ph/0412641)
-
-    The data are available through the web page (http://www.atnf.csiro.au/research/pulsar/psrcat)
-    in the section ‘Public Data’.
+    References
+    ----------
+    Manchester, R. N., Hobbs, G. B., Teoh, A. & Hobbs, M. (2005),
+    *The Australia Telescope National Facility Pulsar Catalogue*,
+    Astronomical Journal, 129, 1993-2006.
     """
 
     _source_name_key = "NAME"
@@ -31,58 +27,67 @@ class SourceCatalogObjectPSRCAT(SourceCatalogObject):
         return self.info()
 
     def info(self, info="all"):
-        """Summary information string.
+        """Return summary information for the source.
 
         Parameters
         ----------
-        info : {'all', 'basic', 'position', 'timing-profile', 'distance', 'associations-survey', 'derived'}
-            Comma-separated list of options for information to include in the summary.
+        info : str, optional
+            Comma-separated list of sections to include. Available options are
+            ``"basic"``, ``"position"``, ``"timing-profile"``, ``"distance"``,
+            ``"associations-survey"``, and ``"derived"``. The default,
+            ``"all"``, includes every section.
+
+        Returns
+        -------
+        info : str
+            Formatted source information.
         """
         if info == "all":
             info = "basic,position,timing-profile,distance,associations-survey,derived"
 
-        ss = ""
-        ops = info.split(",")
-        if "basic" in ops:
-            ss += self._info_basic()
-        if "position" in ops:
-            ss += self._info_position()
-        if "timing-profile" in ops:
-            ss += self._info_timing_profile()
-        if "distance" in ops:
-            ss += self._info_distance()
-        if "associations-survey" in ops:
-            ss += self._info_associations_survey()
-        if "derived" in ops:
-            ss += self._info_derived()
+        text = ""
+        options = info.split(",")
 
-        return ss
+        if "basic" in options:
+            text += self._info_basic()
+        if "position" in options:
+            text += self._info_position()
+        if "timing-profile" in options:
+            text += self._info_timing_profile()
+        if "distance" in options:
+            text += self._info_distance()
+        if "associations-survey" in options:
+            text += self._info_associations_survey()
+        if "derived" in options:
+            text += self._info_derived()
+
+        return text
 
     def _info_basic(self):
-        """Print basic information."""
+        """Return basic source information."""
         return (
-            f"\n*** Basic info ***\n\n"
+            "\n*** Basic info ***\n\n"
             f"Catalog row index (zero-based): {self.row_index}\n"
             f"Source name: {self.name}\n"
         )
 
     def _info_position(self):
-        """Print position information."""
+        """Return source position information."""
         return (
-            f"\n*** Position info ***\n\n"
+            "\n*** Position info ***\n\n"
             f"RA: {self.data.RAJ2000:.3f} ± {self.data.RAJ2000_ERR:.3f}\n"
             f"DEC: {self.data.DEJ2000:.3f} ± {self.data.DEJ2000_ERR:.3f}\n"
         )
 
     def _info_timing_profile(self):
-        """Print timing solution and profile parameters info."""
+        """Return timing and profile information."""
         return (
             "\n*** Timing and profile info ***\n\n"
             f"P0: {self.data.P0.value:.3e} ± {self.data.P0_ERR:.3e}\n"
         )
 
     def _info_distance(self):
-        """Print distance parameters info."""
+        """Return distance information."""
         return (
             "\n*** Distance info ***\n\n"
             f"Dist: {self.data.DIST:.2e}\n"
@@ -90,7 +95,7 @@ class SourceCatalogObjectPSRCAT(SourceCatalogObject):
         )
 
     def _info_associations_survey(self):
-        """Print associations and survey parameters info."""
+        """Return association and survey information."""
         return (
             "\n*** Associations and survey info ***\n\n"
             f"Assoc: {self.data.ASSOC}\n"
@@ -98,7 +103,7 @@ class SourceCatalogObjectPSRCAT(SourceCatalogObject):
         )
 
     def _info_derived(self):
-        """Print derived parameters info."""
+        """Return derived pulsar parameters."""
         return (
             "\n*** Derived parameters info ***\n\n"
             f"Age: {self.data.AGE:.2e}\n"
@@ -110,9 +115,14 @@ class SourceCatalogObjectPSRCAT(SourceCatalogObject):
 class SourceCatalogPSRCAT(SourceCatalog):
     """ATNF Pulsar Catalogue.
 
-    See: https://www.atnf.csiro.au/research/pulsar/psrcat/
+    Each entry is represented by
+    `~feupy.catalogs.psrcat.SourceCatalogObjectPSRCAT`.
 
-    One source is represented by `SourceCatalogObjectPSRCAT`.
+    References
+    ----------
+    Manchester, R. N., Hobbs, G. B., Teoh, A. & Hobbs, M. (2005),
+    *The Australia Telescope National Facility Pulsar Catalogue*,
+    Astronomical Journal, 129, 1993-2006.
     """
 
     tag = "psrcat"
@@ -127,20 +137,29 @@ class SourceCatalogPSRCAT(SourceCatalog):
         self,
         filename="$FEUPY_DATA/catalogs/psrcat/psrcat_catalog.fits",
     ):
+        """Initialize the ATNF Pulsar Catalogue.
+
+        Parameters
+        ----------
+        filename : str or `~pathlib.Path`, optional
+            Path to the PSRCAT FITS file.
+        """
         table = Table.read(make_path(filename), format="fits")
         super().__init__(table=table, source_name_key="NAME")
 
     @property
     def PSR_PARAMS(self):
+        """Pulsar parameter names available in the catalog."""
         return self.table.colnames
 
     @property
     def PSR_PARAMS_DESCRIPTION(self):
-        """Returns the description of pulsar parameters."""
-        ss = "\n*** The Pulsar Parameters ***\n\n"
-        for par in self.PSR_PARAMS:
-            unit = (
-                f" ({self.table[par].unit})" if self.table[par].unit is not None else ""
-            )
-            ss += f"{self.table[par].name}: {self.table[par].description}{unit}\n"
-        return ss
+        """Formatted description of pulsar parameters."""
+        text = "\n*** The Pulsar Parameters ***\n\n"
+
+        for parameter in self.PSR_PARAMS:
+            column = self.table[parameter]
+            unit = f" ({column.unit})" if column.unit is not None else ""
+            text += f"{column.name}: {column.description}{unit}\n"
+
+        return text
