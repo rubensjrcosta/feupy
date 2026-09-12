@@ -1,22 +1,20 @@
 cff-version: 1.2.0
 message: "If you use FeuPy in your research, please cite this software."
 
-title: "FeuPy: Tools for very-high-energy gamma-ray analysis"
+title: "FeuPy: Tools for very-high-energy gamma-ray analysis and simulations"
+version: 0.1.0
 
 authors:
-- family-names: "Costa Jr."
-  given-names: "Rubens"
-  orcid: "https://orcid.org/0000-0002-2893-7589"
-- family-names: "dos Anjos"
-  given-names: "Rita C."
-  orcid: "https://orcid.org/0000-0002-6463-2272"
-title: "feupy"
-version: 1.0.0
+  - family-names: "Costa Jr."
+    given-names: "Rubens"
+    orcid: "https://orcid.org/0000-0002-2893-7589"
+
+  - family-names: "dos Anjos"
+    given-names: "Rita C."
+    orcid: "https://orcid.org/0000-0002-6463-2272"
 
 license: BSD-3-Clause
 
-doi: -----
-date-released: -----
 url: "https://github.com/rubensjrcosta/feupy"
 
 keywords:
