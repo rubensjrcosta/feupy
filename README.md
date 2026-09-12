@@ -1,7 +1,8 @@
 # FeuPy
 
-[![Gammapy](https://img.shields.io/badge/powered%20by-Gammapy-orange.svg?style=flat)](https://gammapy.org/)
-[![License](https://img.shields.io/badge/license-BSD--3--Clause-blue.svg)](LICENSE)
+[![DOI](https://zenodo.org/badge/949684034.svg)](https://doi.org/10.5281/zenodo.22723034)
+[![powered by Gammapy](https://img.shields.io/badge/powered%20by-Gammapy-orange.svg)](https://gammapy.org/)
+[![License: BSD-3-Clause](https://img.shields.io/badge/license-BSD--3--Clause-blue.svg)](LICENSE)
 
 **FeuPy** is an open-source Python package for the analysis, modeling, and simulation of very-high-energy (VHE) gamma-ray data.
 
@@ -155,11 +156,14 @@ The package is intended to provide a common framework for tasks such as multi-in
 
 ## Citation
 
-If you use FeuPy in scientific work, please cite the software.
+If you use FeuPy in your research, please cite the software using the
+Zenodo DOI and the metadata provided in `CITATION.cff`.
 
-Citation information is provided in the [`CITATION.cff`](CITATION.cff) file.
+The DOI for the latest archived release is available through the Zenodo
+badge at the top of this page.
 
-A DOI for FeuPy will be provided through Zenodo starting with the `v0.1.0` release.
+When reporting a specific software version, please cite the corresponding
+version-specific Zenodo DOI.
 
 ## Authors
 
