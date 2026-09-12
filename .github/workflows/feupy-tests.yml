@@ -32,14 +32,21 @@ jobs:
           pip install pytest
           pip install -e .
 
-      - name: Set FEUPY_DATA
+      - name: Download Gammapy datasets
         run: |
+          gammapy download datasets --release 2.0
+
+      - name: Configure data paths
+        run: |
+          echo "GAMMAPY_DATA=${{ github.workspace }}/gammapy-datasets/2.0" >> "$GITHUB_ENV"
           echo "FEUPY_DATA=${{ github.workspace }}/feupy-data/feupy-datasets/1.0" >> "$GITHUB_ENV"
 
-      - name: Show dependency versions
+      - name: Show configuration
         run: |
           python -c "import gammapy, regions; print('gammapy:', gammapy.__version__); print('regions:', regions.__version__)"
+          echo "GAMMAPY_DATA=$GAMMAPY_DATA"
           echo "FEUPY_DATA=$FEUPY_DATA"
+          ls "$GAMMAPY_DATA/catalogs/fermi"
           ls "$FEUPY_DATA"
 
       - name: Run tests
