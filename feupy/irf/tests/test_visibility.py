@@ -1,6 +1,5 @@
 # Licensed under a 3-clause BSD style license - see LICENSE.rst
 import pytest
-import astropy.units as u
 from astropy.coordinates import SkyCoord
 
 from feupy.irf.visibility import (
@@ -8,10 +7,10 @@ from feupy.irf.visibility import (
     make_ctao_visibility_table,
 )
 
-
 # -----------------------------------------------------------------------------
 # Fixtures
 # -----------------------------------------------------------------------------
+
 
 @pytest.fixture
 def target():
@@ -32,6 +31,7 @@ def estimator(target):
 # -----------------------------------------------------------------------------
 # Basic functionality
 # -----------------------------------------------------------------------------
+
 
 def test_estimator_init(estimator):
     assert estimator.year == 2025
@@ -57,6 +57,7 @@ def test_compute_visibility_positive(estimator):
 # Physical sanity checks
 # -----------------------------------------------------------------------------
 
+
 def test_visibility_not_all_zero(estimator):
     vis = estimator.compute_visibility("cta_south", show_progress=False)
 
@@ -75,6 +76,7 @@ def test_visibility_diff_between_sites(estimator):
 # Airmass weighting
 # -----------------------------------------------------------------------------
 
+
 def test_airmass_weight_changes_result(target):
     est1 = CTAOVisibilityEstimator(target, time_step_min=60, use_airmass_weight=False)
     est2 = CTAOVisibilityEstimator(target, time_step_min=60, use_airmass_weight=True)
@@ -88,6 +90,7 @@ def test_airmass_weight_changes_result(target):
 # -----------------------------------------------------------------------------
 # Table generation
 # -----------------------------------------------------------------------------
+
 
 def test_make_visibility_table(estimator):
     df = make_ctao_visibility_table(estimator, show_progress=False)
@@ -109,11 +112,12 @@ def test_table_has_both_sites(estimator):
 # Edge cases
 # -----------------------------------------------------------------------------
 
+
 def test_invalid_observatory(estimator):
     with pytest.raises(KeyError):
         estimator.compute_visibility("invalid_site", show_progress=False)
 
 
 def test_zero_time_step(target):
-    with pytest.raises(Exception):
+    with pytest.raises(ValueError):
         CTAOVisibilityEstimator(target, time_step_min=0)

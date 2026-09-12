@@ -1,47 +1,47 @@
-# Licensed under a 3-clause BSD style license - see LICENSE.rst
-"""
-Spectral model helper utilities.
-"""
+# Licensed under a 3-clause BSD style license - see LICENSE
+"""Spectral model helper utilities."""
 
-__all__ = [
-    "get_ecut_from_ecpl",
-]
+__all__ = ["get_ecut_from_ecpl"]
 
 
 def get_ecut_from_ecpl(sky_model, fmt="{:.2f} \\pm {:.2f}"):
-    """
-    Extract cutoff energy from an ECPL spectral model.
+    """Extract the cutoff energy from an ECPL spectral model.
 
     Parameters
     ----------
     sky_model : `~gammapy.modeling.models.SkyModel`
-        Sky model containing an ExpCutoffPowerLawSpectralModel.
-
+        Sky model containing an exponential cutoff power-law spectral model.
     fmt : str, optional
-        Format string for value ± error.
+        Format string used for the cutoff energy and its uncertainty.
+        Default is ``"{:.2f} \\\\pm {:.2f}"``.
 
     Returns
     -------
     ecut : str
-        Formatted cutoff energy.
+        Formatted cutoff energy and uncertainty.
+
+    Raises
+    ------
+    TypeError
+        If the spectral model does not contain a ``lambda_`` parameter.
+    ValueError
+        If ``lambda_`` has no positive uncertainty.
     """
+    spectral_model = sky_model.spectral_model
 
-    spec = sky_model.spectral_model
-
-    if not hasattr(spec, "lambda_"):
+    if not hasattr(spectral_model, "lambda_"):
         raise TypeError(
             "Spectral model does not contain parameter 'lambda_' "
             "(expected ExpCutoffPowerLawSpectralModel)."
         )
 
-    lam = spec.lambda_.value
-    lam_err = spec.lambda_.error
+    lambda_value = spectral_model.lambda_.value
+    lambda_error = spectral_model.lambda_.error
 
-    # Gammapy parameters never return None, but may return 0
-    if lam_err is None or lam_err <= 0:
+    if lambda_error is None or lambda_error <= 0:
         raise ValueError("Parameter 'lambda_' has no associated error.")
 
-    ecut = 1.0 / lam
-    ecut_err = ecut * (lam_err / lam)
+    ecut = 1.0 / lambda_value
+    ecut_error = ecut * (lambda_error / lambda_value)
 
-    return fmt.format(ecut, ecut_err)
+    return fmt.format(ecut, ecut_error)

@@ -1,16 +1,5 @@
-# Licensed under a 3-clause BSD style license - see LICENSE.rst
-"""
-Legacy utilities for Astropy table manipulation.
-
-WARNING
--------
-This module is deprecated and kept only for backward compatibility.
-
-New code MUST use:
-    feupy.utils.tables.utils
-
-These functions may be removed in future versions without notice.
-"""
+# Licensed under a 3-clause BSD style license - see LICENSE
+"""Deprecated table utilities kept for backward compatibility."""
 
 import warnings
 
@@ -20,36 +9,25 @@ __all__ = [
 ]
 
 
-# ============================================================
-# Legacy: Column utilities
-# ============================================================
-
 def column_to_string(column):
-    """
-    DEPRECATED: Convert column to string representation.
+    """Convert a column to a compact string representation.
 
-    Use:
-        feupy.utils.tables.utils.column_to_string
+    .. deprecated::
+        This function is kept only for backward compatibility.
     """
     warnings.warn(
-        "column_to_string is deprecated. Use utils.tables.utils instead.",
+        "column_to_string is deprecated.",
         DeprecationWarning,
         stacklevel=2,
     )
+    return f"[{','.join(str(value) for value in column)}]"
 
-    return f"[{','.join(str(x) for x in column)}]"
 
+def append_nones(length, input_list):
+    """Pad a list to a given length using None values.
 
-# ============================================================
-# Legacy: List utilities
-# ============================================================
-
-def append_nones(length, list_):
-    """
-    DEPRECATED: Pad list with None values.
-
-    Use:
-        feupy.utils.tables.utils.pad_list_to_length
+    .. deprecated::
+        Use :func:`feupy.utils.tables.utils.pad_list_to_length` for new code.
     """
     warnings.warn(
         "append_nones is deprecated. Use pad_list_to_length instead.",
@@ -57,9 +35,9 @@ def append_nones(length, list_):
         stacklevel=2,
     )
 
-    diff = length - len(list_)
+    diff = length - len(input_list)
 
     if diff < 0:
-        raise ValueError("Input list is longer than target length.")
+        raise ValueError("Input list is longer than the requested target length.")
 
-    return list_ + [None] * diff
+    return input_list + [None] * diff

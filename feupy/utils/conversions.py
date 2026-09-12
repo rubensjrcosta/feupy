@@ -1,5 +1,5 @@
-# Licensed under a 3-clause BSD style license - see LICENSE.rst
-"""Physical unit conversions."""
+# Licensed under a 3-clause BSD style license - see LICENSE
+"""Physical unit conversion utilities."""
 
 import astropy.units as u
 
@@ -9,40 +9,38 @@ __all__ = [
 ]
 
 
-def jy_to_erg_cm2_s(freq, flux):
-    """
-    Convert flux density (Fν) to energy flux (νFν).
+def jy_to_erg_cm2_s(frequency, flux_density):
+    """Convert flux density to energy flux.
 
     Parameters
     ----------
-    freq : `~astropy.units.Quantity`
-        Frequency.
-    flux : `~astropy.units.Quantity`
-        Flux density (e.g. Jy or mJy).
+    frequency : `~astropy.units.Quantity`
+        Frequency of the measurement.
+    flux_density : `~astropy.units.Quantity`
+        Spectral flux density, for example in Jy or mJy.
 
     Returns
     -------
-    flux : `~astropy.units.Quantity`
+    energy_flux : `~astropy.units.Quantity`
         Energy flux in ``erg cm-2 s-1``.
     """
-    flux_density = flux.to(u.Jy)
-    frequency = freq.to(u.Hz)
+    frequency = frequency.to(u.Hz)
+    flux_density = flux_density.to(u.Jy)
 
     return (flux_density * frequency).to("erg cm-2 s-1")
 
 
-def frequency_to_energy(freq):
-    """
-    Convert frequency to photon energy.
+def frequency_to_energy(frequency):
+    """Convert frequency to photon energy.
 
     Parameters
     ----------
-    freq : `~astropy.units.Quantity`
+    frequency : `~astropy.units.Quantity`
         Frequency.
 
     Returns
     -------
     energy : `~astropy.units.Quantity`
-        Energy in electron volts.
+        Photon energy in eV.
     """
-    return freq.to(u.eV, equivalencies=u.spectral())
+    return frequency.to(u.eV, equivalencies=u.spectral())

@@ -1,6 +1,7 @@
 # Licensed under a 3-clause BSD style license - see LICENSE.rst
 from feupy.irf import CTAOIRFManager
 
+
 def test_irf_label():
     manager = CTAOIRFManager()
 
@@ -12,6 +13,7 @@ def test_irf_label():
     assert "South" in label
     assert "40deg" in label
     assert "50h" in label
+
 
 def test_irf_name():
     manager = CTAOIRFManager()
@@ -25,6 +27,7 @@ def test_irf_name():
     assert "20deg" in name
     assert "5h" in name
 
+
 def test_irf_path():
     manager = CTAOIRFManager()
 
@@ -36,6 +39,7 @@ def test_irf_path():
     assert path.name.endswith(".fits.gz")
     assert "South" in str(path)
 
+
 def test_irf_cache():
     manager = CTAOIRFManager()
 
@@ -44,7 +48,8 @@ def test_irf_cache():
     meta1 = manager.get_irf(opt)
     meta2 = manager.get_irf(opt)
 
-    assert meta1 is meta2  
+    assert meta1 is meta2
+
 
 def test_observatory_selection():
     manager = CTAOIRFManager()

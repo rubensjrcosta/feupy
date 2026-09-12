@@ -1,82 +1,35 @@
-# Licensed under a 3-clause BSD style license - see LICENSE.rst
-"""Utilities for enum analysis validation."""
+# Licensed under a 3-clause BSD style license - see LICENSE
+"""Enumeration classes used across FeuPy."""
 
 from enum import Enum
 
 __all__ = [
-    # "CatalogsTypeEnum",
-    # "ReductionTypeEnum",
-    # "FrameEnum",
-    # "RequiredHDUEnum",
-    # "BackgroundMethodEnum",
-    # "SafeMaskMethodsEnum",
-    # "MapSelectionEnum",
     "TableEnum",
     "NaimaFunctionalModelsEnum",
     "ParticleTypeEnum",
 ]
 
+
 class TableEnum(str, Enum):
+    """Supported table formats."""
+
     csv = "csv"
     fits = "fits"
 
+
 class NaimaFunctionalModelsEnum(str, Enum):
+    """Supported Naima functional particle-distribution models."""
+
     PowerLaw = "PowerLaw"
     ExponentialCutoffPowerLaw = "ExponentialCutoffPowerLaw"
     BrokenPowerLaw = "BrokenPowerLaw"
     ExponentialCutoffBrokenPowerLaw = "ExponentialCutoffBrokenPowerLaw"
     LogParabola = "LogParabola"
 
+
 class ParticleTypeEnum(str, Enum):
+    """Supported particle types."""
+
     electrons = "electrons"
     protons = "protons"
     both = "both"
-    
-# class CatalogsTypeEnum(str, Enum):
-#     all = "all"
-#     gamma = "gamma"
-#     pulsar = "pulsar"
-#     feupy = "feupy"
-
-
-    
-# class ReductionTypeEnum(str, Enum):
-#     spectrum = "1d"
-#     cube = "3d"
-
-# class FrameEnum(str, Enum):
-#     icrs = "icrs"
-#     galactic = "galactic"
-
-    
-# class RequiredHDUEnum(str, Enum):
-#     events = "events"
-#     gti = "gti"
-#     aeff = "aeff"
-#     bkg = "bkg"
-#     edisp = "edisp"
-#     psf = "psf"
-#     rad_max = "rad_max"
-
-# class BackgroundMethodEnum(str, Enum):
-#     reflected = "reflected"
-#     fov = "fov_background"
-#     ring = "ring"
-
-
-# class SafeMaskMethodsEnum(str, Enum):
-#     aeff_default = "aeff-default"
-#     aeff_max = "aeff-max"
-#     edisp_bias = "edisp-bias"
-#     offset_max = "offset-max"
-#     bkg_peak = "bkg-peak"
-
-
-# class MapSelectionEnum(str, Enum):
-#     counts = "counts"
-#     exposure = "exposure"
-#     background = "background"
-#     psf = "psf"
-#     edisp = "edisp"
-
-

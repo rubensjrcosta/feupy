@@ -1,60 +1,61 @@
-# Licensed under a 3-clause BSD style license - see LICENSE.rst
-"""ROI and CTAO Analysis classes driving the high level interface API"""
+# Licensed under a 3-clause BSD style license - see LICENSE
+"""High-level interfaces for ROI and CTAO analyses."""
 
-import logging
 import html
-import numpy as np
+import logging
+
 import astropy.units as u
-from astropy.table import Table
+import numpy as np
 from astropy.coordinates import SkyCoord
+from astropy.table import Table
+from gammapy.data import FixedPointingInfo, Observation, Observations
+from gammapy.datasets import (
+    Datasets,
+    FluxPointsDataset,
+    SpectrumDataset,
+    SpectrumDatasetOnOff,
+)
+from gammapy.estimators import FluxPoints, FluxPointsEstimator, SensitivityEstimator
+from gammapy.makers import (
+    FoVBackgroundMaker,
+    ReflectedRegionsBackgroundMaker,
+    RingBackgroundMaker,
+    SafeMaskMaker,
+    SpectrumDatasetMaker,
+)
+from gammapy.maps import MapAxis, RegionGeom
+from gammapy.modeling import Fit
+from gammapy.modeling.models import DatasetModels, FoVBackgroundModel, Models, SkyModel
+from gammapy.utils.scripts import make_path
 from regions import CircleSkyRegion
 
-from gammapy.data import (
-    Observation, Observations, FixedPointingInfo
-)
-from gammapy.datasets import (
-    Datasets, FluxPointsDataset, MapDataset, SpectrumDataset, SpectrumDatasetOnOff
-)
-from gammapy.estimators import (
-    FluxPoints, SensitivityEstimator, FluxPointsEstimator
-)
-from gammapy.makers import (
-    FoVBackgroundMaker, MapDatasetMaker, ReflectedRegionsBackgroundMaker,
-    RingBackgroundMaker, SafeMaskMaker, SpectrumDatasetMaker
-)
-from gammapy.maps import Map, MapAxis, RegionGeom, WcsGeom
-from gammapy.modeling import Fit
-from gammapy.modeling.models import (
-    SkyModel, Models, DatasetModels, FoVBackgroundModel
-)
-from gammapy.utils.scripts import make_path
-
-from feupy.analysis.config import ROIAnalysisConfig, CTAOAnalysisConfig
-
-from feupy.irf import CTAOIRFManager
-from feupy.catalogs.utils import load_catalogs
-from feupy.catalogs.hawc import get_flux_points_3hwc, get_flux_points_2hwc
+from feupy.analysis.config import CTAOAnalysisConfig, ROIAnalysisConfig
 from feupy.catalogs.fermi import get_flux_points_2PC, get_flux_points_3PC
+from feupy.catalogs.hawc import get_flux_points_2hwc, get_flux_points_3hwc
 from feupy.catalogs.lhaaso import get_flux_points_1lhaaso
+from feupy.catalogs.utils import get_catalog_tag, load_catalogs
 from feupy.catalogs.veritas import generate_unique_name
 from feupy.core.sources import Sources
-from feupy.catalogs.utils import get_catalog_tag
+from feupy.irf import CTAOIRFManager
 from feupy.utils.coordinates import convert_pos_config_to_skycoord
-from feupy.utils.datasets import cut_energy_flux_points_datasets, flux_points_dataset_from_table
-from feupy.utils.tables.io import write_table, read_table
-
+from feupy.utils.datasets import (
+    cut_energy_flux_points_datasets,
+)
+from feupy.utils.tables.io import read_table, write_table
 
 __all__ = ["ROIAnalysis", "CTAOAnalysis"]
 
 log = logging.getLogger(__name__)
 
-class ROIAnalysis:
-    """Config-driven high level simulation interface.
 
-    It is initialized by default with a set of configuration parameters and values declared in
-    an internal high level interface model, though the user can also provide configuration
-    parameters passed as a nested dictionary at the moment of instantiation. In that case these
-    parameters will overwrite the default values of those present in the configuration file.
+class ROIAnalysis:
+    """Config-driven high-level simulation interface.
+
+    It is initialized by default with a set of configuration parameters
+    and values declared in an internal high-level interface model.
+    The user can also provide configuration parameters as a nested
+    dictionary at instantiation time. In that case, these parameters
+    overwrite the default values defined in the configuration file.
 
     Parameters
     ----------
@@ -75,7 +76,7 @@ class ROIAnalysis:
             return self.to_html()
         except AttributeError:
             return f"<pre>{html.escape(str(self))}</pre>"
-            
+
     @property
     def models(self):
         if not self.datasets:
@@ -85,7 +86,7 @@ class ROIAnalysis:
     @models.setter
     def models(self, models):
         self.set_models(models, extend=False)
-        
+
     @property
     def config(self):
         """Simulation configuration (`ROIAnalysisConfig`)"""
@@ -121,16 +122,16 @@ class ROIAnalysis:
         sources = []
         for catalog in self._get_catalogs():
             sources.extend(catalog)
-        self.sources =  Sources(sources)
+        self.sources = Sources(sources)
 
     def _get_catalog_roi(self):
-        """
-        Compute separations of sources from the target position and return an Astropy Table.
+        """Compute source separations from the target position.
 
         Returns
         -------
         result_table : `~astropy.table.Table`
-            Table with columns for source name, catalog, RA, Dec, and separation from target.
+            Table containing source name, catalog, coordinates, and
+            angular separation from the target.
         """
         names, ras, decs, separations, catalogs, has_fp = [], [], [], [], [], []
         sources = self.sources
@@ -150,34 +151,44 @@ class ROIAnalysis:
             catalogs.append(catalog)
             separations.append(sep)
             has_fp.append(self._has_fp[source.name])
-            
+
         result_table = Table()
-        result_table['index'] =  [_ for _ in range(0, (len(names)))]
-        result_table['source_name'] = names
-        result_table['source_label'] = sources.labels
-        result_table['catalog'] = catalogs
-        result_table['ra'] = ras * u.deg
-        result_table['dec'] = decs * u.deg
-        result_table['separation'] = separations * u.deg
-        result_table['has_fp'] = has_fp
-        
+        result_table["index"] = list(range(len(names)))
+        result_table["source_name"] = names
+        result_table["source_label"] = sources.labels
+        result_table["catalog"] = catalogs
+        result_table["ra"] = ras * u.deg
+        result_table["dec"] = decs * u.deg
+        result_table["separation"] = separations * u.deg
+        result_table["has_fp"] = has_fp
+
         for column in result_table.colnames:
             if column.startswith(("ra", "dec", "sep")):
                 result_table[column].format = ".3f"
-                
-        # Add meta (columns descriptions)
-        result_table.meta['description'] = {
-            'index': "Unique identifier for each source.",
-            'source_name': "Name of the source as listed in the catalog.",
-            'source_label': "User-defined label for the source, often used for plotting.",
-            'has_fp': "Boolean flag indicating if flux points are available (True/False).",
-            'catalog': "Catalog from which the source originates.",
-            'ra': "Right Ascension (RA) of the source in degrees, formatted to 3 decimal places.",
-            'dec': "Declination (Dec) of the source in degrees, formatted to 3 decimal places.",
-            'separation': "Angular separation from a reference position in degrees, formatted to 3 decimal places."
-        }
-        self.catalog = result_table      
 
+        # Add meta (columns descriptions)
+        result_table.meta["description"] = {
+            "index": "Unique identifier for each source.",
+            "source_name": ("Name of the source as listed in the catalog."),
+            "source_label": (
+                "User-defined label for the source, often used for plotting."
+            ),
+            "has_fp": ("Boolean flag indicating whether flux points are available."),
+            "catalog": "Catalog from which the source originates.",
+            "ra": (
+                "Right Ascension (RA) of the source in degrees, "
+                "formatted to 3 decimal places."
+            ),
+            "dec": (
+                "Declination (Dec) of the source in degrees, "
+                "formatted to 3 decimal places."
+            ),
+            "separation": (
+                "Angular separation from a reference position in degrees, "
+                "formatted to 3 decimal places."
+            ),
+        }
+        self.catalog = result_table
 
     def run(self):
         """Run the ROI analysis, initializing datasets."""
@@ -199,8 +210,8 @@ class ROIAnalysis:
             if tag == "psrcat":
                 dict_fp[source.name] = False
                 log.info("Flux points unavailable for ATNF Pulsar Catalog.")
-                continue     
-                
+                continue
+
             try:
                 which = None
 
@@ -208,55 +219,76 @@ class ROIAnalysis:
                     spectral_model = self._create_spectral_model(source, which)
                     flux_points = get_flux_points_2PC(source)
                     dict_fp[source.name] = True
-                    self._create_flux_points_dataset(f"PSR {label}", models, datasets,  spectral_model, flux_points)
+                    self._create_flux_points_dataset(
+                        f"PSR {label}", models, datasets, spectral_model, flux_points
+                    )
 
                 elif tag == "3PC":
                     spectral_model = self._create_spectral_model(source, which)
                     flux_points = get_flux_points_3PC(source)
                     dict_fp[source.name] = True
-                    # self._create_flux_points_dataset(f"PSR {label}", models, datasets,  spectral_model, flux_points)
-                    self._create_flux_points_dataset(f"{label}", models, datasets,  spectral_model, flux_points)
-                    
+                    self._create_flux_points_dataset(
+                        f"{label}", models, datasets, spectral_model, flux_points
+                    )
+
                 elif tag == "3hwc":
                     spectral_model = self._create_spectral_model(source, which)
                     flux_points = get_flux_points_3hwc(source)
                     dict_fp[source.name] = True
-                    # self._create_flux_points_dataset(label, models, datasets,  spectral_model, flux_points)
-                    self._create_flux_points_dataset(f"{label}", models, datasets,  spectral_model, flux_points)
+                    self._create_flux_points_dataset(
+                        f"{label}", models, datasets, spectral_model, flux_points
+                    )
 
                 elif tag == "2hwc":
-                    for model_type in ['point', 'extended']:
+                    for model_type in ["point", "extended"]:
                         spectral_model = self._create_spectral_model(source, model_type)
                         flux_points = get_flux_points_2hwc(source, model_type)
                         dict_fp[source.name] = True
-                        self._create_flux_points_dataset(f"{label} ({model_type})", models, datasets,  spectral_model, flux_points)
-                         
+                        self._create_flux_points_dataset(
+                            f"{label} ({model_type})",
+                            models,
+                            datasets,
+                            spectral_model,
+                            flux_points,
+                        )
+
                 elif tag == "1LHAASO":
-                    for model_type in ['KM2A', 'WCDA']:
+                    for model_type in ["KM2A", "WCDA"]:
                         spectral_model = self._create_spectral_model(source, model_type)
                         flux_points = get_flux_points_1lhaaso(source, model_type)
                         dict_fp[source.name] = True
-                        self._create_flux_points_dataset(f"{label} ({model_type})", models, datasets,  spectral_model, flux_points)
-                
+                        self._create_flux_points_dataset(
+                            f"{label} ({model_type})",
+                            models,
+                            datasets,
+                            spectral_model,
+                            flux_points,
+                        )
+
                 elif tag == "vtscat":
                     unique_names = [source.name]
                     for flux_points in source.flux_points():
-                        reference_id = flux_points.meta['reference_id']
-                        model_name = generate_unique_name(source.name, reference_id, unique_names)
+                        reference_id = flux_points.meta["reference_id"]
+                        model_name = generate_unique_name(
+                            source.name, reference_id, unique_names
+                        )
                         unique_names.append(model_name)
                         model = flux_points.reference_model
                         dict_fp[source.name] = True
                         spectral_model = model.spectral_model
                         label = model_name
-                        self._create_flux_points_dataset(label, models, datasets,  spectral_model, flux_points)
-                        
-                else:        
+                        self._create_flux_points_dataset(
+                            label, models, datasets, spectral_model, flux_points
+                        )
+
+                else:
                     spectral_model = source.spectral_model()
                     flux_points = source.flux_points
                     dict_fp[source.name] = True
-                    self._create_flux_points_dataset(label, models, datasets,  spectral_model, flux_points)
+                    self._create_flux_points_dataset(
+                        label, models, datasets, spectral_model, flux_points
+                    )
 
-                        
             except Exception as error:
                 dict_fp[source.name] = False
                 log.info(f"Unable to create dataset for {source.name}. Error: {error}")
@@ -270,31 +302,21 @@ class ROIAnalysis:
         """Helper function to create a FluxPointsDataset for a source."""
         return source.spectral_model(which=which) if which else source.spectral_model()
 
-    def _create_flux_points_dataset(self,  name, models, datasets,  spectral_model, flux_points):
+    def _create_flux_points_dataset(
+        self, name, models, datasets, spectral_model, flux_points
+    ):
         """Helper function to create a FluxPointsDataset for a source."""
-        
+
         e_ref_min = self.config.energy_range.min
         e_ref_max = self.config.energy_range.max
         log.info("Getting FluxPointsDataset.")
-        
-        model = SkyModel(
-        name=name,
-        spectral_model=spectral_model,
-        datasets_names=name
-        )
-        dataset = FluxPointsDataset(
-        models=model,
-        data=flux_points,
-        name=name
-        )
-        
+
+        model = SkyModel(name=name, spectral_model=spectral_model, datasets_names=name)
+        dataset = FluxPointsDataset(models=model, data=flux_points, name=name)
+
         if any([e_ref_min is not None, e_ref_max is not None]):
-            dataset = cut_energy_flux_points_datasets(
-            dataset, 
-            e_ref_min, 
-            e_ref_max
-            ) 
-                    
+            dataset = cut_energy_flux_points_datasets(dataset, e_ref_min, e_ref_max)
+
         models.append(model)
         datasets.append(dataset)
         log.info(f"Dataset created: {dataset}")
@@ -318,7 +340,7 @@ class ROIAnalysis:
             models = Models.from_yaml(models)
         elif isinstance(models, Models):
             pass
-        elif isinstance(models, DatasetModels) or isinstance(models, list):
+        elif isinstance(models, (DatasetModels, list)):
             models = Models(models)
         else:
             raise TypeError(f"Invalid type: {models!r}")
@@ -327,7 +349,7 @@ class ROIAnalysis:
             models.extend(self.datasets.models)
 
         self.datasets.models = models
-        
+
         log.info(models)
 
     def read_models(self, path, extend=True):
@@ -345,7 +367,7 @@ class ROIAnalysis:
         models = Models.read(path)
         self.set_models(models, extend=extend)
         log.info(f"Models loaded from {path}.")
- 
+
     def read_sources(self, path):
         """Read sources from YAML file.
 
@@ -362,7 +384,7 @@ class ROIAnalysis:
         _sources.read(path)
         self.sources = Sources(_sources)
         log.info(f"sources loaded from {path}.")
-    
+
     def write_sources(self, overwrite=True):
         """Write sources to YAML file.
 
@@ -370,12 +392,11 @@ class ROIAnalysis:
         """
         filename_sources = self.config.general.sources_file
         if filename_sources is not None:
-            self.sources.write(
-                filename_sources, overwrite=overwrite)
+            self.sources.write(filename_sources, overwrite=overwrite)
             log.info(f"sources loaded from {filename_sources}.")
         else:
             raise RuntimeError("Missing sources_file in config.general")
-            
+
     def write_models(self, overwrite=True, write_covariance=True):
         """Write models to YAML file.
 
@@ -468,7 +489,7 @@ class CTAOAnalysis:
 
     def update_config(self, config):
         self.config = self.config.update(config=config)
-        
+
     @property
     def models(self):
         if not self.datasets:
@@ -478,7 +499,7 @@ class CTAOAnalysis:
     @models.setter
     def models(self, models):
         self.set_models(models, extend=False)
-        
+
     def set_models(self, models, extend=True):
         """Set models on datasets.
 
@@ -500,7 +521,7 @@ class CTAOAnalysis:
             models = Models.from_yaml(models)
         elif isinstance(models, Models):
             pass
-        elif isinstance(models, DatasetModels) or isinstance(models, list):
+        elif isinstance(models, (DatasetModels, list)):
             models = Models(models)
         else:
             raise TypeError(f"Invalid type: {models!r}")
@@ -549,7 +570,7 @@ class CTAOAnalysis:
             log.info(f"Models loaded from {filename_models}.")
         else:
             raise RuntimeError("Missing models_file in config.general")
-            
+
     # =====================
     # Observation
     # =====================
@@ -571,7 +592,6 @@ class CTAOAnalysis:
 
         pointing = self._create_pointing(pointing_pos)
 
-        # IRFs via manager (única fonte)
         irf_data = self.irf_manager.get_irf(obs_cfg.required_irfs)
 
         observation = Observation.create(
@@ -618,23 +638,26 @@ class CTAOAnalysis:
         )
 
         if not ds_cfg.containment_correction:
-            
             containment = ds_cfg.containment
             offset = obs_cfg.offset
             energy_axis = self._make_energy_axis(ds_cfg.geom.axes.energy)
             on_region_radius = ds_cfg.on_region.radius
-            
+
             dataset.exposure *= containment
-            log.info("\nCorrected exposure (containment: {}%):\n{}\n".format(containment, dataset)) 
+            log.info(
+                f"\nCorrected exposure (containment: {containment}%):\n{dataset}\n"
+            )
 
             on_radii = obs.psf.containment_radius(
                 energy_true=energy_axis.center, offset=offset, fraction=containment
-            )            
-            
+            )
+
             factor = (1 - np.cos(on_radii)) / (1 - np.cos(on_region_radius))
             dataset.background *= factor.value.reshape((-1, 1, 1))
-            log.info("\nCorrected background (containment: {}%):\n{}\n".format(containment, dataset)) 
-            
+            log.info(
+                f"\nCorrected background (containment: {containment}%):\n{dataset}\n"
+            )
+
         bkg_maker = self._create_background_maker()
         if bkg_maker:
             dataset = bkg_maker.run(dataset, obs)
@@ -821,41 +844,41 @@ class CTAOAnalysis:
     # File Handling Methods
     def write_table_sensitivity(self, overwrite=True):
         """Write sensitivity table to file in configured format."""
-    
+
         if self.table_sens is None:
             raise RuntimeError("Missing table_sens")
-    
+
         path_file = self.config.sensitivity.data_path
         file_name = self.get_file_name()
         file_format = self.config.sensitivity.table_format
-    
+
         full_name = f"{file_name}.{file_format}"
-    
+
         write_table(
             self.table_sens,
             path_file,
             full_name,
             overwrite=overwrite,
         )
-    
+
         log.info(f"Table ({full_name}) stored to {path_file}.")
 
     def read_table_sensitivity(self):
         """Read sensitivity table from file based on configuration."""
-    
+
         path_file = self.config.sensitivity.data_path
         file_name = self.get_file_name()
         file_format = self.config.sensitivity.table_format
-    
+
         full_name = f"{file_name}.{file_format}"
-    
+
         try:
             return read_table(path_file, full_name)
-    
+
         except Exception as error:
             log.error(f"Error reading sensitivity table: {error}")
             raise
-            
+
     @staticmethod
     def _make_energy_axis(axis, name="energy"):
 
@@ -875,7 +898,7 @@ class CTAOAnalysis:
 
         obs = self.config.observation
         irfs = obs.required_irfs
-        
+
         irf_data = self.irf_manager.get_irf(irfs)
 
         return {
@@ -884,13 +907,10 @@ class CTAOAnalysis:
             "LIVETIME": obs.livetime.to_string(),
             "IRF_NAME": irf_data["name"],
             "IRF_LABEL": irf_data["label"],
-            "IRF_ARR": irfs[0] if len(irfs) > 0 else "", 
-            "IRF_AZ":  irfs[1] if len(irfs) > 1 else "", 
-            "IRF_ZEN": irfs[2] if len(irfs) > 2 else "", 
-            "IRF_LT":  irfs[3] if len(irfs) > 3 else "",
-        
-            #"IRFS": obs.required_irfs,
-            
+            "IRF_ARR": irfs[0] if len(irfs) > 0 else "",
+            "IRF_AZ": irfs[1] if len(irfs) > 1 else "",
+            "IRF_ZEN": irfs[2] if len(irfs) > 2 else "",
+            "IRF_LT": irfs[3] if len(irfs) > 3 else "",
         }
 
     def get_file_name(self):

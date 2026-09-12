@@ -1,7 +1,7 @@
 # Licensed under a 3-clause BSD style license - see LICENSE.rst
-"""Default marker styles for catalogs."""
+"""Default marker styles for catalog sources."""
 
-from .registry import CatalogStyle, CATALOG_STYLE_REGISTRY
+from .registry import CATALOG_STYLE_REGISTRY, CatalogStyle
 
 __all__ = ["DEFAULT_MARKERS"]
 
@@ -28,8 +28,10 @@ DEFAULT_MARKERS = {
 }
 
 
-# Register defaults in the global registry
 for tag, marker in DEFAULT_MARKERS.items():
     CATALOG_STYLE_REGISTRY.register(
-        CatalogStyle(tag=tag, marker=marker)
+        CatalogStyle(
+            tag=tag,
+            marker=marker,
+        )
     )

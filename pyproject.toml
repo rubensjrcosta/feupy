@@ -1,18 +1,37 @@
 [build-system]
-requires = ["setuptools>=65", "wheel", "Cython>=0.29"]
+requires = [
+    "setuptools>=77.0.3",
+    "wheel",
+]
 build-backend = "setuptools.build_meta"
+
 
 [project]
 name = "feupy"
 version = "0.1.0"
-description = "FeuPy — A Python application for VHE gamma-ray analysis with Gammapy..."
-authors = [
-    { name = "R. Jr. Costa", email = "rubensp@utfpr.edu.br" },
-    { name = "R. C. Dos Anjos", email = "ritacassia@ufpr.br" }
-]
-license = { text = "BSD-3-Clause" }
+
+description = "Open-source Python tools for very-high-energy gamma-ray analysis, modeling, and simulations"
+
 readme = "README.md"
+
 requires-python = ">=3.10"
+
+license = "BSD-3-Clause"
+license-files = ["LICENSE"]
+
+authors = [
+    { name = "Rubens Costa Jr.", email = "rubensp@utfpr.edu.br" },
+    { name = "Rita C. dos Anjos", email = "ritacassia@ufpr.br" },
+]
+
+keywords = [
+    "gamma-ray astronomy",
+    "very-high-energy gamma rays",
+    "CTAO",
+    "Gammapy",
+    "astrophysics",
+    "scientific software",
+]
 
 dependencies = [
     "gammapy==2.0",
@@ -25,23 +44,62 @@ dependencies = [
     "pyyaml>=6.0",
     "tqdm>=4.65",
     "regions>=0.7",
-    "jupyter>=1.0",
-    "ipykernel>=6.0"
 ]
+
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+    "pytest-cov",
+    "pytest-mock",
+    "ruff",
+    "pydocstyle",
+]
+
+notebooks = [
+    "jupyter>=1.0",
+    "ipykernel>=6.0",
+]
+
+
+[project.urls]
+Homepage = "https://github.com/rubensjrcosta/feupy"
+Repository = "https://github.com/rubensjrcosta/feupy"
+Issues = "https://github.com/rubensjrcosta/feupy/issues"
+
 
 [tool.setuptools.package-data]
 feupy = [
-    "visualization/styles/*.mplstyle"
+    "visualization/styles/*.mplstyle",
 ]
+
 
 [tool.setuptools.packages.find]
 where = ["."]
 include = ["feupy*"]
 
+
 [tool.pytest.ini_options]
 filterwarnings = [
-    "ignore::DeprecationWarning"
+    "ignore::DeprecationWarning",
 ]
-[project.urls]
-Homepage = "https://github.com/rubensjrcosta/feupy"
-Issues = "https://github.com/rubensjrcosta/feupy/issues"
+
+
+[tool.ruff]
+line-length = 88
+target-version = "py310"
+
+
+[tool.ruff.lint]
+select = [
+    "E",
+    "F",
+    "I",
+    "UP",
+    "B",
+]
+
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"

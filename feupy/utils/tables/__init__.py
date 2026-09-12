@@ -1,9 +1,4 @@
-"""
-Table utilities for feupy.
-
-Provides I/O and helper functions for Astropy tables,
-including cleaning, padding, reading and writing.
-"""
+"""Table utilities for FeuPy."""
 
 from .io import read_table, write_table
 from .utils import pad_list_to_length, remove_nan_rows

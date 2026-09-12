@@ -1,8 +1,16 @@
 # Licensed under a 3-clause BSD style license - see LICENSE.rst
-"""Color palettes for feupy visualizations.
+"""Color palettes used by FeuPy visualization utilities.
 
-Palettes are defined as lists of [color, label].
+Each palette entry is stored as ``[color, label]``.
 """
+
+__all__ = [
+    "PALETTE_DEFAULT",
+    "PALETTE_IBM",
+    "PALETTE_TABLEAU",
+    "PALETTE_WONG",
+]
+
 
 PALETTE_DEFAULT = [
     ["seagreen", "seagreen"],

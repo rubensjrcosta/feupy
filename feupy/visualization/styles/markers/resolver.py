@@ -15,11 +15,20 @@ CATALOG_RE = re.compile(r"\((.*?)\)")
 
 
 def extract_catalog_tag(label):
-    """
-    Extract catalog tag from a source label.
+    """Extract a catalog tag from a source label.
 
-    Example
+    Parameters
+    ----------
+    label : object
+        Source label containing a catalog tag in parentheses.
+
+    Returns
     -------
+    str or None
+        Lowercase catalog tag, or None if no tag is found.
+
+    Examples
+    --------
     >>> extract_catalog_tag("Crab (hgps)")
     'hgps'
     """
@@ -28,30 +37,28 @@ def extract_catalog_tag(label):
 
     match = CATALOG_RE.search(str(label))
 
-    if not match:
+    if match is None:
         return None
 
     return match.group(1).lower()
 
 
 def resolve_marker(label, default="o"):
-    """
-    Resolve matplotlib marker for a label.
+    """Resolve the Matplotlib marker associated with a source label.
 
     Parameters
     ----------
-    label : str
-        Source label containing catalog tag.
-
-    default : str
-        Default marker if catalog not recognized.
+    label : object
+        Source label containing a catalog tag.
+    default : str, optional
+        Marker returned when the catalog tag is missing or not registered.
+        Default is ``"o"``.
 
     Returns
     -------
     str
         Matplotlib marker symbol.
     """
-
     tag = extract_catalog_tag(label)
 
     if tag is None:

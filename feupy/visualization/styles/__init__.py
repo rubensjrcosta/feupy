@@ -3,14 +3,6 @@
 
 from importlib.resources import files
 
-# Palettes
-from .palettes import (
-    PALETTE_DEFAULT,
-    PALETTE_TABLEAU,
-    PALETTE_IBM,
-    PALETTE_WONG,
-)
-
 # Line styles
 from .linestyles import (
     LINESTYLES_DEFAULT,
@@ -18,13 +10,21 @@ from .linestyles import (
 
 # Marker styles
 from .markers import (
+    CATALOG_STYLE_REGISTRY,
     CatalogStyle,
     CatalogStyleRegistry,
-    CATALOG_STYLE_REGISTRY,
+    build_fp_kwargs,
+    build_point_kwargs,
     resolve_marker,
     resolve_marker_size,
-    build_point_kwargs,
-    build_fp_kwargs,
+)
+
+# Palettes
+from .palettes import (
+    PALETTE_DEFAULT,
+    PALETTE_IBM,
+    PALETTE_TABLEAU,
+    PALETTE_WONG,
 )
 
 # Matplotlib style

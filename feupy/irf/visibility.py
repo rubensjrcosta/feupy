@@ -6,26 +6,24 @@ from __future__ import annotations
 import logging
 from datetime import datetime, timedelta
 from pathlib import Path
-from typing import Dict, Optional
 
+import astropy.units as u
 import numpy as np
 import pandas as pd
-import astropy.units as u
-
 from astropy.coordinates import (
-    SkyCoord,
     AltAz,
-    get_sun,
+    SkyCoord,
     get_body,
+    get_sun,
     solar_system_ephemeris,
 )
 from astropy.time import Time
-
 from gammapy.data import observatory_locations
 
 try:
     from tqdm import tqdm
 except Exception:
+
     def tqdm(iterable, **kwargs):
         return iterable
 
@@ -41,6 +39,7 @@ log = logging.getLogger(__name__)
 # -----------------------------------------------------------------------------
 # Core estimator (ONLY physics)
 # -----------------------------------------------------------------------------
+
 
 class CTAOVisibilityEstimator:
     """
@@ -105,8 +104,7 @@ class CTAOVisibilityEstimator:
         target_altaz = self.target.transform_to(altaz)
 
         moon_mask = ~(
-            (moon.alt > 0 * u.deg) &
-            (moon.separation(target_altaz) < self.moon_limit)
+            (moon.alt > 0 * u.deg) & (moon.separation(target_altaz) < self.moon_limit)
         )
 
         return times[night_mask & moon_mask]
@@ -119,7 +117,7 @@ class CTAOVisibilityEstimator:
         self,
         observatory: str,
         show_progress: bool = True,
-    ) -> Dict[str, float]:
+    ) -> dict[str, float]:
         """
         Compute annual visibility per zenith bin.
 
@@ -145,7 +143,8 @@ class CTAOVisibilityEstimator:
 
         iterator = (
             tqdm(range(n_days), desc=f"{observatory}")
-            if show_progress else range(n_days)
+            if show_progress
+            else range(n_days)
         )
 
         for d in iterator:
@@ -179,9 +178,10 @@ class CTAOVisibilityEstimator:
 # Table utilities (separate responsibility)
 # -----------------------------------------------------------------------------
 
+
 def make_ctao_visibility_table(
     estimator: CTAOVisibilityEstimator,
-    save_path: Optional[str] = None,
+    save_path: str | None = None,
     show_progress: bool = True,
 ) -> pd.DataFrame:
     """
@@ -203,11 +203,13 @@ def make_ctao_visibility_table(
         vis = estimator.compute_visibility(obs, show_progress)
 
         for zbin, hours in vis.items():
-            rows.append({
-                "Observatory": "CTAO South" if obs == "cta_south" else "CTAO North",
-                "Zenith (deg)": int(zbin),
-                "Visibility (hours)": hours,
-            })
+            rows.append(
+                {
+                    "Observatory": "CTAO South" if obs == "cta_south" else "CTAO North",
+                    "Zenith (deg)": int(zbin),
+                    "Visibility (hours)": hours,
+                }
+            )
 
     df = pd.DataFrame(rows)
     df = df.sort_values(["Observatory", "Zenith (deg)"])

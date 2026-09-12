@@ -1,133 +1,157 @@
 # Licensed under a 3-clause BSD style license - see LICENSE.rst
-"""HESS Source Catalog."""
-from astropy.table import Table
-from gammapy.utils.scripts import make_path
-from gammapy.estimators import FluxPoints
-from gammapy.modeling.models import SkyModel, Models
-from gammapy.catalog.core import SourceCatalog, SourceCatalogObject
-from feupy.utils.formatting import string_to_filename
-import logging
+"""H.E.S.S. catalog and source classes."""
 
-# Set up logging
-log = logging.getLogger(__name__)
+from astropy.table import Table
+from gammapy.catalog.core import SourceCatalog, SourceCatalogObject
+from gammapy.estimators import FluxPoints
+from gammapy.modeling.models import Models, SkyModel
+from gammapy.utils.scripts import make_path
+
+from feupy.utils.formatting import string_to_filename
 
 __all__ = [
     "SourceCatalogObjectExtraHESS",
     "SourceCatalogExtraHESS",
 ]
 
+
 class SourceCatalogObjectExtraHESS(SourceCatalogObject):
-    """Represents a single source in the ExtraHESS catalog.
+    """One source from the dedicated H.E.S.S. catalog."""
 
-    Provides detailed information about a source, including position, spectrum,
-    and flux points.
-
-    Attributes
-    ----------
-    _source_name_key : str
-        Name of the key for source names.
-    _MODELS : Models
-        Pre-loaded models from the ExtraHESS data file.
-    """
     _MODELS = None
     _source_name_key = "source_name"
-    
+
     def __str__(self):
         return self.info()
 
     def info(self, info="all"):
-        """Summary information string for the source.
+        """Return summary information for the source.
 
         Parameters
         ----------
-        info : {'all', 'basic', 'position', 'spectrum'}
-            Type of information to display. Options are:
-            - 'all': Shows basic, position, and spectrum information.
-            - 'basic': Shows basic source information.
-            - 'position': Shows position information.
-            - 'spectrum': Shows spectral information.
+        info : {"all", "basic", "position", "spectrum"}, optional
+            Information sections to include.
+
+        Returns
+        -------
+        info : str
+            Formatted source information.
         """
         details = {
             "basic": self._info_basic,
             "position": self._info_position,
             "spectrum": self._info_spectrum,
         }
-        selected_info = info.split(",") if info != "all" else details.keys()
-        return "\n".join(details[opt]() for opt in selected_info if opt in details)
+        selected = info.split(",") if info != "all" else details.keys()
+        return "\n".join(details[item]() for item in selected if item in details)
 
     def _info_basic(self):
-        return f"\n*** Basic info ***\n\nCatalog row index: {self.row_index}\nSource name: {self.name}\n"
+        """Return basic source information."""
+        return (
+            "\n*** Basic info ***\n\n"
+            f"Catalog row index: {self.row_index}\n"
+            f"Source name: {self.name}\n"
+        )
 
     def _info_position(self):
-        return f"\n*** Position info ***\n\nRA: {self.data.ra:.3f}\nDEC: {self.data.dec:.3f}\n"
+        """Return source position information."""
+        return (
+            "\n*** Position info ***\n\n"
+            f"RA: {self.data.ra:.3f}\n"
+            f"DEC: {self.data.dec:.3f}\n"
+        )
 
     def _info_spectrum(self):
-        if self.spectral_model() is None:
+        """Return spectral information."""
+        model = self.spectral_model()
+        if model is None:
             return "No spectral information available."
 
-        model = self.spectral_model()
-        return "\n".join([
+        lines = [
             "\n*** Spectral info ***\n",
             f"Spectrum type: {model.tag[0]}",
-            *(f"{par.name}: {par.value:.3f} ± {par.error} {par.unit if par.unit else ''}" for par in model.parameters)
-        ])
+        ]
+        lines.extend(
+            f"{par.name}: {par.value:.3f} ± {par.error} {par.unit if par.unit else ''}"
+            for par in model.parameters
+        )
+        return "\n".join(lines)
 
     def spectral_model(self):
-        """Get the spectral model associated with this source."""
+        """Return the spectral model associated with the source."""
         if self._MODELS is None:
-            filename = "$FEUPY_DATA/dedicated_publications/hess/2019Apercent26A...621A.116H/models.yaml"
+            filename = (
+                "$FEUPY_DATA/dedicated_publications/hess/"
+                "2019Apercent26A...621A.116H/models.yaml"
+            )
             self.__class__._MODELS = Models.read(make_path(filename))
-    
-        models = self._MODELS
-    
-        if self.name in models.names:
-            return models[self.name].spectral_model
-    
+
+        if self.name in self._MODELS.names:
+            return self._MODELS[self.name].spectral_model
+
         return None
 
     def sky_model(self):
-        """Create a SkyModel representation of the source."""
-        if self.spectral_model():
-            return SkyModel(spectral_model=self.spectral_model(), name=self.name)
-        return None
+        """Return the source sky model."""
+        spectral_model = self.spectral_model()
+        if spectral_model is None:
+            return None
+
+        return SkyModel(
+            spectral_model=spectral_model,
+            name=self.name,
+        )
 
     @property
     def flux_points(self):
-        """Flux points as a `~gammapy.estimators.FluxPoints` object."""
-    
+        """Return source flux points."""
         filename = (
-            "$FEUPY_DATA/dedicated_publications/hess/2019Apercent26A...621A.116H/"
+            "$FEUPY_DATA/dedicated_publications/hess/"
+            "2019Apercent26A...621A.116H/"
             f"{string_to_filename(self.name)}.fits"
         )
-    
         filename = make_path(filename)
-    
+
         if not filename.exists():
             return None
-    
+
         return FluxPoints.read(
             filename,
             reference_model=self.sky_model(),
             sed_type="e2dnde",
         )
-    
+
+
 class SourceCatalogExtraHESS(SourceCatalog):
-    """HESS Extra Source Catalog with extended data.
+    """Catalog for the H.E.S.S. J1825-137 dedicated publication.
 
-    See: https://www.aanda.org/articles/aa/full_html/2019/01/aa34335-18/aa34335-18.html
-
-    Each source is represented by `SourceCatalogObjectExtraHESS`.
+    References
+    ----------
+    https://www.aanda.org/articles/aa/full_html/2019/01/aa34335-18/aa34335-18.html
     """
-    tag = 'hess-2019A&A'
-    bibcode = '2019A&A...621A.116H'
-    description = "Particle transport within the pulsar wind nebula HESS J1825–137★"
+
+    tag = "hess-2019A&A"
+    bibcode = "2019A&A...621A.116H"
+    description = "Particle transport within the pulsar wind nebula HESS J1825-137"
 
     source_object_class = SourceCatalogObjectExtraHESS
 
     def __init__(
         self,
-        filename="$FEUPY_DATA/dedicated_publications/hess/2019Apercent26A...621A.116H/catalog.ecsv",
+        filename=(
+            "$FEUPY_DATA/dedicated_publications/hess/"
+            "2019Apercent26A...621A.116H/hess_2019_catalog.ecsv"
+        ),
     ):
+        """Initialize the dedicated H.E.S.S. catalog.
+
+        Parameters
+        ----------
+        filename : str or `~pathlib.Path`, optional
+            Path to the catalog ECSV file.
+        """
         table = Table.read(make_path(filename), format="ascii.ecsv")
-        super().__init__(table=table, source_name_key="source_name")
-            
+        super().__init__(
+            table=table,
+            source_name_key="source_name",
+        )

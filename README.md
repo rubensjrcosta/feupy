@@ -3,7 +3,7 @@
 [![Gammapy](https://img.shields.io/badge/powered%20by-Gammapy-orange.svg?style=flat)](https://gammapy.org/)
 [![License](https://img.shields.io/badge/license-BSD--3--Clause-blue.svg)](LICENSE)
 
-**FeuPy** is an open-source Python package for the analysis, modeling, and simulation of very-high-energy (VHE) gamma-ray observations.
+**FeuPy** is an open-source Python package for the analysis, modeling, and simulation of very-high-energy (VHE) gamma-ray data.
 
 Built around [Gammapy](https://gammapy.org/), FeuPy provides tools for multi-instrument spectral analysis, gamma-ray counterpart searches, observation simulations, sensitivity studies, and non-thermal emission modeling. The package is particularly designed to support studies involving current gamma-ray observatories and the Cherenkov Telescope Array Observatory (CTAO).
 
@@ -136,10 +136,12 @@ echo $FEUPY_DATA
 
 ## Quick start
 
-After installation and data configuration, FeuPy can be imported in Python:
+After installation and data configuration, verify the FeuPy installation:
 
 ```python
 import feupy
+
+print(feupy.__version__)
 ```
 
 Examples demonstrating the main analysis workflows are available in the [`examples`](examples/) directory.
@@ -161,10 +163,9 @@ A DOI for FeuPy will be provided through Zenodo starting with the `v0.1.0` relea
 
 ## Authors
 
-**Rubens Costa Jr.**
-**Rita C. dos Anjos**
+* **Rubens Costa Jr.**
+* **Rita C. dos Anjos**
 
 ## License
 
 FeuPy is distributed under the BSD 3-Clause License. See [`LICENSE`](LICENSE) for details.
-

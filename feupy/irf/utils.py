@@ -32,15 +32,9 @@ def get_irf_groups(groups):
     manager = CTAOIRFManager()
 
     # Ensure each entry is iterable
-    normalized = [
-        values if isinstance(values, list) else [values]
-        for values in groups
-    ]
+    normalized = [values if isinstance(values, list) else [values] for values in groups]
 
     required_irfs = [list(options) for options in product(*normalized)]
-    irfs = [
-        manager.get_irf(options)["irf"]
-        for options in required_irfs
-    ]
+    irfs = [manager.get_irf(options)["irf"] for options in required_irfs]
 
     return required_irfs, irfs

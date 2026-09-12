@@ -1,12 +1,8 @@
-# Licensed under a 3-clause BSD style license - see LICENSE.rst
+# Licensed under a 3-clause BSD style license - see LICENSE
 """Utilities for coordinate conversions."""
 
-from astropy.coordinates import SkyCoord
 import astropy.units as u
-
-import logging
-
-log = logging.getLogger(__name__)
+from astropy.coordinates import SkyCoord
 
 __all__ = [
     "convert_skycoord_to_dict",
@@ -16,22 +12,18 @@ __all__ = [
 ]
 
 
-def convert_skycoord_to_dict(position: SkyCoord):
-    """
-    Convert a SkyCoord object to a dictionary.
+def convert_skycoord_to_dict(position):
+    """Convert a sky coordinate to a dictionary.
 
     Parameters
     ----------
-    position : SkyCoord
+    position : `~astropy.coordinates.SkyCoord`
         Input sky coordinate.
 
     Returns
     -------
-    dict
-        Dictionary with keys:
-        - 'lon'
-        - 'lat'
-        - 'frame'
+    position_dict : dict
+        Dictionary containing ``lon``, ``lat``, and ``frame``.
     """
     return {
         "lon": position.spherical.lon,
@@ -41,49 +33,72 @@ def convert_skycoord_to_dict(position: SkyCoord):
 
 
 def convert_pos_config_to_skycoord(pos_config):
+    """Convert a position configuration to a sky coordinate.
+
+    Parameters
+    ----------
+    pos_config : object
+        Configuration-like object providing ``lon``, ``lat``, and ``frame``
+        attributes.
+
+    Returns
+    -------
+    position : `~astropy.coordinates.SkyCoord`
+        Sky coordinate.
+
+    Raises
+    ------
+    AttributeError
+        If one of the required attributes is missing.
     """
-    Convert a configuration-like object to SkyCoord.
+    required_attributes = ("lon", "lat", "frame")
 
-    The object must have attributes:
-    - lon
-    - lat
-    - frame
+    for attribute in required_attributes:
+        if not hasattr(pos_config, attribute):
+            raise AttributeError(f"pos_config missing '{attribute}'")
+
+    return SkyCoord(
+        pos_config.lon,
+        pos_config.lat,
+        frame=pos_config.frame,
+    )
+
+
+def convert_dict_to_skycoord(pos_dict):
+    """Convert a position dictionary to a sky coordinate.
+
+    The dictionary can contain either ``lon`` and ``lat`` or ``ra`` and
+    ``dec``. Values without units are interpreted as degrees.
+
+    Parameters
+    ----------
+    pos_dict : dict
+        Position dictionary. The coordinate frame defaults to ``"icrs"``.
+
+    Returns
+    -------
+    position : `~astropy.coordinates.SkyCoord`
+        Sky coordinate.
+
+    Raises
+    ------
+    KeyError
+        If no supported coordinate keys are found.
     """
-    required = ["lon", "lat", "frame"]
-
-    for attr in required:
-        if not hasattr(pos_config, attr):
-            raise AttributeError(f"pos_config missing '{attr}'")
-
-    return SkyCoord(pos_config.lon, pos_config.lat, frame=pos_config.frame)
-
-def convert_dict_to_skycoord(pos_dict: dict):
-    """
-    Convert dictionary to SkyCoord.
-
-    Supports:
-    - lon/lat
-    - ra/dec
-    """
-
-    # Detect keys automatically
     if {"lon", "lat"}.issubset(pos_dict):
         lon_key, lat_key = "lon", "lat"
     elif {"ra", "dec"}.issubset(pos_dict):
         lon_key, lat_key = "ra", "dec"
     else:
-        raise KeyError(
-            "Dictionary must contain ('lon','lat') or ('ra','dec')"
-        )
+        raise KeyError("Dictionary must contain ('lon', 'lat') or ('ra', 'dec').")
 
     frame = pos_dict.get("frame", "icrs")
-
     lon = pos_dict[lon_key]
     lat = pos_dict[lat_key]
 
-    # Handle missing units
     if not hasattr(lon, "unit"):
         lon = lon * u.deg
+
     if not hasattr(lat, "unit"):
         lat = lat * u.deg
 
@@ -91,26 +106,47 @@ def convert_dict_to_skycoord(pos_dict: dict):
 
 
 def convert_table_to_skycoord(table):
-    """
-    Convert an astropy Table to SkyCoord.
+    """Convert coordinate columns from a table to a sky coordinate.
 
-    Supports multiple common column naming conventions.
-    """
-    keys = table.colnames
+    Supported column pairs are ``RAJ2000/DEJ2000``,
+    ``RAJ2000/DECJ2000``, ``RA/DEC``, and ``ra/dec``.
 
-    if {"RAJ2000", "DEJ2000"}.issubset(keys):
-        lon, lat, frame = "RAJ2000", "DEJ2000", "icrs"
-    elif {"RAJ2000", "DECJ2000"}.issubset(keys):
-        lon, lat, frame = "RAJ2000", "DECJ2000", "fk5"
-    elif {"RA", "DEC"}.issubset(keys):
-        lon, lat, frame = "RA", "DEC", "icrs"
-    elif {"ra", "dec"}.issubset(keys):
-        lon, lat, frame = "ra", "dec", "icrs"
+    Parameters
+    ----------
+    table : `~astropy.table.Table`
+        Input table containing coordinate columns.
+
+    Returns
+    -------
+    position : `~astropy.coordinates.SkyCoord`
+        Sky coordinates corresponding to the table rows.
+
+    Raises
+    ------
+    KeyError
+        If no supported coordinate columns are found.
+    """
+    column_names = table.colnames
+
+    if {"RAJ2000", "DEJ2000"}.issubset(column_names):
+        lon_name, lat_name, frame = "RAJ2000", "DEJ2000", "icrs"
+    elif {"RAJ2000", "DECJ2000"}.issubset(column_names):
+        lon_name, lat_name, frame = "RAJ2000", "DECJ2000", "fk5"
+    elif {"RA", "DEC"}.issubset(column_names):
+        lon_name, lat_name, frame = "RA", "DEC", "icrs"
+    elif {"ra", "dec"}.issubset(column_names):
+        lon_name, lat_name, frame = "ra", "dec", "icrs"
     else:
         raise KeyError(
-            "No valid coordinate columns found (RA/DEC, ra/dec, RAJ2000/DEJ2000)."
+            "No valid coordinate columns found "
+            "(RA/DEC, ra/dec, RAJ2000/DEJ2000, RAJ2000/DECJ2000)."
         )
 
-    unit = table[lon].unit.to_string() if table[lon].unit else "deg"
+    unit = table[lon_name].unit.to_string() if table[lon_name].unit else "deg"
 
-    return SkyCoord(table[lon], table[lat], unit=unit, frame=frame)
+    return SkyCoord(
+        table[lon_name],
+        table[lat_name],
+        unit=unit,
+        frame=frame,
+    )

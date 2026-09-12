@@ -27,21 +27,21 @@ if HAS_FEUPY_DATASETS:
         SourceCatalogExtraHESS,
         SourceCatalogObjectExtraHESS,
     )
-    from .veritas import (
-        SourceCatalogVTSCat,
-        SourceCatalogVERITASCygnus,
-        SourceCatalogObjectVTSCat,
-        SourceCatalogObjectVERITASCygnus,
+    from .lhaaso import (
+        SourceCatalogExtraLHAASO,
+        SourceCatalogLHAASO,
+        SourceCatalogObjectExtraLHAASO,
+        SourceCatalogObjectLHAASO,
     )
     from .psrcat import (
-        SourceCatalogPSRCAT,
         SourceCatalogObjectPSRCAT,
+        SourceCatalogPSRCAT,
     )
-    from .lhaaso import (
-        SourceCatalogLHAASO,
-        SourceCatalogExtraLHAASO,
-        SourceCatalogObjectLHAASO,
-        SourceCatalogObjectExtraLHAASO,
+    from .veritas import (
+        SourceCatalogObjectVERITASCygnus,
+        SourceCatalogObjectVTSCat,
+        SourceCatalogVERITASCygnus,
+        SourceCatalogVTSCat,
     )
 
     __all__ += [
