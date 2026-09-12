@@ -19,7 +19,7 @@ dependencies:
   - pandas>=2.0
   - pyyaml>=6.0
   - tqdm>=4.65
-  - regions>=0.7
+  - regions>=0.7,<0.12
 
   # Astronomy / gamma-ray tools
   - astropy>=6.0
