@@ -1,8 +1,12 @@
 cff-version: 1.2.0
+
 message: "If you use FeuPy in your research, please cite this software."
 
 title: "FeuPy: Tools for very-high-energy gamma-ray analysis and simulations"
-version: 0.1.0
+
+type: software
+
+version: "0.1.0"
 
 authors:
   - family-names: "Costa Jr."
@@ -13,9 +17,9 @@ authors:
     given-names: "Rita C."
     orcid: "https://orcid.org/0000-0002-6463-2272"
 
-license: BSD-3-Clause
+license: "BSD-3-Clause"
 
-url: "https://github.com/rubensjrcosta/feupy"
+repository-code: "https://github.com/rubensjrcosta/feupy"
 
 keywords:
   - gamma-ray astronomy
@@ -24,3 +28,11 @@ keywords:
   - Gammapy
   - astrophysics
   - scientific software
+
+abstract: >
+  FeuPy is a Python package for very-high-energy gamma-ray analysis
+  and simulations. It provides tools for working with gamma-ray source
+  catalogs, instrument response functions, sensitivity calculations,
+  simulations, visualization, and related astrophysical analyses.
+  FeuPy builds on the scientific Python ecosystem and integrates with
+  Gammapy for gamma-ray data analysis.

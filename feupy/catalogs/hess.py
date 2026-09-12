@@ -140,7 +140,7 @@ class SourceCatalogExtraHESS(SourceCatalog):
         self,
         filename=(
             "$FEUPY_DATA/dedicated_publications/hess/"
-            "2019Apercent26A...621A.116H/catalog.ecsv"
+            "2019Apercent26A...621A.116H/hess_2019_catalog.ecsv"
         ),
     ):
         """Initialize the dedicated H.E.S.S. catalog.

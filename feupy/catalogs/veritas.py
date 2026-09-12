@@ -278,7 +278,9 @@ class SourceCatalogVTSCat(SourceCatalog):
             Path to the VTSCat ECSV file.
         """
         if filename is None:
-            filename = get_feupy_data_path() / "catalogs/vtscat/sources/vtscat.ecsv"
+            filename = (
+                get_feupy_data_path() / "catalogs/vtscat/sources/vtscat_catalog.ecsv"
+            )
 
         table = Table.read(make_path(filename), format="ascii.ecsv")
         super().__init__(
@@ -406,10 +408,10 @@ class SourceCatalogVERITASCygnus(SourceCatalog):
         Parameters
         ----------
         filename : str or `~pathlib.Path`, optional
-            Path to the VERITAS FITS catalog.
+            Path to the VERITAS catalog file.
         """
         if filename is None:
-            filename = get_feupy_data_path() / "catalogs/veritas/veritas.fits"
+            filename = get_feupy_data_path() / "catalogs/veritas/veritas_catalog.ecsv"
 
         table = Table.read(make_path(filename))
         super().__init__(

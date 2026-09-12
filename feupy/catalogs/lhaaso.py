@@ -257,7 +257,7 @@ class SourceCatalogExtraLHAASO(SourceCatalog):
     def __init__(
         self,
         filename=(
-            "$FEUPY_DATA/dedicated_publications/lhaaso/2024icrc.confE.643Y/catalog.ecsv"
+            "$FEUPY_DATA/dedicated_publications/lhaaso/2024icrc.confE.643Y/lhaaso_2024_catalog.ecsv"
         ),
     ):
         """Initialize the dedicated LHAASO catalog.
@@ -281,18 +281,7 @@ class SourceCatalogObjectLHAASO(SourceCatalogObject):
         return self.info()
 
     def info(self, info="all"):
-        """Return summary information for the source.
-
-        Parameters
-        ----------
-        info : {"all", "basic", "position", "spectrum"}, optional
-            Comma-separated information sections.
-
-        Returns
-        -------
-        info : str
-            Formatted source information.
-        """
+        """Return summary information for the source."""
         if info == "all":
             info = "basic,position,spectrum"
 
@@ -327,6 +316,7 @@ class SourceCatalogObjectLHAASO(SourceCatalogObject):
     def _info_spectrum(self):
         """Return spectral information."""
         model = self.spectral_model()
+
         if model is None:
             return "\n*** Spectral info ***\n\nNo spectrum available"
 
@@ -334,11 +324,7 @@ class SourceCatalogObjectLHAASO(SourceCatalogObject):
         text += f"Spectrum type: {model.tag[0]}\n"
 
         for parameter in model.parameters:
-            try:
-                unit = f"{parameter.unit:unicode}"
-            except AttributeError:
-                unit = ""
-
+            unit = f"{parameter.unit:unicode}" if parameter.unit else ""
             text += (
                 f"{parameter.name}: {parameter.value:.3f} ± {parameter.error} {unit}\n"
             )
@@ -346,29 +332,30 @@ class SourceCatalogObjectLHAASO(SourceCatalogObject):
         return text
 
     def spectral_model(self):
-        """Create and fit the source spectral model."""
-        flux_points_table = self.flux_points_table
-        reference = self.data["spec_reference"]
+        """Fit and return the source spectral model."""
         spec_type = self.data["spec_type"]
+        reference = self.data["spec_reference"]
 
         if spec_type == "lp":
-            spec_model = LogParabolaSpectralModel(reference=reference)
+            model = LogParabolaSpectralModel(reference=reference)
         elif spec_type == "pl":
-            spec_model = PowerLawSpectralModel(reference=reference)
+            model = PowerLawSpectralModel(reference=reference)
         else:
             log.warning("Unknown spectral model type: %s", spec_type)
             return None
 
         return fit_spectral_model_to_flux_points(
-            flux_points_table,
-            spec_model,
+            self.flux_points_table,
+            model,
         )
 
     def sky_model(self):
         """Return the source sky model."""
         spectral_model = self.spectral_model()
+
         if spectral_model is None:
             return None
+
         return SkyModel(
             spectral_model=spectral_model,
             name=self.name,
@@ -385,30 +372,21 @@ class SourceCatalogObjectLHAASO(SourceCatalogObject):
 
     @property
     def flux_points_table(self):
-        """Return the source differential flux-points table."""
-        data = self.data
-        spec_type = data["spec_type"]
-
+        """Return the source flux-points table."""
         table = Table()
         table.meta["SED_TYPE"] = self._sed_type
 
-        if spec_type == "pl":
-            log.info(
-                "Table with a single row generated from the spectral model parameters."
-            )
+        for key in self.data:
+            if not key.startswith("sed_"):
+                continue
 
-        valid_sed = [
-            key
-            for key in data.keys()
-            if "sed" in key and not np.all(np.isnan(data.get(key).value))
-        ]
+            values = self.data[key]
+            array = np.asarray(getattr(values, "value", values))
 
-        for sed_column in valid_sed:
-            column_name = sed_column.replace("sed_", "")
-            if column_name not in table.colnames:
-                table[column_name] = data[sed_column]
-            else:
-                log.warning("Column %s already exists in the table.", column_name)
+            if array.dtype.kind in "fc" and np.all(np.isnan(array)):
+                continue
+
+            table[key.removeprefix("sed_")] = values
 
         return remove_nan_rows(table)
 

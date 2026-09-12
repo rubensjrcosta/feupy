@@ -486,7 +486,7 @@ class SourceCatalogExtraHAWC(SourceCatalog):
     def __init__(
         self,
         filename=(
-            "$FEUPY_DATA/dedicated_publications/hawc/2021ApJ...907L..30A/catalog.ecsv"
+            "$FEUPY_DATA/dedicated_publications/hawc/2021ApJ...907L..30A/hawc_2021_catalog.ecsv"
         ),
     ):
         """Initialize the dedicated HAWC catalog.
