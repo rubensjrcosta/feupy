@@ -51,7 +51,14 @@ class CTAOIRFManager:
         "North": "4LSTs09MSTs",
     }
 
-    _OBS_TIME = {
+    _PROD5_OBS_TIME = {
+        "0.5h": "1800s",
+        "5h": "18000s",
+        "50h": "180000s",
+    }
+
+    _PROD6_OBS_TIME = {
+        "100s": "100s",
         "0.5h": "1800s",
         "5h": "18000s",
         "50h": "180000s",
@@ -159,6 +166,14 @@ class CTAOIRFManager:
         return self._PROD6_SITE_ARRAY
 
     @property
+    def observation_times(self) -> dict[str, str]:
+        """Return observation times for the selected production."""
+        if self.production == "prod5":
+            return self._PROD5_OBS_TIME
+
+        return self._PROD6_OBS_TIME
+
+    @property
     def zeniths(self) -> list[str]:
         """Return zenith angles for the selected production."""
         if self.production == "prod5":
@@ -216,7 +231,7 @@ class CTAOIRFManager:
         filename = (
             f"Prod5-{site}-{zenith}-{azimuth}-"
             f"{self._PROD5_SITE_ARRAY[array]}."
-            f"{self._OBS_TIME[livetime]}-"
+            f"{self._PROD5_OBS_TIME[livetime]}-"
             f"v0.1.fits.gz"
         )
 
@@ -243,7 +258,7 @@ class CTAOIRFManager:
             f"Prod6-CTAO-{array}-{zenith}-{azimuth}-"
             f"{self._PROD6_SITE_ARRAY[array]}-"
             f"{self.condition}-"
-            f"{self._OBS_TIME[livetime]}-"
+            f"{self._PROD6_OBS_TIME[livetime]}-"
             f"v1.0.fits.gz"
         )
 
@@ -304,7 +319,6 @@ class CTAOIRFManager:
             return self._cache[opt]
 
         path = self._build_path(opt)
-
         irf = self._load_file(path)
 
         meta = {
@@ -409,6 +423,6 @@ class CTAOIRFManager:
                 self.site_arrays,
                 self._AZIMUTHS,
                 self.zeniths,
-                self._OBS_TIME,
+                self.observation_times,
             )
         ]
