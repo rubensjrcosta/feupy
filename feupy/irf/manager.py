@@ -29,7 +29,7 @@ class CTAOIRFManager:
 
     IRF_VERSION = "prod5 v0.1"
 
-    _SITE_ARRAY = {
+    _PROD5_SITE_ARRAY = {
         "South": "14MSTs37SSTs",
         "South-SSTSubArray": "37SSTs",
         "South-MSTSubArray": "14MSTs",
@@ -38,6 +38,11 @@ class CTAOIRFManager:
         "North-LSTSubArray": "4LSTs",
     }
 
+    _PROD6_SITE_ARRAY = {
+        "South": "2LSTs14MSTs37SSTs",
+        "North": "4LSTs09MSTs",
+    }
+    
     _OBS_TIME = {
         "0.5h": "1800s",
         "5h": "18000s",
@@ -50,20 +55,107 @@ class CTAOIRFManager:
         "SouthAz",
     ]
 
-    _ZENITHS = [
+    _PROD5_ZENITHS = [
         "20deg",
         "40deg",
         "60deg",
     ]
+    
+    _PROD6_ZENITHS = [
+        "20deg",
+        "40deg",
+        "52deg",
+        "60deg",
+    ]
 
-    _BASE_PATH = Path(os.getenv("FEUPY_DATA", ".")) / "irfs/cta-prod5-zenodo-v0.1/fits"
+    _DATA_PATH = Path(
+            os.getenv("FEUPY_DATA", ".")
+        )
+    
+    _PROD5_BASE_PATH = (
+        _DATA_PATH
+        / "irfs"
+        / "cta-prod5-zenodo-v0.1"
+        / "fits"
+    )
+    
+    _PROD6_BASE_PATH = (
+        _DATA_PATH
+        / "irfs"
+        / "ctao-prod6-zenodo-v1.0"
+        / "fits"
+    )
 
-    def __init__(self):
-        self._cache: dict[IRFOption, dict[str, Any]] = {}
+    def __init__(
+        self,
+        production: str = "prod5",
+        condition: str = "dark",
+    ):
+        production = production.lower()
+        condition = condition.lower()
+    
+        if production not in {
+            "prod5",
+            "prod6",
+        }:
+            raise ValueError(
+                "Invalid CTAO IRF production "
+                f"{production!r}. "
+                "Available productions are: "
+                "'prod5', 'prod6'."
+            )
+    
+        if (
+            production == "prod6"
+            and condition not in {
+                "dark",
+                "halfmoon",
+            }
+        ):
+            raise ValueError(
+                "Invalid Prod6 observing condition "
+                f"{condition!r}. "
+                "Available conditions are: "
+                "'dark', 'halfmoon'."
+            )
+    
+        self.production = production
+        self.condition = condition
+    
+        self._cache: dict[
+            IRFOption,
+            dict[str, Any],
+        ] = {}
 
     # ------------------------------------------------------------------
     # Helpers
     # ------------------------------------------------------------------
+
+    @property
+    def site_arrays(self):
+        """Return array configurations for the selected production."""
+        if self.production == "prod5":
+            return self._PROD5_SITE_ARRAY
+    
+        return self._PROD6_SITE_ARRAY
+    
+    
+    @property
+    def zeniths(self):
+        """Return zenith angles for the selected production."""
+        if self.production == "prod5":
+            return self._PROD5_ZENITHS
+    
+        return self._PROD6_ZENITHS
+    
+    
+    @property
+    def base_path(self):
+        """Return base path for the selected production."""
+        if self.production == "prod5":
+            return self._PROD5_BASE_PATH
+    
+        return self._PROD6_BASE_PATH
 
     @staticmethod
     def _array_label(name: str) -> str:
