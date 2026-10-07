@@ -210,6 +210,47 @@ class CTAOIRFManager:
             else observatory_locations["cta_north"]
         )
 
+    def _validate_option(
+        self,
+        opt: IRFOption,
+    ) -> None:
+        """Validate an IRF option for the selected production."""
+        if len(opt) != 4:
+            raise ValueError(
+                "IRFOption must contain exactly four entries: "
+                "(array, azimuth, zenith, livetime)."
+            )
+
+        array, azimuth, zenith, livetime = opt
+
+        if array not in self.site_arrays:
+            raise ValueError(
+                f"Invalid array {array!r} for {self.production}. "
+                "Available arrays are: "
+                f"{', '.join(self.site_arrays)}."
+            )
+
+        if azimuth not in self._AZIMUTHS:
+            raise ValueError(
+                f"Invalid azimuth {azimuth!r}. "
+                "Available azimuths are: "
+                f"{', '.join(self._AZIMUTHS)}."
+            )
+
+        if zenith not in self.zeniths:
+            raise ValueError(
+                f"Invalid zenith {zenith!r} for {self.production}. "
+                "Available zeniths are: "
+                f"{', '.join(self.zeniths)}."
+            )
+
+        if livetime not in self.observation_times:
+            raise ValueError(
+                f"Invalid livetime {livetime!r} for {self.production}. "
+                "Available livetimes are: "
+                f"{', '.join(self.observation_times)}."
+            )
+
     # ------------------------------------------------------------------
     # Path builders
     # ------------------------------------------------------------------
@@ -314,6 +355,8 @@ class CTAOIRFManager:
                 "IRFOption must be tuple, "
                 f"got {type(opt)}"
             )
+
+        self._validate_option(opt)
 
         if opt in self._cache:
             return self._cache[opt]
