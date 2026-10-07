@@ -8,6 +8,14 @@ from feupy.irf.utils import get_irf_groups
 class FakeIRFManager:
     """Fake CTAOIRFManager used for testing."""
 
+    def __init__(
+        self,
+        production="prod5",
+        condition="dark",
+    ):
+        self.production = production
+        self.condition = condition
+
     def get_irf(self, options):
         return {"irf": tuple(options)}
 
@@ -16,16 +24,23 @@ class FakeIRFManager:
 def fake_manager(monkeypatch):
     monkeypatch.setattr(
         "feupy.irf.utils.CTAOIRFManager",
-        lambda: FakeIRFManager(),
+        FakeIRFManager,
     )
 
 
 def test_get_irf_groups_single_values(fake_manager):
-    groups = ["South", "AverageAz", "20deg", "0.5h"]
+    groups = [
+        "South",
+        "AverageAz",
+        "20deg",
+        "0.5h",
+    ]
 
     required_irfs, irfs = get_irf_groups(groups)
 
-    expected = [["South", "AverageAz", "20deg", "0.5h"]]
+    expected = [
+        ["South", "AverageAz", "20deg", "0.5h"],
+    ]
 
     assert required_irfs == expected
     assert irfs == [tuple(expected[0])]
@@ -47,7 +62,10 @@ def test_get_irf_groups_multiple_arrays(fake_manager):
     ]
 
     assert required_irfs == expected
-    assert irfs == [tuple(x) for x in expected]
+    assert irfs == [
+        tuple(options)
+        for options in expected
+    ]
 
 
 def test_get_irf_groups_multiple_parameters(fake_manager):
@@ -63,11 +81,33 @@ def test_get_irf_groups_multiple_parameters(fake_manager):
     assert len(required_irfs) == 8
     assert len(irfs) == 8
 
-    assert ["South", "AverageAz", "20deg", "0.5h"] in required_irfs
-    assert ["North", "NorthAz", "40deg", "0.5h"] in required_irfs
+    assert [
+        "South",
+        "AverageAz",
+        "20deg",
+        "0.5h",
+    ] in required_irfs
 
-    assert ("South", "AverageAz", "20deg", "0.5h") in irfs
-    assert ("North", "NorthAz", "40deg", "0.5h") in irfs
+    assert [
+        "North",
+        "NorthAz",
+        "40deg",
+        "0.5h",
+    ] in required_irfs
+
+    assert (
+        "South",
+        "AverageAz",
+        "20deg",
+        "0.5h",
+    ) in irfs
+
+    assert (
+        "North",
+        "NorthAz",
+        "40deg",
+        "0.5h",
+    ) in irfs
 
 
 def test_get_irf_groups_all_lists(fake_manager):
@@ -80,5 +120,53 @@ def test_get_irf_groups_all_lists(fake_manager):
 
     required_irfs, irfs = get_irf_groups(groups)
 
-    assert required_irfs == [["South", "AverageAz", "20deg", "0.5h"]]
-    assert irfs == [("South", "AverageAz", "20deg", "0.5h")]
+    assert required_irfs == [
+        ["South", "AverageAz", "20deg", "0.5h"],
+    ]
+
+    assert irfs == [
+        ("South", "AverageAz", "20deg", "0.5h"),
+    ]
+
+
+def test_get_irf_groups_prod6(fake_manager):
+    groups = [
+        "South",
+        "AverageAz",
+        "52deg",
+        "100s",
+    ]
+
+    required_irfs, irfs = get_irf_groups(
+        groups,
+        production="prod6",
+    )
+
+    expected = [
+        ["South", "AverageAz", "52deg", "100s"],
+    ]
+
+    assert required_irfs == expected
+    assert irfs == [tuple(expected[0])]
+
+
+def test_get_irf_groups_prod6_halfmoon(fake_manager):
+    groups = [
+        "South",
+        "AverageAz",
+        "20deg",
+        "0.5h",
+    ]
+
+    required_irfs, irfs = get_irf_groups(
+        groups,
+        production="prod6",
+        condition="halfmoon",
+    )
+
+    expected = [
+        ["South", "AverageAz", "20deg", "0.5h"],
+    ]
+
+    assert required_irfs == expected
+    assert irfs == [tuple(expected[0])]
