@@ -1,6 +1,7 @@
 # Licensed under a 3-clause BSD style license - see LICENSE.rst
 """Regression tests using the Porter et al. (2017) GALPROP ISRF data."""
 
+from pathlib import Path
 import os
 
 import numpy as np
@@ -12,11 +13,6 @@ from astropy.coordinates import SkyCoord
 from feupy.isrf import Porter2017ISRF
 from feupy.isrf.utils import blackbody_sed, integrate_isrf_sed
 
-
-pytestmark = pytest.mark.skipif(
-    not os.environ.get("FEUPY_DATA"),
-    reason="FEUPY_DATA is not configured.",
-)
 
 SED_UNIT = u.eV / u.cm**3
 TEMPERATURES = {
@@ -35,8 +31,37 @@ REFERENCE_DENSITIES = {
 
 @pytest.fixture(scope="module")
 def isrf():
-    """Load the R12 GALPROP ISRF model."""
-    return Porter2017ISRF(model="R12")
+    """Load the R12 GALPROP ISRF model if data are available."""
+
+    feupy_data = os.environ.get("FEUPY_DATA")
+
+    if not feupy_data:
+        pytest.skip(
+            "FEUPY_DATA is not configured."
+        )
+
+    model_dir = (
+        Path(feupy_data)
+        / "isrf"
+        / "porter2017"
+        / "Porter_etal_ApJ_846_67_2017_SEDonly"
+        / "R12"
+    )
+
+    index_file = (
+        model_dir
+        / "robitaille_DL07_PAHISMMix.dat"
+    )
+
+    if not index_file.is_file():
+        pytest.skip(
+            "Porter2017 GALPROP R12 data are not available."
+        )
+
+    return Porter2017ISRF(
+        model="R12",
+        data_dir=model_dir,
+    )
 
 
 @pytest.fixture(scope="module")
