@@ -599,7 +599,7 @@ def test_ctao_prod5_rejects_prod6_only_irf():
         )
 
 
-def test_simulate_observation_prod6():
+def test_simulate_observation_prod6(require_prod6_data):
     config = CTAOAnalysisConfig(
         observation={
             "livetime": "100 s",

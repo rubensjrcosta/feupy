@@ -160,26 +160,33 @@ def test_prod6_site_arrays():
 
 
 def test_prod6_path():
-    manager = CTAOIRFManager(production="prod6")
+    """Test Prod6 path construction without loading FITS files."""
 
-    opt = ("South", "AverageAz", "20deg", "0.5h")
-    meta = manager.get_irf(opt)
+    manager = CTAOIRFManager(
+        production="prod6",
+    )
 
-    path = meta["file_path"]
+    opt = (
+        "South",
+        "AverageAz",
+        "20deg",
+        "0.5h",
+    )
+
+    path = manager._build_path(opt)
 
     assert path.name == (
         "Prod6-CTAO-South-20deg-AverageAz-"
         "2LSTs14MSTs37SSTs-dark-1800s-v1.0.fits.gz"
     )
 
-    assert (
-        path.parent.name
-        == "CTAO-Performance-Prod6-CTAO-"
+    assert path.parent.name == (
+        "CTAO-Performance-Prod6-CTAO-"
         "South-20deg-dark-v1.0.FITS"
     )
 
 
-def test_prod6_load():
+def test_prod6_load(require_prod6_data):
     manager = CTAOIRFManager(production="prod6")
 
     opt = ("South", "AverageAz", "20deg", "0.5h")
@@ -197,7 +204,7 @@ def test_prod6_load():
     assert meta["condition"] == "dark"
 
 
-def test_prod6_52deg_100s():
+def test_prod6_52deg_100s(require_prod6_data):
     manager = CTAOIRFManager(production="prod6")
 
     opt = ("South", "AverageAz", "52deg", "100s")
@@ -214,7 +221,7 @@ def test_prod6_52deg_100s():
     assert "100s" in meta["file_path"].name
 
 
-def test_prod6_halfmoon():
+def test_prod6_halfmoon(require_prod6_data):
     manager = CTAOIRFManager(
         production="prod6",
         condition="halfmoon",
