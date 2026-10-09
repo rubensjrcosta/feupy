@@ -38,15 +38,32 @@ def validate_irf(value):
         value = tuple(value)
 
     if not isinstance(value, tuple):
-        raise TypeError("IRF must be a tuple or list.")
+        raise TypeError(
+            "IRF must be a tuple or list."
+        )
 
     if len(value) != 4:
-        raise ValueError("IRF must have exactly 4 elements.")
+        raise ValueError(
+            "IRF must have exactly 4 elements."
+        )
 
-    options = CTAOIRFManager.get_irfs_options()
+    prod5_options = CTAOIRFManager(
+        production="prod5",
+    ).get_irfs_options()
+
+    prod6_options = CTAOIRFManager(
+        production="prod6",
+    ).get_irfs_options()
+
+    options = set(
+        prod5_options
+        + prod6_options
+    )
 
     if value not in options:
-        raise ValueError(f"Invalid IRF option: {value!r}. Choose one from: {options!r}")
+        raise ValueError(
+            f"Invalid IRF option: {value!r}."
+        )
 
     return value
 

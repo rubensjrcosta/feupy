@@ -1,6 +1,8 @@
 # Licensed under a 3-clause BSD style license - see LICENSE
 """Configuration classes used by FeuPy analysis utilities."""
 
+from typing import Literal
+
 from gammapy.analysis.config import (
     BackgroundConfig,
     GammapyBaseConfig,
@@ -63,7 +65,6 @@ class SensitivityConfig(GammapyBaseConfig):
     data_path: PathType | None = None
     table_format: TableEnum = "fits"
 
-
 class ObservationConfig(GammapyBaseConfig):
     """Configuration for CTAO observations."""
 
@@ -71,4 +72,13 @@ class ObservationConfig(GammapyBaseConfig):
     livetime: QuantityType | None = None
     offset: QuantityType | None = None
     position_angle: AngleType | None = None
-    required_irfs: IrfType = ("South", "AverageAz", "20deg", "50h")
+
+    irf_production: Literal["prod5", "prod6"] = "prod5"
+    irf_condition: Literal["dark", "halfmoon"] = "dark"
+
+    required_irfs: IrfType = (
+        "South",
+        "AverageAz",
+        "20deg",
+        "50h",
+    )

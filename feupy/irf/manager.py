@@ -429,19 +429,26 @@ class CTAOIRFManager:
             f"{extra}"
         )
 
-    @staticmethod
     def _make_name(
+        self,
         opt: IRFOption,
     ) -> str:
-        """Create an IRF name."""
-        array, _, zenith, livetime = opt
-
-        return (
-            f"CTAO-{array}_"
-            f"{zenith}_"
-            f"{livetime}"
-        )
-
+        """Create a unique IRF name."""
+        array, azimuth, zenith, livetime = opt
+    
+        parts = [
+            "CTAO",
+            self.production,
+            array,
+            azimuth,
+            zenith,
+            livetime,
+        ]
+    
+        if self.production == "prod6":
+            parts.append(self.condition)
+    
+        return "_".join(parts)
     # ------------------------------------------------------------------
     # Available options
     # ------------------------------------------------------------------

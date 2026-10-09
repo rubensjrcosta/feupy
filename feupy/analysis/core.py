@@ -62,7 +62,6 @@ class ROIAnalysis:
     config : dict or `ROIAnalysisConfig`
         Configuration options following `ROIAnalysisConfig` schema
     """
-
     def __init__(self, config):
         self.config = config
         self.config.set_logging()
@@ -70,6 +69,7 @@ class ROIAnalysis:
         self.sources = None
         self._has_fp = None
         self.catalog = None
+
 
     def _repr_html_(self):
         try:
@@ -469,8 +469,10 @@ class CTAOAnalysis:
         self.flux_points = None
         self.table_sens = None
 
-        self.irf_manager = CTAOIRFManager()
-
+        self.irf_manager = CTAOIRFManager(
+            production=self.config.observation.irf_production,
+            condition=self.config.observation.irf_condition,
+        )
     # =====================
     # Config
     # =====================
@@ -489,6 +491,11 @@ class CTAOAnalysis:
 
     def update_config(self, config):
         self.config = self.config.update(config=config)
+    
+        self.irf_manager = CTAOIRFManager(
+            production=self.config.observation.irf_production,
+            condition=self.config.observation.irf_condition,
+        )
 
     @property
     def models(self):
@@ -902,17 +909,21 @@ class CTAOAnalysis:
         irf_data = self.irf_manager.get_irf(irfs)
 
         return {
-            "ONRADIUS": f"{self.config.datasets.on_region.radius.to('deg').value} deg",
+            "ONRADIUS": (
+                f"{self.config.datasets.on_region.radius.to('deg').value} deg"
+            ),
             "OFFSET": obs.offset.to_string(),
             "LIVETIME": obs.livetime.to_string(),
             "IRF_NAME": irf_data["name"],
             "IRF_LABEL": irf_data["label"],
+            "IRF_PROD": irf_data["production"],
+            "IRF_VER": irf_data["version"],
+            "IRF_COND": irf_data.get("condition", ""),
             "IRF_ARR": irfs[0] if len(irfs) > 0 else "",
             "IRF_AZ": irfs[1] if len(irfs) > 1 else "",
             "IRF_ZEN": irfs[2] if len(irfs) > 2 else "",
             "IRF_LT": irfs[3] if len(irfs) > 3 else "",
         }
-
     def get_file_name(self):
 
         obs = self.config.observation

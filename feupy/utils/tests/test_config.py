@@ -1,7 +1,9 @@
 # Licensed under a 3-clause BSD style license - see LICENSE
 
+import pytest
 from gammapy.analysis.config import ReductionTypeEnum
 from gammapy.makers import MapDatasetMaker
+from pydantic import ValidationError
 
 from feupy.utils.config import (
     DatasetsConfig,
@@ -62,6 +64,9 @@ def test_observation_defaults():
     assert config.livetime is None
     assert config.offset is None
     assert config.position_angle is None
+    assert config.irf_production == "prod5"
+    assert config.irf_condition == "dark"
+
     assert tuple(config.required_irfs) == (
         "South",
         "AverageAz",
@@ -70,7 +75,45 @@ def test_observation_defaults():
     )
 
 
+def test_observation_prod6():
+    config = ObservationConfig(
+        irf_production="prod6",
+        irf_condition="halfmoon",
+        required_irfs=(
+            "South",
+            "AverageAz",
+            "52deg",
+            "100s",
+        ),
+    )
+
+    assert config.irf_production == "prod6"
+    assert config.irf_condition == "halfmoon"
+
+    assert tuple(config.required_irfs) == (
+        "South",
+        "AverageAz",
+        "52deg",
+        "100s",
+    )
+
+
+def test_observation_invalid_irf_production():
+    with pytest.raises(ValidationError):
+        ObservationConfig(
+            irf_production="prod7",
+        )
+
+
+def test_observation_invalid_irf_condition():
+    with pytest.raises(ValidationError):
+        ObservationConfig(
+            irf_condition="moon",
+        )
+
+
 def test_observation_has_cone():
     config = ObservationConfig()
 
     assert config.obs_cone is not None
+    
