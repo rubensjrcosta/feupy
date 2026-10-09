@@ -5,18 +5,37 @@ import pytest
 from feupy.utils import types
 from feupy.utils.types import validate_irf
 
-VALID_IRFS = [
+
+PROD5_IRFS = [
     ("a", "b", "c", "d"),
     ("e", "f", "g", "h"),
+]
+
+PROD6_IRFS = [
+    ("a", "b", "c", "d"),
+    ("i", "j", "k", "l"),
 ]
 
 
 class FakeManager:
     """Minimal CTAO IRF manager used for validation tests."""
 
-    @classmethod
-    def get_irfs_options(cls):
-        return VALID_IRFS
+    def __init__(
+        self,
+        production="prod5",
+        condition="dark",
+    ):
+        self.production = production
+        self.condition = condition
+
+    def get_irfs_options(self):
+        if self.production == "prod5":
+            return PROD5_IRFS
+
+        if self.production == "prod6":
+            return PROD6_IRFS
+
+        return []
 
 
 @pytest.fixture
@@ -42,12 +61,29 @@ def test_all():
 @pytest.mark.parametrize(
     ("value", "expected"),
     [
-        (("a", "b", "c", "d"), ("a", "b", "c", "d")),
-        (["a", "b", "c", "d"], ("a", "b", "c", "d")),
-        (("e", "f", "g", "h"), ("e", "f", "g", "h")),
+        (
+            ("a", "b", "c", "d"),
+            ("a", "b", "c", "d"),
+        ),
+        (
+            ["a", "b", "c", "d"],
+            ("a", "b", "c", "d"),
+        ),
+        (
+            ("e", "f", "g", "h"),
+            ("e", "f", "g", "h"),
+        ),
+        (
+            ("i", "j", "k", "l"),
+            ("i", "j", "k", "l"),
+        ),
     ],
 )
-def test_validate_irf_valid(mock_irf_manager, value, expected):
+def test_validate_irf_valid(
+    mock_irf_manager,
+    value,
+    expected,
+):
     assert validate_irf(value) == expected
 
 
@@ -59,8 +95,14 @@ def test_validate_irf_valid(mock_irf_manager, value, expected):
         None,
     ],
 )
-def test_validate_irf_invalid_type(mock_irf_manager, value):
-    with pytest.raises(TypeError, match="tuple or list"):
+def test_validate_irf_invalid_type(
+    mock_irf_manager,
+    value,
+):
+    with pytest.raises(
+        TypeError,
+        match="tuple or list",
+    ):
         validate_irf(value)
 
 
@@ -72,13 +114,24 @@ def test_validate_irf_invalid_type(mock_irf_manager, value):
         [],
     ],
 )
-def test_validate_irf_invalid_length(mock_irf_manager, value):
-    with pytest.raises(ValueError, match="exactly 4 elements"):
+def test_validate_irf_invalid_length(
+    mock_irf_manager,
+    value,
+):
+    with pytest.raises(
+        ValueError,
+        match="exactly 4 elements",
+    ):
         validate_irf(value)
 
 
-def test_validate_irf_invalid_option(mock_irf_manager):
+def test_validate_irf_invalid_option(
+    mock_irf_manager,
+):
     value = ("x", "y", "z", "w")
 
-    with pytest.raises(ValueError, match="Invalid IRF option"):
+    with pytest.raises(
+        ValueError,
+        match="Invalid IRF option",
+    ):
         validate_irf(value)

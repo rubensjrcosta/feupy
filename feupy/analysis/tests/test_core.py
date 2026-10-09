@@ -10,7 +10,7 @@ from gammapy.maps import MapAxis
 from gammapy.modeling.models import Models
 
 from feupy.analysis.core import CTAOAnalysis, ROIAnalysis
-
+from feupy.analysis.config import CTAOAnalysisConfig
 
 def make_roi_analysis():
     config = MagicMock()
@@ -155,29 +155,74 @@ def test_roi_set_models_invalid_type():
 def test_ctao_analysis_config_from_dict():
     config = MagicMock()
     config.set_logging = MagicMock()
+    config.observation.irf_production = "prod5"
+    config.observation.irf_condition = "dark"
 
     with (
         patch(
             "feupy.analysis.core.CTAOAnalysisConfig",
             return_value=config,
         ) as config_class,
-        patch("feupy.analysis.core.Observations") as observations_class,
-        patch("feupy.analysis.core.Fit") as fit_class,
-        patch("feupy.analysis.core.CTAOIRFManager") as irf_manager_class,
+        patch(
+            "feupy.analysis.core.Observations"
+        ) as observations_class,
+        patch(
+            "feupy.analysis.core.Fit"
+        ) as fit_class,
+        patch(
+            "feupy.analysis.core.CTAOIRFManager"
+        ) as irf_manager_class,
     ):
-        analysis = CTAOAnalysis({"general": {}})
+        analysis = CTAOAnalysis(
+            {
+                "general": {},
+            }
+        )
 
-    config_class.assert_called_once_with(general={})
+    config_class.assert_called_once_with(
+        general={},
+    )
     config.set_logging.assert_called_once_with()
     observations_class.assert_called_once_with()
     fit_class.assert_called_once_with()
-    irf_manager_class.assert_called_once_with()
+
+    irf_manager_class.assert_called_once_with(
+        production="prod5",
+        condition="dark",
+    )
 
     assert analysis.datasets is None
     assert analysis.spectrum_dataset is None
     assert analysis.fit_result is None
     assert analysis.flux_points is None
     assert analysis.table_sens is None
+
+
+def test_ctao_analysis_prod6():
+    config = MagicMock()
+    config.set_logging = MagicMock()
+    config.observation.irf_production = "prod6"
+    config.observation.irf_condition = "halfmoon"
+
+    with (
+        patch(
+            "feupy.analysis.core.CTAOAnalysisConfig",
+            return_value=config,
+        ),
+        patch("feupy.analysis.core.Observations"),
+        patch("feupy.analysis.core.Fit"),
+        patch(
+            "feupy.analysis.core.CTAOIRFManager"
+        ) as irf_manager_class,
+    ):
+        analysis = CTAOAnalysis({})
+
+    irf_manager_class.assert_called_once_with(
+        production="prod6",
+        condition="halfmoon",
+    )
+
+    assert analysis.irf_manager is irf_manager_class.return_value
 
 
 def test_ctao_invalid_config():
@@ -204,7 +249,9 @@ def test_create_pointing_position():
     )
 
     assert isinstance(result, SkyCoord)
-    assert position.separation(result).to_value(u.deg) == pytest.approx(1)
+    assert position.separation(result).to_value(
+        u.deg
+    ) == pytest.approx(1)
 
 
 def test_create_pointing():
@@ -214,16 +261,21 @@ def test_create_pointing():
         frame="icrs",
     )
 
-    with patch("feupy.analysis.core.FixedPointingInfo") as fixed_pointing_info:
-        result = CTAOAnalysis._create_pointing(pointing_position)
+    with patch(
+        "feupy.analysis.core.FixedPointingInfo"
+    ) as fixed_pointing_info:
+        result = CTAOAnalysis._create_pointing(
+            pointing_position
+        )
 
     assert result is fixed_pointing_info.return_value
     fixed_pointing_info.assert_called_once()
 
     kwargs = fixed_pointing_info.call_args.kwargs
-    assert kwargs["fixed_icrs"].separation(pointing_position.icrs).to_value(
-        u.deg
-    ) == pytest.approx(0)
+
+    assert kwargs["fixed_icrs"].separation(
+        pointing_position.icrs
+    ).to_value(u.deg) == pytest.approx(0)
 
 
 def test_get_spectrum_dataset_requires_observations():
@@ -294,16 +346,27 @@ def test_get_datasets_runs_on_off():
 @pytest.mark.parametrize(
     ("method", "class_name"),
     [
-        ("reflected", "ReflectedRegionsBackgroundMaker"),
-        ("ring", "RingBackgroundMaker"),
-        ("fov_background", "FoVBackgroundMaker"),
+        (
+            "reflected",
+            "ReflectedRegionsBackgroundMaker",
+        ),
+        (
+            "ring",
+            "RingBackgroundMaker",
+        ),
+        (
+            "fov_background",
+            "FoVBackgroundMaker",
+        ),
     ],
 )
 def test_create_background_maker(method, class_name):
     analysis, config = make_ctao_analysis()
 
     config.datasets.background.method = method
-    config.datasets.background.parameters = {"test": 1}
+    config.datasets.background.parameters = {
+        "test": 1,
+    }
 
     target = f"feupy.analysis.core.{class_name}"
 
@@ -339,8 +402,14 @@ def test_make_energy_axis():
     assert axis.name == "energy"
     assert axis.nbin == 4
     assert axis.unit == u.TeV
-    assert axis.edges[0].to_value(u.TeV) == pytest.approx(0.1)
-    assert axis.edges[-1].to_value(u.TeV) == pytest.approx(10)
+
+    assert axis.edges[0].to_value(
+        u.TeV
+    ) == pytest.approx(0.1)
+
+    assert axis.edges[-1].to_value(
+        u.TeV
+    ) == pytest.approx(10)
 
 
 @pytest.mark.parametrize(
@@ -350,14 +419,22 @@ def test_make_energy_axis():
         (0.1 * u.TeV, None),
     ],
 )
-def test_make_energy_axis_missing_bounds(minimum, maximum):
+def test_make_energy_axis_missing_bounds(
+    minimum,
+    maximum,
+):
     axis_config = SimpleNamespace(
         min=minimum,
         max=maximum,
         nbins=4,
     )
 
-    assert CTAOAnalysis._make_energy_axis(axis_config) is None
+    assert (
+        CTAOAnalysis._make_energy_axis(
+            axis_config
+        )
+        is None
+    )
 
 
 def test_run_fit_requires_datasets():
@@ -387,6 +464,7 @@ def test_run_fit():
     fit.run.assert_called_once_with(
         datasets=datasets,
     )
+
     assert analysis.fit_result == "fit-result"
 
 
@@ -415,9 +493,13 @@ def test_get_table_meta():
     )
 
     analysis.irf_manager = MagicMock()
+
     analysis.irf_manager.get_irf.return_value = {
         "name": "test-irf",
         "label": "Test IRF",
+        "production": "prod6",
+        "version": "v1.0",
+        "condition": "halfmoon",
     }
 
     meta = analysis._get_table_meta()
@@ -430,6 +512,10 @@ def test_get_table_meta():
     assert meta["IRF_ZEN"] == "20deg"
     assert meta["IRF_LT"] == "50h"
 
+    assert meta["IRF_PROD"] == "prod6"
+    assert meta["IRF_VER"] == "v1.0"
+    assert meta["IRF_COND"] == "halfmoon"
+
 
 def test_get_file_name():
     analysis, config = make_ctao_analysis()
@@ -440,11 +526,119 @@ def test_get_file_name():
         "20deg",
         "50h",
     )
+
     config.observation.livetime = 50 * u.h
 
     analysis.irf_manager = MagicMock()
-    analysis.irf_manager.get_irf.return_value = {"name": "prod5-test"}
+    analysis.irf_manager.get_irf.return_value = {
+        "name": "prod5-test",
+    }
 
     result = analysis.get_file_name()
 
     assert result == "sens_prod5-test_livetime50.0h"
+
+
+def test_ctao_update_config_updates_irf_manager():
+    analysis, config = make_ctao_analysis()
+
+    updated_config = CTAOAnalysisConfig()
+    updated_config.observation.irf_production = "prod6"
+    updated_config.observation.irf_condition = "halfmoon"
+
+    config.update.return_value = updated_config
+
+    update = {
+        "observation": {
+            "irf_production": "prod6",
+            "irf_condition": "halfmoon",
+        }
+    }
+
+    with patch(
+        "feupy.analysis.core.CTAOIRFManager"
+    ) as irf_manager_class:
+        analysis.update_config(update)
+
+    config.update.assert_called_once_with(
+        config=update,
+    )
+
+    irf_manager_class.assert_called_once_with(
+        production="prod6",
+        condition="halfmoon",
+    )
+
+    assert analysis.config is updated_config
+    assert (
+        analysis.irf_manager
+        is irf_manager_class.return_value
+    )
+
+
+
+def test_ctao_prod5_rejects_prod6_only_irf():
+    config = CTAOAnalysisConfig(
+        observation={
+            "irf_production": "prod5",
+            "irf_condition": "dark",
+            "required_irfs": (
+                "South",
+                "AverageAz",
+                "52deg",
+                "100s",
+            ),
+        }
+    )
+
+    analysis = CTAOAnalysis(config)
+
+    with pytest.raises(ValueError):
+        analysis.irf_manager.get_irf(
+            config.observation.required_irfs
+        )
+
+
+def test_simulate_observation_prod6(require_prod6_data):
+    config = CTAOAnalysisConfig(
+        observation={
+            "livetime": "100 s",
+            "offset": "0.5 deg",
+            "position_angle": "0 deg",
+            "irf_production": "prod6",
+            "irf_condition": "dark",
+            "required_irfs": (
+                "South",
+                "AverageAz",
+                "52deg",
+                "100s",
+            ),
+        },
+        datasets={
+            "on_region": {
+                "frame": "icrs",
+                "lon": "0 deg",
+                "lat": "0 deg",
+                "radius": "0.1 deg",
+            },
+        },
+    )
+
+    analysis = CTAOAnalysis(config)
+
+    analysis.simulate_observation(obs_id=1)
+
+    assert len(analysis.observations) == 1
+
+    obs = analysis.observations[0]
+
+    assert obs.obs_id == 1
+
+    assert analysis.irf_manager.production == "prod6"
+    assert analysis.irf_manager.version == "v1.0"
+    assert analysis.irf_manager.condition == "dark"
+
+    assert obs.aeff is not None
+    assert obs.edisp is not None
+    assert obs.psf is not None
+    assert obs.bkg is not None
