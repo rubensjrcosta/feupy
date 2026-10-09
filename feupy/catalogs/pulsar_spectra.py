@@ -11,7 +11,7 @@ from gammapy.datasets import Datasets, FluxPointsDataset
 from gammapy.estimators import FluxPoints
 from gammapy.utils.scripts import make_path
 
-from feupy.utils.conversions import frequency_to_energy, jy_to_erg_cm2_s
+from feupy.utils.conversions import frequency_to_energy, flux_density_to_nu_fnu
 
 log = logging.getLogger(__name__)
 
@@ -103,14 +103,14 @@ def create_pulsar_flux_points_table(pulsar_jname):
     )
 
     table["e2dnde"] = Column(
-        data=jy_to_erg_cm2_s(freqs_mhz, fluxes_mjy),
+        data=flux_density_to_nu_fnu(freqs_mhz, fluxes_mjy),
         unit="erg cm^-2 s^-1",
         description="Spectral energy distribution",
         format=".3e",
     )
 
     table["e2dnde_err"] = Column(
-        data=jy_to_erg_cm2_s(freqs_mhz, flux_errors_mjy),
+        data=flux_density_to_nu_fnu(freqs_mhz, flux_errors_mjy),
         unit="erg cm^-2 s^-1",
         description="Spectral energy distribution uncertainty",
         format=".3e",
